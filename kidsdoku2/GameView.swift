@@ -77,9 +77,10 @@ struct GameView: View {
                     config: config,
                     cells: viewModel.puzzle.cells,
                     selected: viewModel.selectedPosition,
+                    highlightedValue: viewModel.highlightedValue,
                     onTap: { cell in
                         withAnimation(.easeInOut(duration: 0.15)) {
-                            viewModel.select(position: cell.position)
+                            viewModel.didTapCell(cell)
                         }
                     }
                 )
@@ -189,9 +190,9 @@ struct GameView: View {
     private var titleText: String {
         switch config.size {
         case 4:
-            return "Let's play the 4 x 4 puzzle!"
+            return "4 x 4 puzzle!"
         case 6:
-            return "Ready for the 6 x 6 challenge?"
+            return "6 x 6 puzzle"
         default:
             return "Have fun with Sudoku!"
         }
@@ -224,6 +225,7 @@ private struct BoardGridView: View {
     let config: KidSudokuConfig
     let cells: [KidSudokuCell]
     let selected: KidSudokuPosition?
+    let highlightedValue: Int?
     let onTap: (KidSudokuCell) -> Void
 
     var body: some View {
@@ -248,7 +250,6 @@ private struct BoardGridView: View {
                     }
                 }
                 .frame(width: side, height: side)
-                .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
 
                 Canvas { context, size in
                     drawSubgridLines(context: &context, size: size)
@@ -262,6 +263,10 @@ private struct BoardGridView: View {
 
     private func cellView(cell: KidSudokuCell, cellSize: CGFloat) -> some View {
         let isSelected = selected == cell.position
+        let isMatchingHighlighted = {
+            guard let highlightedValue = highlightedValue, let cellValue = cell.value else { return false }
+            return cellValue == highlightedValue
+        }()
 
         return Button {
             onTap(cell)
@@ -269,6 +274,12 @@ private struct BoardGridView: View {
             ZStack {
                 Rectangle()
                     .fill(cellBackground(for: cell, isSelected: isSelected))
+
+                if isMatchingHighlighted {
+                    Circle()
+                        .stroke(Color.red, lineWidth: 3)
+                        .frame(width: cellSize * 0.7, height: cellSize * 0.7)
+                }
 
                 Text(symbol(for: cell))
                     .font(.system(size: cellFontSize))
@@ -303,6 +314,7 @@ private struct BoardGridView: View {
         config.size == 4 ? 44 : 36
     }
 
+    // subgrid lines
     private func drawSubgridLines(context: inout GraphicsContext, size: CGSize) {
         let dimension = min(size.width, size.height)
         let cell = dimension / CGFloat(config.size)

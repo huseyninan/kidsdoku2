@@ -8,12 +8,14 @@ final class GameViewModel: ObservableObject {
     @Published var selectedPosition: KidSudokuPosition?
     @Published var message: KidSudokuMessage?
     @Published var showCelebration = false
+    @Published var highlightedValue: Int?
 
     let config: KidSudokuConfig
 
     init(config: KidSudokuConfig) {
         self.config = config
         self.puzzle = KidSudokuGenerator.generatePuzzle(config: config)
+        self.highlightedValue = nil
     }
 
     func startNewPuzzle() {
@@ -21,12 +23,21 @@ final class GameViewModel: ObservableObject {
         selectedPosition = nil
         message = KidSudokuMessage(text: "New puzzle ready!", type: .info)
         showCelebration = false
+        highlightedValue = nil
     }
 
     func select(position: KidSudokuPosition) {
         guard puzzle.cell(at: position).isFixed == false else { return }
         selectedPosition = position
         message = nil
+    }
+
+    func didTapCell(_ cell: KidSudokuCell) {
+        highlightedValue = cell.value
+        message = nil
+        if cell.isFixed == false {
+            selectedPosition = cell.position
+        }
     }
 
     func clearSelection() {
