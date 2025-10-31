@@ -1,23 +1,57 @@
 import Foundation
 
+enum SymbolGroup: Int, CaseIterable, Hashable {
+    case animals = 1
+    case fruits = 2
+    case sports = 3
+    case weather = 4
+    case vehicles = 5
+    case nature = 6
+    
+    var symbols: [String] {
+        switch self {
+        case .animals:
+            return ["🐶", "🐱", "🐻", "🐼", "🐸", "🦊"]
+        case .fruits:
+            return ["🍎", "🍊", "🍓", "🍉", "🍇", "🍌"]
+        case .sports:
+            return ["⚽️", "🏀", "⚾️", "🎾", "🏈", "🏐"]
+        case .weather:
+            return ["☀️", "⛅️", "☁️", "🌧️", "⚡️", "🌈"]
+        case .vehicles:
+            return ["🚗", "🚕", "🚙", "🚌", "🚎", "🏎️"]
+        case .nature:
+            return ["🌸", "🌺", "🌻", "🌷", "🌹", "🌼"]
+        }
+    }
+    
+    var id: Int {
+        return rawValue
+    }
+}
+
 struct KidSudokuConfig: Hashable {
     let size: Int
     let subgridRows: Int
     let subgridCols: Int
-    let symbols: [String]
+    let symbolGroup: SymbolGroup
+    
+    var symbols: [String] {
+        return Array(symbolGroup.symbols.prefix(size))
+    }
 
     static let fourByFour = KidSudokuConfig(
         size: 4,
         subgridRows: 2,
         subgridCols: 2,
-        symbols: ["🐶", "🐱", "🐻", "🐼"]
+        symbolGroup: .sports
     )
 
     static let sixBySix = KidSudokuConfig(
         size: 6,
         subgridRows: 2,
         subgridCols: 3,
-        symbols: ["🍎", "🍊", "🍓", "🍉", "🍇", "🍌"]
+        symbolGroup: .fruits
     )
 
     static func configuration(for size: Int) -> KidSudokuConfig? {
