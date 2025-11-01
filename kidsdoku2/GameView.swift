@@ -5,9 +5,9 @@ struct GameView: View {
     let config: KidSudokuConfig
     @StateObject private var viewModel: GameViewModel
 
-    init(config: KidSudokuConfig) {
+    init(config: KidSudokuConfig, puzzleId: Int? = nil) {
         self.config = config
-        _viewModel = StateObject(wrappedValue: GameViewModel(config: config))
+        _viewModel = StateObject(wrappedValue: GameViewModel(config: config, puzzleId: puzzleId))
     }
 
     var body: some View {

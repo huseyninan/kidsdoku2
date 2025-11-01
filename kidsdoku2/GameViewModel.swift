@@ -11,15 +11,26 @@ final class GameViewModel: ObservableObject {
     @Published var highlightedValue: Int?
 
     let config: KidSudokuConfig
+    let puzzleId: Int?
 
-    init(config: KidSudokuConfig) {
+    init(config: KidSudokuConfig, puzzleId: Int? = nil) {
         self.config = config
-        self.puzzle = KidSudokuGenerator.generatePuzzle(config: config)
+        self.puzzleId = puzzleId
+        
+        if let puzzleId = puzzleId, let preDefinedPuzzle = PuzzleLibrary.getPuzzle(id: puzzleId) {
+            self.puzzle = KidSudokuGenerator.createPuzzle(from: preDefinedPuzzle, config: config)
+        } else {
+            self.puzzle = KidSudokuGenerator.generatePuzzle(config: config)
+        }
         self.highlightedValue = nil
     }
 
     func startNewPuzzle() {
-        puzzle = KidSudokuGenerator.generatePuzzle(config: config)
+        if let puzzleId = puzzleId, let preDefinedPuzzle = PuzzleLibrary.getPuzzle(id: puzzleId) {
+            puzzle = KidSudokuGenerator.createPuzzle(from: preDefinedPuzzle, config: config)
+        } else {
+            puzzle = KidSudokuGenerator.generatePuzzle(config: config)
+        }
         selectedPosition = nil
         message = KidSudokuMessage(text: "New puzzle ready!", type: .info)
         showCelebration = false

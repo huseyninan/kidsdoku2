@@ -122,6 +122,388 @@ struct KidSudokuMessage: Identifiable {
 
 enum KidSudokuRoute: Hashable {
     case game(size: Int)
+    case puzzleSelection(size: Int)
+    case specificGame(size: Int, puzzleId: Int, difficulty: String)
+}
+
+enum PuzzleDifficulty: String, CaseIterable {
+    case easy = "Easy"
+    case normal = "Normal"
+    case hard = "Hard"
+}
+
+struct PreDefinedPuzzle: Identifiable {
+    let id: Int
+    let size: Int
+    let difficulty: PuzzleDifficulty
+    let puzzle: [[Int?]]
+    let solution: [[Int]]
+}
+
+enum PuzzleLibrary {
+    static func getPuzzles(for size: Int, difficulty: PuzzleDifficulty) -> [PreDefinedPuzzle] {
+        allPuzzles.filter { $0.size == size && $0.difficulty == difficulty }
+    }
+    
+    static func getPuzzle(id: Int) -> PreDefinedPuzzle? {
+        allPuzzles.first { $0.id == id }
+    }
+    
+    private static let allPuzzles: [PreDefinedPuzzle] = [
+        // 4x4 Easy Puzzles
+        PreDefinedPuzzle(
+            id: 1,
+            size: 4,
+            difficulty: .easy,
+            puzzle: [
+                [0, nil, nil, 3],
+                [nil, 3, 0, nil],
+                [nil, 2, 3, nil],
+                [3, nil, nil, 2]
+            ],
+            solution: [
+                [0, 1, 2, 3],
+                [2, 3, 0, 1],
+                [1, 2, 3, 0],
+                [3, 0, 1, 2]
+            ]
+        ),
+        PreDefinedPuzzle(
+            id: 2,
+            size: 4,
+            difficulty: .easy,
+            puzzle: [
+                [nil, 2, nil, 0],
+                [3, nil, 2, nil],
+                [nil, 3, nil, 2],
+                [2, nil, 0, nil]
+            ],
+            solution: [
+                [1, 2, 3, 0],
+                [3, 0, 2, 1],
+                [0, 3, 1, 2],
+                [2, 1, 0, 3]
+            ]
+        ),
+        PreDefinedPuzzle(
+            id: 3,
+            size: 4,
+            difficulty: .easy,
+            puzzle: [
+                [2, nil, nil, 1],
+                [nil, 1, 2, nil],
+                [nil, 2, 1, nil],
+                [1, nil, nil, 2]
+            ],
+            solution: [
+                [2, 3, 0, 1],
+                [0, 1, 2, 3],
+                [3, 2, 1, 0],
+                [1, 0, 3, 2]
+            ]
+        ),
+        
+        // 4x4 Normal Puzzles
+        PreDefinedPuzzle(
+            id: 4,
+            size: 4,
+            difficulty: .normal,
+            puzzle: [
+                [nil, nil, 2, 3],
+                [2, nil, nil, nil],
+                [nil, nil, nil, 2],
+                [3, 2, nil, nil]
+            ],
+            solution: [
+                [0, 1, 2, 3],
+                [2, 3, 0, 1],
+                [1, 0, 3, 2],
+                [3, 2, 1, 0]
+            ]
+        ),
+        PreDefinedPuzzle(
+            id: 5,
+            size: 4,
+            difficulty: .normal,
+            puzzle: [
+                [nil, 3, nil, nil],
+                [nil, nil, 3, 0],
+                [3, 0, nil, nil],
+                [nil, nil, 0, 3]
+            ],
+            solution: [
+                [1, 3, 2, 0],
+                [2, 1, 3, 0],
+                [3, 0, 1, 2],
+                [0, 2, 0, 3]
+            ]
+        ),
+        PreDefinedPuzzle(
+            id: 6,
+            size: 4,
+            difficulty: .normal,
+            puzzle: [
+                [3, nil, nil, nil],
+                [nil, nil, 3, 2],
+                [2, 3, nil, nil],
+                [nil, nil, nil, 3]
+            ],
+            solution: [
+                [3, 0, 1, 2],
+                [1, 0, 3, 2],
+                [2, 3, 0, 1],
+                [0, 2, 1, 3]
+            ]
+        ),
+        
+        // 4x4 Hard Puzzles
+        PreDefinedPuzzle(
+            id: 7,
+            size: 4,
+            difficulty: .hard,
+            puzzle: [
+                [nil, nil, nil, 3],
+                [nil, 3, nil, nil],
+                [nil, nil, 3, nil],
+                [3, nil, nil, nil]
+            ],
+            solution: [
+                [0, 1, 2, 3],
+                [2, 3, 0, 1],
+                [1, 0, 3, 2],
+                [3, 2, 1, 0]
+            ]
+        ),
+        PreDefinedPuzzle(
+            id: 8,
+            size: 4,
+            difficulty: .hard,
+            puzzle: [
+                [nil, nil, 1, nil],
+                [1, nil, nil, 0],
+                [0, nil, nil, 1],
+                [nil, 1, nil, nil]
+            ],
+            solution: [
+                [2, 3, 1, 0],
+                [1, 2, 3, 0],
+                [0, 3, 2, 1],
+                [3, 1, 0, 2]
+            ]
+        ),
+        PreDefinedPuzzle(
+            id: 9,
+            size: 4,
+            difficulty: .hard,
+            puzzle: [
+                [nil, 2, nil, nil],
+                [nil, nil, 2, nil],
+                [nil, 1, nil, nil],
+                [nil, nil, 1, nil]
+            ],
+            solution: [
+                [0, 2, 3, 1],
+                [3, 0, 2, 1],
+                [2, 1, 0, 3],
+                [1, 3, 1, 0]
+            ]
+        ),
+        
+        // 6x6 Easy Puzzles
+        PreDefinedPuzzle(
+            id: 10,
+            size: 6,
+            difficulty: .easy,
+            puzzle: [
+                [0, 1, nil, nil, 4, 5],
+                [nil, nil, 4, 5, 0, 1],
+                [4, 5, 0, 1, nil, nil],
+                [nil, nil, 5, 0, 1, 4],
+                [5, 0, 1, 4, nil, nil],
+                [1, 4, nil, nil, 5, 0]
+            ],
+            solution: [
+                [0, 1, 2, 3, 4, 5],
+                [2, 3, 4, 5, 0, 1],
+                [4, 5, 0, 1, 2, 3],
+                [3, 2, 5, 0, 1, 4],
+                [5, 0, 1, 4, 3, 2],
+                [1, 4, 3, 2, 5, 0]
+            ]
+        ),
+        PreDefinedPuzzle(
+            id: 11,
+            size: 6,
+            difficulty: .easy,
+            puzzle: [
+                [nil, 2, 3, 4, nil, nil],
+                [4, 5, nil, nil, 2, 3],
+                [2, 3, 4, 5, nil, nil],
+                [nil, nil, 5, 0, 3, 4],
+                [3, 4, nil, nil, 5, 0],
+                [nil, nil, 0, 3, 4, 2]
+            ],
+            solution: [
+                [0, 2, 3, 4, 1, 5],
+                [4, 5, 1, 2, 2, 3],
+                [2, 3, 4, 5, 0, 1],
+                [1, 0, 5, 0, 3, 4],
+                [3, 4, 2, 1, 5, 0],
+                [5, 1, 0, 3, 4, 2]
+            ]
+        ),
+        PreDefinedPuzzle(
+            id: 12,
+            size: 6,
+            difficulty: .easy,
+            puzzle: [
+                [1, nil, 3, 4, 5, nil],
+                [nil, 5, 0, 1, 2, 3],
+                [5, 0, nil, nil, 3, 4],
+                [3, 4, 5, nil, nil, 1],
+                [2, 3, 4, 5, 0, nil],
+                [nil, 1, 2, 3, 4, 5]
+            ],
+            solution: [
+                [1, 2, 3, 4, 5, 0],
+                [4, 5, 0, 1, 2, 3],
+                [5, 0, 1, 2, 3, 4],
+                [3, 4, 5, 0, 1, 1],
+                [2, 3, 4, 5, 0, 1],
+                [0, 1, 2, 3, 4, 5]
+            ]
+        ),
+        
+        // 6x6 Normal Puzzles
+        PreDefinedPuzzle(
+            id: 13,
+            size: 6,
+            difficulty: .normal,
+            puzzle: [
+                [nil, nil, 3, nil, 5, nil],
+                [nil, 5, nil, 1, nil, 3],
+                [5, nil, 1, nil, 3, nil],
+                [nil, 4, nil, 0, nil, 1],
+                [3, nil, 4, nil, 0, nil],
+                [nil, 1, nil, 3, nil, 5]
+            ],
+            solution: [
+                [0, 2, 3, 4, 5, 1],
+                [4, 5, 0, 1, 2, 3],
+                [5, 0, 1, 2, 3, 4],
+                [2, 4, 5, 0, 1, 1],
+                [3, 2, 4, 5, 0, 1],
+                [1, 1, 2, 3, 4, 5]
+            ]
+        ),
+        PreDefinedPuzzle(
+            id: 14,
+            size: 6,
+            difficulty: .normal,
+            puzzle: [
+                [nil, 1, nil, nil, 4, nil],
+                [3, nil, nil, 5, nil, 1],
+                [nil, 5, 0, nil, nil, 3],
+                [2, nil, nil, 0, 1, nil],
+                [0, nil, 1, nil, nil, 2],
+                [nil, 4, nil, nil, 5, nil]
+            ],
+            solution: [
+                [5, 1, 2, 3, 4, 0],
+                [3, 0, 4, 5, 2, 1],
+                [4, 5, 0, 1, 3, 3],
+                [2, 3, 5, 0, 1, 4],
+                [0, 3, 1, 4, 5, 2],
+                [1, 4, 3, 2, 5, 0]
+            ]
+        ),
+        PreDefinedPuzzle(
+            id: 15,
+            size: 6,
+            difficulty: .normal,
+            puzzle: [
+                [0, nil, nil, 3, nil, 5],
+                [nil, 3, 4, nil, 0, nil],
+                [nil, 5, nil, 1, 2, nil],
+                [nil, 2, 1, nil, 3, nil],
+                [nil, 0, nil, 4, 5, nil],
+                [5, nil, 3, nil, nil, 0]
+            ],
+            solution: [
+                [0, 1, 2, 3, 4, 5],
+                [2, 3, 4, 5, 0, 1],
+                [4, 5, 0, 1, 2, 3],
+                [0, 2, 1, 5, 3, 4],
+                [3, 0, 2, 4, 5, 1],
+                [5, 4, 3, 2, 1, 0]
+            ]
+        ),
+        
+        // 6x6 Hard Puzzles
+        PreDefinedPuzzle(
+            id: 16,
+            size: 6,
+            difficulty: .hard,
+            puzzle: [
+                [nil, nil, nil, 3, nil, nil],
+                [nil, 3, nil, nil, 0, nil],
+                [nil, nil, 0, nil, nil, 3],
+                [3, nil, nil, 0, nil, nil],
+                [nil, 0, nil, nil, 5, nil],
+                [nil, nil, 3, nil, nil, nil]
+            ],
+            solution: [
+                [0, 1, 2, 3, 4, 5],
+                [2, 3, 4, 5, 0, 1],
+                [4, 5, 0, 1, 2, 3],
+                [3, 2, 5, 0, 1, 4],
+                [1, 0, 4, 2, 5, 3],
+                [5, 4, 3, 1, 0, 2]
+            ]
+        ),
+        PreDefinedPuzzle(
+            id: 17,
+            size: 6,
+            difficulty: .hard,
+            puzzle: [
+                [nil, 1, nil, nil, nil, 5],
+                [3, nil, nil, nil, 0, nil],
+                [nil, nil, 0, 1, nil, nil],
+                [nil, nil, 5, 0, nil, nil],
+                [nil, 0, nil, nil, nil, 2],
+                [1, nil, nil, nil, 4, nil]
+            ],
+            solution: [
+                [0, 1, 2, 3, 4, 5],
+                [3, 4, 5, 2, 0, 1],
+                [4, 5, 0, 1, 2, 3],
+                [2, 3, 5, 0, 1, 4],
+                [5, 0, 3, 4, 1, 2],
+                [1, 2, 3, 5, 4, 0]
+            ]
+        ),
+        PreDefinedPuzzle(
+            id: 18,
+            size: 6,
+            difficulty: .hard,
+            puzzle: [
+                [nil, nil, 2, nil, 4, nil],
+                [nil, 5, nil, 1, nil, nil],
+                [5, nil, nil, nil, 2, nil],
+                [nil, 4, nil, nil, nil, 1],
+                [nil, nil, 4, 5, nil, nil],
+                [nil, 1, nil, 3, nil, nil]
+            ],
+            solution: [
+                [0, 3, 2, 5, 4, 1],
+                [4, 5, 3, 1, 0, 2],
+                [5, 0, 1, 3, 2, 4],
+                [3, 4, 5, 0, 2, 1],
+                [2, 3, 4, 5, 1, 0],
+                [0, 1, 2, 3, 5, 4]
+            ]
+        )
+    ]
 }
 
 enum KidSudokuGenerator {
@@ -134,6 +516,11 @@ enum KidSudokuGenerator {
 
         let cells = buildCells(from: puzzleBoard, solution: solution, config: config)
         return KidSudokuPuzzle(config: config, cells: cells, solution: solution)
+    }
+    
+    static func createPuzzle(from preDefinedPuzzle: PreDefinedPuzzle, config: KidSudokuConfig) -> KidSudokuPuzzle {
+        let cells = buildCells(from: preDefinedPuzzle.puzzle, solution: preDefinedPuzzle.solution, config: config)
+        return KidSudokuPuzzle(config: config, cells: cells, solution: preDefinedPuzzle.solution)
     }
 
     private static func generateCompleteBoard(config: KidSudokuConfig) -> [[Int]] {

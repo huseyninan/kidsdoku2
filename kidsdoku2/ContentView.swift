@@ -21,6 +21,14 @@ struct ContentView: View {
                         } else {
                             Text("Puzzle not available")
                         }
+                    case .puzzleSelection(let size):
+                        PuzzleSelectionView(size: size, path: $path)
+                    case .specificGame(let size, let puzzleId, _):
+                        if let config = KidSudokuConfig.configuration(for: size) {
+                            GameView(config: config, puzzleId: puzzleId)
+                        } else {
+                            Text("Puzzle not available")
+                        }
                     }
                 }
         }
