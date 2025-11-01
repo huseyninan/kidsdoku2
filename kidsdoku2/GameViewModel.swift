@@ -79,7 +79,6 @@ final class GameViewModel: ObservableObject {
         if isValid(symbolIndex, at: position) {
             objectWillChange.send()
             puzzle.updateCell(at: position, with: symbolIndex)
-            highlightedValue = symbolIndex
             message = nil
             checkForCompletion()
         } else {
