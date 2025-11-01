@@ -11,15 +11,28 @@ final class GameViewModel: ObservableObject {
     @Published var highlightedValue: Int?
 
     let config: KidSudokuConfig
+    private let predefinedPuzzle: PredefinedPuzzle?
 
-    init(config: KidSudokuConfig) {
+    init(config: KidSudokuConfig, predefinedPuzzle: PredefinedPuzzle? = nil) {
         self.config = config
-        self.puzzle = KidSudokuGenerator.generatePuzzle(config: config)
+        self.predefinedPuzzle = predefinedPuzzle
+        
+        if let predefined = predefinedPuzzle {
+            self.puzzle = Self.createPuzzle(from: predefined, config: config)
+        } else {
+            self.puzzle = KidSudokuGenerator.generatePuzzle(config: config)
+        }
         self.highlightedValue = nil
     }
 
     func startNewPuzzle() {
-        puzzle = KidSudokuGenerator.generatePuzzle(config: config)
+        if let predefined = predefinedPuzzle {
+            // Reload the same predefined puzzle
+            puzzle = Self.createPuzzle(from: predefined, config: config)
+        } else {
+            // Generate a new random puzzle
+            puzzle = KidSudokuGenerator.generatePuzzle(config: config)
+        }
         selectedPosition = nil
         message = KidSudokuMessage(text: "New puzzle ready!", type: .info)
         showCelebration = false
@@ -140,6 +153,29 @@ final class GameViewModel: ObservableObject {
 
     private var puzzleCells: [KidSudokuCell] {
         puzzle.cells
+    }
+    
+    private static func createPuzzle(from predefined: PredefinedPuzzle, config: KidSudokuConfig) -> KidSudokuPuzzle {
+        var cells: [KidSudokuCell] = []
+        cells.reserveCapacity(config.size * config.size)
+        
+        for row in 0..<config.size {
+            for col in 0..<config.size {
+                let currentValue = predefined.board[row][col]
+                let isFixed = currentValue != nil
+                let cell = KidSudokuCell(
+                    row: row,
+                    col: col,
+                    value: currentValue,
+                    solution: predefined.solution[row][col],
+                    isFixed: isFixed,
+                    boardSize: config.size
+                )
+                cells.append(cell)
+            }
+        }
+        
+        return KidSudokuPuzzle(config: config, cells: cells, solution: predefined.solution)
     }
 }
 
