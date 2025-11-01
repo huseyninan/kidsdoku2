@@ -25,11 +25,11 @@ struct MainMenuView: View {
 
                 VStack(spacing: 20) {
                     menuButton(title: "4x4", subtitle: "Perfect for beginners", color: .orange) {
-                        path.append(.game(size: 4))
+                        path.append(.catalog(size: 4))
                     }
 
                     menuButton(title: "6x6", subtitle: "Ready for a challenge", color: .purple) {
-                        path.append(.game(size: 6))
+                        path.append(.catalog(size: 6))
                     }
                 }
                 .padding(.horizontal, 24)

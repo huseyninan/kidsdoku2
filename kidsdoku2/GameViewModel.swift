@@ -11,15 +11,25 @@ final class GameViewModel: ObservableObject {
     @Published var highlightedValue: Int?
 
     let config: KidSudokuConfig
+    private let seed: UInt64?
 
-    init(config: KidSudokuConfig) {
+    init(config: KidSudokuConfig, seed: UInt64? = nil) {
         self.config = config
-        self.puzzle = KidSudokuGenerator.generatePuzzle(config: config)
+        self.seed = seed
+        if let seed {
+            self.puzzle = KidSudokuGenerator.generatePuzzle(config: config, seed: seed)
+        } else {
+            self.puzzle = KidSudokuGenerator.generatePuzzle(config: config)
+        }
         self.highlightedValue = nil
     }
 
     func startNewPuzzle() {
-        puzzle = KidSudokuGenerator.generatePuzzle(config: config)
+        if let seed {
+            puzzle = KidSudokuGenerator.generatePuzzle(config: config, seed: seed)
+        } else {
+            puzzle = KidSudokuGenerator.generatePuzzle(config: config)
+        }
         selectedPosition = nil
         message = KidSudokuMessage(text: "New puzzle ready!", type: .info)
         showCelebration = false

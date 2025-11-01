@@ -10,6 +10,11 @@ struct GameView: View {
         _viewModel = StateObject(wrappedValue: GameViewModel(config: config))
     }
 
+    init(config: KidSudokuConfig, seed: UInt64) {
+        self.config = config
+        _viewModel = StateObject(wrappedValue: GameViewModel(config: config, seed: seed))
+    }
+
     var body: some View {
         VStack(spacing: 20) {
             header
