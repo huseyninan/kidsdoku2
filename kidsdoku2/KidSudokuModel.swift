@@ -71,7 +71,7 @@ struct KidSudokuPosition: Hashable {
     let col: Int
 }
 
-struct KidSudokuCell: Identifiable {
+struct KidSudokuCell: Identifiable, Hashable {
     let id: Int
     let position: KidSudokuPosition
     var value: Int?
@@ -85,9 +85,25 @@ struct KidSudokuCell: Identifiable {
         self.solution = solution
         self.isFixed = isFixed
     }
+    
+    static func == (lhs: KidSudokuCell, rhs: KidSudokuCell) -> Bool {
+        lhs.id == rhs.id &&
+        lhs.position == rhs.position &&
+        lhs.value == rhs.value &&
+        lhs.solution == rhs.solution &&
+        lhs.isFixed == rhs.isFixed
+    }
+    
+    func hash(into hasher: inout Hasher) {
+        hasher.combine(id)
+        hasher.combine(position)
+        hasher.combine(value)
+        hasher.combine(solution)
+        hasher.combine(isFixed)
+    }
 }
 
-struct KidSudokuPuzzle {
+struct KidSudokuPuzzle: Hashable {
     let config: KidSudokuConfig
     private(set) var cells: [KidSudokuCell]
     let solution: [[Int]]
@@ -106,6 +122,18 @@ struct KidSudokuPuzzle {
         let index = position.row * config.size + position.col
         cells[index].value = value
     }
+    
+    static func == (lhs: KidSudokuPuzzle, rhs: KidSudokuPuzzle) -> Bool {
+        lhs.config == rhs.config && 
+        lhs.cells.map(\.id) == rhs.cells.map(\.id) &&
+        lhs.solution == rhs.solution
+    }
+    
+    func hash(into hasher: inout Hasher) {
+        hasher.combine(config)
+        hasher.combine(cells.map(\.id))
+        hasher.combine(solution)
+    }
 }
 
 enum KidSudokuMessageType {
@@ -122,6 +150,8 @@ struct KidSudokuMessage: Identifiable {
 
 enum KidSudokuRoute: Hashable {
     case game(size: Int)
+    case puzzleSelection(size: Int)
+    case puzzle(config: KidSudokuConfig, puzzleData: PuzzleData)
 }
 
 enum KidSudokuGenerator {

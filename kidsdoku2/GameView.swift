@@ -5,9 +5,10 @@ struct GameView: View {
     let config: KidSudokuConfig
     @StateObject private var viewModel: GameViewModel
 
-    init(config: KidSudokuConfig) {
+    init(config: KidSudokuConfig, puzzleData: PuzzleData? = nil) {
         self.config = config
-        _viewModel = StateObject(wrappedValue: GameViewModel(config: config))
+        let puzzle = puzzleData?.puzzle
+        _viewModel = StateObject(wrappedValue: GameViewModel(config: config, puzzle: puzzle))
     }
 
     var body: some View {
@@ -339,6 +340,6 @@ private struct BoardGridView: View {
 }
 
 #Preview {
-    GameView(config: .fourByFour)
+    GameView(config: .fourByFour, puzzleData: nil)
 }
 
