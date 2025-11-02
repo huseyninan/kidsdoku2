@@ -26,6 +26,8 @@ struct GameView: View {
             boardSection
 
             paletteSection
+            
+            actionButtons
 
             Spacer()
         }
@@ -33,17 +35,9 @@ struct GameView: View {
         .padding(.top, 16)
         .padding(.bottom, 28)
         .background(Color(.systemGroupedBackground).ignoresSafeArea())
-        .navigationTitle(viewModel.navigationTitle)
-        .toolbar {
-            ToolbarItem(placement: .navigationBarTrailing) {
-                Button("New Puzzle") {
-                    withAnimation(.easeInOut) {
-                        viewModel.startNewPuzzle()
-                    }
-                }
-                .font(.system(.headline, design: .rounded))
-            }
-        }
+        .navigationBarBackButtonHidden(false)
+        .navigationTitle("")
+        .navigationBarTitleDisplayMode(.inline)
         .alert("Great job!", isPresented: Binding(
             get: { viewModel.showCelebration },
             set: { viewModel.showCelebration = $0 }
@@ -58,19 +52,51 @@ struct GameView: View {
     }
 
     private var header: some View {
-        VStack(spacing: 8) {
+        VStack(spacing: 12) {
+            // Top bar with pause button, title, and stars
+            HStack {
+                Text(viewModel.navigationTitle)
+                    .font(.system(size: 20, weight: .semibold, design: .rounded))
+                    .foregroundStyle(Color(.label))
+                
+                Spacer()
+                
+                HStack(spacing: 4) {
+                    ForEach(0..<3) { _ in
+                        Image(systemName: "star.fill")
+                            .font(.system(size: 24))
+                            .foregroundColor(.yellow)
+                    }
+                }
+            }
+            
+            // Theme title
             Text(titleText)
-                .font(.system(size: 28, weight: .heavy, design: .rounded))
-                .foregroundStyle(Color(.label))
-
-            ProgressView(value: progressRatio)
-                .progressViewStyle(.linear)
-                .tint(Color.accentColor)
-                .scaleEffect(x: 1, y: 1.5, anchor: .center)
-
+                .font(.system(size: 32, weight: .heavy, design: .rounded))
+                .foregroundStyle(Color.green)
+            
+            // Progress text above bar
             Text(progressText)
                 .font(.system(size: 16, weight: .medium, design: .rounded))
                 .foregroundStyle(Color(.secondaryLabel))
+
+            // Progress bar with gradient
+            GeometryReader { geometry in
+                ZStack(alignment: .leading) {
+                    RoundedRectangle(cornerRadius: 8)
+                        .fill(Color(.systemGray5))
+                        .frame(height: 12)
+                    
+                    LinearGradient(
+                        colors: [Color.orange, Color.yellow, Color.green.opacity(0.4)],
+                        startPoint: .leading,
+                        endPoint: .trailing
+                    )
+                    .frame(width: geometry.size.width * progressRatio, height: 12)
+                    .cornerRadius(8)
+                }
+            }
+            .frame(height: 12)
         }
     }
 
@@ -97,28 +123,17 @@ struct GameView: View {
     }
 
     private var paletteSection: some View {
-        VStack(spacing: 16) {
-            Text("Pick an icon and tap the glowing square")
-                .font(.system(size: 16, weight: .medium, design: .rounded))
-                .foregroundStyle(Color(.secondaryLabel))
-
-            ScrollView(.horizontal, showsIndicators: false) {
-                HStack(spacing: 12) {
-                    ForEach(Array(config.symbols.enumerated()), id: \.offset) { entry in
-                        paletteButton(symbolIndex: entry.offset, symbol: entry.element)
-                    }
-
-                    removeButton
-                }
-                .padding(.vertical, 12)
+        HStack(spacing: 12) {
+            ForEach(Array(config.symbols.enumerated()), id: \.offset) { entry in
+                paletteButton(symbolIndex: entry.offset, symbol: entry.element)
             }
         }
         .frame(maxWidth: .infinity)
-        .padding(16)
+        .padding(.vertical, 16)
+        .padding(.horizontal, 20)
         .background(
-            RoundedRectangle(cornerRadius: 24, style: .continuous)
-                .fill(Color.white)
-                .shadow(color: Color.black.opacity(0.1), radius: 10, x: 0, y: 6)
+            RoundedRectangle(cornerRadius: 20, style: .continuous)
+                .fill(Color.green.opacity(0.15))
         )
     }
 
@@ -149,23 +164,70 @@ struct GameView: View {
         .buttonStyle(.plain)
     }
 
-    private var removeButton: some View {
-        Button {
-            withAnimation(.easeInOut(duration: 0.2)) {
-                viewModel.removeValue()
-            }
-        } label: {
-            Image(systemName: "eraser.fill")
-                .font(.system(size: 22, weight: .bold, design: .rounded))
-                .frame(width: 56, height: 56)
-                .foregroundStyle(Color.white)
+    private var actionButtons: some View {
+        HStack(spacing: 12) {
+            // Undo button
+            Button(action: {
+                // Undo action
+            }) {
+                HStack(spacing: 8) {
+                    Image(systemName: "arrow.uturn.backward")
+                        .font(.system(size: 18, weight: .semibold))
+                    Text("Undo")
+                        .font(.system(size: 16, weight: .semibold, design: .rounded))
+                }
+                .foregroundColor(Color(.label))
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 14)
                 .background(
-                    Circle()
-                        .fill(Color(.systemPink))
+                    RoundedRectangle(cornerRadius: 12)
+                        .fill(Color(.systemGray5))
                 )
+            }
+            .buttonStyle(.plain)
+            
+            // Erase button
+            Button(action: {
+                withAnimation(.easeInOut(duration: 0.2)) {
+                    viewModel.removeValue()
+                }
+            }) {
+                HStack(spacing: 8) {
+                    Image(systemName: "xmark.circle")
+                        .font(.system(size: 18, weight: .semibold))
+                    Text("Erase")
+                        .font(.system(size: 16, weight: .semibold, design: .rounded))
+                }
+                .foregroundColor(Color(.label))
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 14)
+                .background(
+                    RoundedRectangle(cornerRadius: 12)
+                        .fill(Color(.systemGray5))
+                )
+            }
+            .buttonStyle(.plain)
+            
+            // Hint button
+            Button(action: {
+                // Hint action
+            }) {
+                HStack(spacing: 8) {
+                    Image(systemName: "lightbulb")
+                        .font(.system(size: 18, weight: .semibold))
+                    Text("Hint")
+                        .font(.system(size: 16, weight: .semibold, design: .rounded))
+                }
+                .foregroundColor(Color(.label))
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 14)
+                .background(
+                    RoundedRectangle(cornerRadius: 12)
+                        .fill(Color(.systemGray5))
+                )
+            }
+            .buttonStyle(.plain)
         }
-        .buttonStyle(.plain)
-        .accessibilityLabel("Clear selected square")
     }
 
     private func messageBanner(_ message: KidSudokuMessage) -> some View {
@@ -193,14 +255,7 @@ struct GameView: View {
     }
 
     private var titleText: String {
-        switch config.size {
-        case 4:
-            return "4 x 4 puzzle!"
-        case 6:
-            return "6 x 6 puzzle"
-        default:
-            return "Have fun with Sudoku!"
-        }
+        return "Veggie Match!"
     }
 
     private var progressRatio: Double {
@@ -330,7 +385,13 @@ private struct BoardGridView: View {
             let y = CGFloat(row) * cell
             path.move(to: CGPoint(x: 0, y: y))
             path.addLine(to: CGPoint(x: dimension, y: y))
-            context.stroke(path, with: .color(lineColor), lineWidth: row == 0 || row == config.size ? 4 : 3)
+            
+            // Use dashed lines for subgrid separators, solid for borders
+            if row == 0 || row == config.size {
+                context.stroke(path, with: .color(lineColor), lineWidth: 4)
+            } else {
+                context.stroke(path, with: .color(lineColor), style: StrokeStyle(lineWidth: 3, dash: [6, 4]))
+            }
         }
 
         for col in 0...config.size where col % config.subgridCols == 0 {
@@ -338,12 +399,18 @@ private struct BoardGridView: View {
             let x = CGFloat(col) * cell
             path.move(to: CGPoint(x: x, y: 0))
             path.addLine(to: CGPoint(x: x, y: dimension))
-            context.stroke(path, with: .color(lineColor), lineWidth: col == 0 || col == config.size ? 4 : 3)
+            
+            // Use dashed lines for subgrid separators, solid for borders
+            if col == 0 || col == config.size {
+                context.stroke(path, with: .color(lineColor), lineWidth: 4)
+            } else {
+                context.stroke(path, with: .color(lineColor), style: StrokeStyle(lineWidth: 3, dash: [6, 4]))
+            }
         }
     }
 }
 
 #Preview {
-    GameView(config: .fourByFour)
+    GameView(config: .sixBySix)
 }
 
