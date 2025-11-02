@@ -174,9 +174,14 @@ struct PremadePuzzle: Hashable, Identifiable {
     let config: KidSudokuConfig
     let initialBoard: [[Int?]]
     let solutionBoard: [[Int]]
+    let emoji: String?
     
     var displayName: String {
         return "Puzzle \(number)"
+    }
+    
+    var displayEmoji: String {
+        return emoji ?? "🎯"
     }
 }
 
@@ -201,7 +206,8 @@ struct PremadePuzzleStore {
                 [3, 1, 0, 2],
                 [1, 3, 2, 0],
                 [2, 0, 3, 1]
-            ]
+            ],
+            emoji: "☀️"
         ),
         PremadePuzzle(
             number: 2,
@@ -219,7 +225,8 @@ struct PremadePuzzleStore {
                 [3, 1, 0, 2],
                 [1, 3, 2, 0],
                 [2, 0, 3, 1]
-            ]
+            ],
+            emoji: "🌻"
         ),
         PremadePuzzle(
             number: 3,
@@ -237,12 +244,13 @@ struct PremadePuzzleStore {
                 [2, 3, 0, 1],
                 [0, 1, 3, 2],
                 [3, 2, 1, 0]
-            ]
+            ],
+            emoji: "🐞"
         ),
         
         // Normal 4x4 puzzles
         PremadePuzzle(
-            number: 4,
+            number: 1,
             size: 4,
             difficulty: .normal,
             config: .fourByFour,
@@ -257,10 +265,11 @@ struct PremadePuzzleStore {
                 [3, 2, 0, 1],
                 [2, 3, 1, 0],
                 [0, 1, 3, 2]
-            ]
+            ],
+            emoji: "🍄"
         ),
         PremadePuzzle(
-            number: 5,
+            number: 2,
             size: 4,
             difficulty: .normal,
             config: .fourByFour,
@@ -275,12 +284,13 @@ struct PremadePuzzleStore {
                 [1, 0, 3, 2],
                 [3, 1, 2, 0],
                 [0, 2, 1, 3]
-            ]
+            ],
+            emoji: "🌿"
         ),
         
         // Hard 4x4 puzzles  
         PremadePuzzle(
-            number: 6,
+            number: 1,
             size: 4,
             difficulty: .hard,
             config: .fourByFour,
@@ -295,7 +305,8 @@ struct PremadePuzzleStore {
                 [1, 0, 2, 3],
                 [0, 3, 1, 2],
                 [2, 1, 3, 0]
-            ]
+            ],
+            emoji: "💎"
         )
     ]
     
@@ -321,12 +332,13 @@ struct PremadePuzzleStore {
                 [1, 5, 0, 4, 2, 3],
                 [2, 0, 3, 1, 5, 4],
                 [5, 4, 0, 1, 3, 2]
-            ]
+            ],
+            emoji: "🦋"
         ),
         
         // Normal 6x6 puzzle
         PremadePuzzle(
-            number: 2,
+            number: 1,
             size: 6,
             difficulty: .normal,
             config: .sixBySix,
@@ -345,12 +357,13 @@ struct PremadePuzzleStore {
                 [0, 4, 5, 2, 3, 1],
                 [2, 5, 4, 0, 1, 3],
                 [3, 1, 0, 4, 5, 2]
-            ]
+            ],
+            emoji: "🌳"
         ),
         
         // Hard 6x6 puzzle
         PremadePuzzle(
-            number: 3,
+            number: 1,
             size: 6,
             difficulty: .hard,
             config: .sixBySix,
@@ -369,7 +382,8 @@ struct PremadePuzzleStore {
                 [4, 0, 2, 1, 3, 5],
                 [1, 5, 3, 4, 0, 2],
                 [2, 3, 0, 5, 4, 1]
-            ]
+            ],
+            emoji: "💠"
         )
     ]
     
