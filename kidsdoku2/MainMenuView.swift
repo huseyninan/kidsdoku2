@@ -5,71 +5,118 @@ struct MainMenuView: View {
 
     var body: some View {
         ZStack {
+            // Forest/Nature themed gradient background
             LinearGradient(
-                gradient: Gradient(colors: [Color(.systemTeal), Color(.systemGreen)]),
+                gradient: Gradient(colors: [
+                    Color(red: 0.4, green: 0.65, blue: 0.6),
+                    Color(red: 0.5, green: 0.7, blue: 0.5),
+                    Color(red: 0.6, green: 0.75, blue: 0.5)
+                ]),
                 startPoint: .top,
                 endPoint: .bottom
             )
             .ignoresSafeArea()
 
-            VStack(spacing: 32) {
-                VStack(spacing: 12) {
-                    Text("Sudoku for Kids")
-                        .font(.system(size: 44, weight: .heavy, design: .rounded))
-                        .foregroundStyle(.white)
-
-                    Text("Choose your puzzle size to begin")
-                        .font(.system(size: 18, weight: .medium, design: .rounded))
-                        .foregroundStyle(.white.opacity(0.9))
+            VStack(spacing: 0) {
+                // Settings button in top right
+                HStack {
+                    Spacer()
+                    Button(action: {
+                        // Settings action
+                    }) {
+                        Image(systemName: "gearshape.fill")
+                            .font(.system(size: 28))
+                            .foregroundColor(.white)
+                            .padding()
+                    }
                 }
+                
+                Spacer()
+                    .frame(height: 60)
+                
+                // Quest Log Title Card
+                VStack(spacing: 8) {
+                    Text("Quest Log")
+                        .font(.system(size: 48, weight: .heavy, design: .rounded))
+                        .foregroundStyle(Color(red: 0.4, green: 0.25, blue: 0.15))
+                    
+                    Text("Welcome! Choose your")
+                        .font(.system(size: 20, weight: .semibold, design: .rounded))
+                        .foregroundStyle(Color(red: 0.7, green: 0.35, blue: 0.3))
+                    
+                    Text("adventure!")
+                        .font(.system(size: 20, weight: .semibold, design: .rounded))
+                        .foregroundStyle(Color(red: 0.7, green: 0.35, blue: 0.3))
+                }
+                .padding(.vertical, 32)
+                .padding(.horizontal, 40)
+                .background(
+                    RoundedRectangle(cornerRadius: 35, style: .continuous)
+                        .fill(Color(red: 0.95, green: 0.93, blue: 0.87))
+                        .shadow(color: .black.opacity(0.15), radius: 12, x: 0, y: 6)
+                )
+                .padding(.horizontal, 24)
+                
+                Spacer()
+                    .frame(height: 50)
 
-                VStack(spacing: 20) {
-                    menuButton(title: "4x4", subtitle: "Perfect for beginners", color: .orange) {
+                // Quest Buttons
+                VStack(spacing: 24) {
+                    questButton(
+                        title: "Path Unlocked: 4x4",
+                        subtitle: "Easy Journey"
+                    ) {
                         path.append(.puzzleSelection(size: 4))
                     }
 
-                    menuButton(title: "6x6", subtitle: "Ready for a challenge", color: .purple) {
+                    questButton(
+                        title: "Path Unlocked: 6x6",
+                        subtitle: "Brave Expedition"
+                    ) {
                         path.append(.puzzleSelection(size: 6))
                     }
                 }
-                .padding(.horizontal, 24)
+                .padding(.horizontal, 32)
 
                 Spacer()
-
-                Text("Have fun solving with adorable icons!")
-                    .font(.system(size: 16, weight: .semibold, design: .rounded))
-                    .foregroundStyle(.white.opacity(0.85))
             }
-            .padding()
         }
     }
 
-    private func menuButton(title: String, subtitle: String, color: Color, action: @escaping () -> Void) -> some View {
+    private func questButton(title: String, subtitle: String, action: @escaping () -> Void) -> some View {
         Button(action: action) {
-            HStack {
-                VStack(alignment: .leading, spacing: 6) {
-                    Text(title)
-                        .font(.system(size: 32, weight: .heavy, design: .rounded))
-                    Text(subtitle)
-                        .font(.system(size: 16, weight: .medium, design: .rounded))
-                        .foregroundStyle(.white.opacity(0.85))
-                }
-                Spacer()
-                Image(systemName: "chevron.right.circle.fill")
-                    .font(.system(size: 30, weight: .bold))
+            VStack(spacing: 8) {
+                Text(title)
+                    .font(.system(size: 28, weight: .bold, design: .rounded))
+                    .foregroundStyle(.white)
+                
+                Text(subtitle)
+                    .font(.system(size: 18, weight: .medium, design: .rounded))
+                    .foregroundStyle(Color(red: 0.9, green: 0.85, blue: 0.75))
             }
-            .foregroundStyle(.white)
-            .padding(28)
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 24)
+            .padding(.horizontal, 20)
             .background(
-                RoundedRectangle(cornerRadius: 28, style: .continuous)
+                RoundedRectangle(cornerRadius: 30, style: .continuous)
                     .fill(
                         LinearGradient(
-                            colors: [color, color.opacity(0.7)],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
+                            colors: [
+                                Color(red: 0.35, green: 0.22, blue: 0.12),
+                                Color(red: 0.45, green: 0.28, blue: 0.15)
+                            ],
+                            startPoint: .top,
+                            endPoint: .bottom
                         )
                     )
-                    .shadow(color: color.opacity(0.4), radius: 8, x: 0, y: 8)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 30, style: .continuous)
+                            .strokeBorder(
+                                Color(red: 0.85, green: 0.75, blue: 0.6),
+                                lineWidth: 3
+                            )
+                    )
+                    .shadow(color: .black.opacity(0.3), radius: 10, x: 0, y: 6)
             )
         }
         .buttonStyle(.plain)
