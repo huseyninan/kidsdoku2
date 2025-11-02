@@ -21,6 +21,10 @@ struct ContentView: View {
                         } else {
                             Text("Puzzle not available")
                         }
+                    case .puzzleSelection(let size):
+                        PuzzleSelectionView(size: size, path: $path)
+                    case .premadePuzzle(let puzzle):
+                        GameView(config: puzzle.config, premadePuzzle: puzzle)
                     }
                 }
         }

@@ -9,6 +9,11 @@ struct GameView: View {
         self.config = config
         _viewModel = StateObject(wrappedValue: GameViewModel(config: config))
     }
+    
+    init(config: KidSudokuConfig, premadePuzzle: PremadePuzzle) {
+        self.config = config
+        _viewModel = StateObject(wrappedValue: GameViewModel(config: config, premadePuzzle: premadePuzzle))
+    }
 
     var body: some View {
         VStack(spacing: 20) {
@@ -28,7 +33,7 @@ struct GameView: View {
         .padding(.top, 16)
         .padding(.bottom, 28)
         .background(Color(.systemGroupedBackground).ignoresSafeArea())
-        .navigationTitle("\(config.size) x \(config.size) Puzzle")
+        .navigationTitle(viewModel.navigationTitle)
         .toolbar {
             ToolbarItem(placement: .navigationBarTrailing) {
                 Button("New Puzzle") {

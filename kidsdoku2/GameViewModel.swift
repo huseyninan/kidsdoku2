@@ -11,15 +11,31 @@ final class GameViewModel: ObservableObject {
     @Published var highlightedValue: Int?
 
     let config: KidSudokuConfig
+    private let isPremadePuzzle: Bool
+    private let originalPremadePuzzle: PremadePuzzle?
 
     init(config: KidSudokuConfig) {
         self.config = config
+        self.isPremadePuzzle = false
+        self.originalPremadePuzzle = nil
         self.puzzle = KidSudokuGenerator.generatePuzzle(config: config)
+        self.highlightedValue = nil
+    }
+    
+    init(config: KidSudokuConfig, premadePuzzle: PremadePuzzle) {
+        self.config = config
+        self.isPremadePuzzle = true
+        self.originalPremadePuzzle = premadePuzzle
+        self.puzzle = KidSudokuPuzzle(from: premadePuzzle)
         self.highlightedValue = nil
     }
 
     func startNewPuzzle() {
-        puzzle = KidSudokuGenerator.generatePuzzle(config: config)
+        if let premadePuzzle = originalPremadePuzzle {
+            puzzle = KidSudokuPuzzle(from: premadePuzzle)
+        } else {
+            puzzle = KidSudokuGenerator.generatePuzzle(config: config)
+        }
         selectedPosition = nil
         message = KidSudokuMessage(text: "New puzzle ready!", type: .info)
         showCelebration = false
@@ -140,6 +156,14 @@ final class GameViewModel: ObservableObject {
 
     private var puzzleCells: [KidSudokuCell] {
         puzzle.cells
+    }
+    
+    var navigationTitle: String {
+        if let premadePuzzle = originalPremadePuzzle {
+            return "\(premadePuzzle.displayName) (\(premadePuzzle.difficulty.rawValue))"
+        } else {
+            return "\(config.size) x \(config.size) Puzzle"
+        }
     }
 }
 
