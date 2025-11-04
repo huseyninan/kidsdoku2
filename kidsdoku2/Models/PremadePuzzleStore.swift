@@ -26,7 +26,6 @@
 // Then use the helper: puzzle(number: 1, size: 4, difficulty: .easy, emoji: "☀️", initial: "...", solution: "...")
 
 import Foundation
-
 struct PremadePuzzleStore {
     static let shared = PremadePuzzleStore()
     
@@ -196,6 +195,7 @@ struct PremadePuzzleStore {
         return puzzles(for: size).filter { $0.difficulty == difficulty }
     }
 }
+
 
 // MARK: - Puzzle Builder Helper
 /// Creates a PremadePuzzle from compact string notation
