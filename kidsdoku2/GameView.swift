@@ -367,7 +367,8 @@ private struct BoardGridView: View {
 
     private func symbol(for cell: KidSudokuCell) -> String {
         guard let value = cell.value else { return "" }
-        return config.symbols[value]
+        let symbol = config.symbols[value - 1]
+        return symbol
     }
 
     private var cellFontSize: CGFloat {

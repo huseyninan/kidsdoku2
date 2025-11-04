@@ -11,21 +11,21 @@ enum SymbolGroup: Int, CaseIterable, Hashable {
     case nature = 6
     
     var symbols: [String] {
-        switch self {
-        case .animals:
-            return ["🐶", "🐱", "🐻", "🐼", "🐸", "🦊"]
-        case .fruits:
-            return ["🍎", "🍊", "🍓", "🍉", "🍇", "🍌"]
-        case .sports:
-            return ["⚽️", "🏀", "⚾️", "🎾", "🏈", "🏐"]
-        case .weather:
-            return ["☀️", "⛅️", "☁️", "🌧️", "⚡️", "🌈"]
-        case .vehicles:
-            return ["🚗", "🚕", "🚙", "🚌", "🚎", "🏎️"]
-        case .nature:
-            return ["🌸", "🌺", "🌻", "🌷", "🌹", "🌼"]
+            switch self {
+            case .animals:
+                return ["🐶", "🐱", "🐻", "🐼", "🐸", "🦊", "🦁", "🐯", "🐰", "🐨"]
+            case .fruits:
+                return ["🍎", "🍊", "🍓", "🍉", "🍇", "🍌", "🍒", "🍍", "🥝", "🍑"]
+            case .sports:
+                return ["⚽️", "🏀", "⚾️", "🎾", "🏈", "🏐", "🎱", "🏓", "🏸", "🏒"]
+            case .weather:
+                return ["☀️", "⛅️", "☁️", "🌧️", "⚡️", "🌈", "❄️", "💨", "🌪️", "🌊"]
+            case .vehicles:
+                return ["🚗", "🚕", "🚙", "🚌", "🚎", "🏎️", "🚓", "🚑", "🚒", "🚚"]
+            case .nature:
+                return ["🌸", "🌺", "🌻", "🌷", "🌹", "🌼", "🌳", "🌲", "🍁", "🍄"]
+            }
         }
-    }
     
     var id: Int {
         return rawValue
@@ -39,7 +39,7 @@ struct KidSudokuConfig: Hashable {
     let symbolGroup: SymbolGroup
     
     var symbols: [String] {
-        return Array(symbolGroup.symbols.prefix(size))
+        return Array(symbolGroup.symbols)
     }
 
     static let fourByFour = KidSudokuConfig(
