@@ -87,7 +87,7 @@ struct PuzzleSelectionView: View {
                 GridItem(.flexible(), spacing: 12),
                 GridItem(.flexible(), spacing: 12)
             ], spacing: 12) {
-                ForEach(0..<min(puzzles.count, 4), id: \.self) { index in
+                ForEach(0..<puzzles.count, id: \.self) { index in
                     if index < puzzles.count {
                         puzzleButton(puzzle: puzzles[index], theme: theme)
                     } else {
