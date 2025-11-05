@@ -74,6 +74,10 @@ final class GameViewModel: ObservableObject {
             puzzle.updateCell(at: position, with: nil)
         }
     }
+    
+    func highlightSymbol(at symbolIndex: Int) {
+        highlightedValue = symbolIndex
+    }
 
     func placeSymbol(at symbolIndex: Int) {
         guard let position = selectedPosition else {

@@ -124,7 +124,11 @@ struct GameView: View {
 
     private var paletteSection: some View {
         HStack(spacing: 12) {
-            ForEach(Array(config.symbols.enumerated()), id: \.offset) { entry in
+            ForEach(Array(config.symbols.enumerated()).filter { entry in
+                guard let firstRow = viewModel.puzzle.solution.first else { return true }
+                let symbolIndicesInFirstRow = Set(firstRow.map { $0 })
+                return symbolIndicesInFirstRow.contains(entry.offset)
+            }, id: \.offset) { entry in
                 paletteButton(symbolIndex: entry.offset, symbol: entry.element)
             }
         }
@@ -146,6 +150,7 @@ struct GameView: View {
 
         return Button {
             withAnimation(.spring(response: 0.35, dampingFraction: 0.6)) {
+                viewModel.highlightSymbol(at: symbolIndex)
                 viewModel.placeSymbol(at: symbolIndex)
             }
         } label: {
@@ -367,7 +372,7 @@ private struct BoardGridView: View {
 
     private func symbol(for cell: KidSudokuCell) -> String {
         guard let value = cell.value else { return "" }
-        let symbol = config.symbols[value - 1]
+        let symbol = config.symbols[value]
         return symbol
     }
 
