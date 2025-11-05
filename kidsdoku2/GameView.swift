@@ -337,8 +337,16 @@ private struct BoardGridView: View {
 
                 if isMatchingHighlighted {
                     Circle()
-                        .stroke(Color.red, lineWidth: 3)
+                        .fill(Color.yellow.opacity(0.3))
                         .frame(width: cellSize * 0.7, height: cellSize * 0.7)
+                        .shadow(color: .yellow.opacity(0.8), radius: 8, x: 0, y: 0)
+                        .shadow(color: .yellow.opacity(0.6), radius: 15, x: 0, y: 0)
+                        .shadow(color: .orange.opacity(0.4), radius: 20, x: 0, y: 0)
+                        .overlay(
+                            Circle()
+                                .stroke(Color.orange.opacity(0.0005), lineWidth: 0.05)
+                                .frame(width: cellSize * 0.7, height: cellSize * 0.7)
+                        )
                 }
 
                 Text(symbol(for: cell))
