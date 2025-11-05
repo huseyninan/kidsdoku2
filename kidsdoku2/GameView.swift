@@ -4,6 +4,7 @@ import Combine
 struct GameView: View {
     let config: KidSudokuConfig
     @StateObject private var viewModel: GameViewModel
+    @Environment(\.dismiss) private var dismiss
 
     init(config: KidSudokuConfig) {
         self.config = config
@@ -38,16 +39,15 @@ struct GameView: View {
         .navigationBarBackButtonHidden(false)
         .navigationTitle("")
         .navigationBarTitleDisplayMode(.inline)
-        .alert("Great job!", isPresented: Binding(
+        .alert("🎉 You're a Star! 🎉", isPresented: Binding(
             get: { viewModel.showCelebration },
             set: { viewModel.showCelebration = $0 }
         )) {
-            Button("Play again") {
-                viewModel.startNewPuzzle()
+            Button("Yay!") {
+                dismiss()
             }
-            Button("Keep playing", role: .cancel) { }
         } message: {
-            Text("You solved the puzzle perfectly!")
+            Text("You did it! Amazing job solving the puzzle! ⭐️")
         }
     }
 
