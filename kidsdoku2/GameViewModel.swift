@@ -9,6 +9,7 @@ final class GameViewModel: ObservableObject {
     @Published var message: KidSudokuMessage?
     @Published var showCelebration = false
     @Published var highlightedValue: Int?
+    @Published var selectedPaletteSymbol: Int?
 
     let config: KidSudokuConfig
     private let isPremadePuzzle: Bool
@@ -40,6 +41,7 @@ final class GameViewModel: ObservableObject {
         message = KidSudokuMessage(text: "New puzzle ready!", type: .info)
         showCelebration = false
         highlightedValue = nil
+        selectedPaletteSymbol = nil
     }
 
     func select(position: KidSudokuPosition) {
@@ -49,11 +51,31 @@ final class GameViewModel: ObservableObject {
     }
 
     func didTapCell(_ cell: KidSudokuCell) {
-        highlightedValue = cell.value
         message = nil
-        if cell.isFixed == false {
-            selectedPosition = cell.position
+        
+        // If cell is fixed, just highlight it
+        if cell.isFixed {
+            highlightedValue = cell.value
+            return
         }
+        
+        // If a palette symbol is selected and the cell is empty, fill it
+        if let paletteSymbol = selectedPaletteSymbol, cell.value == nil {
+            if isValid(paletteSymbol, at: cell.position) {
+                objectWillChange.send()
+                puzzle.updateCell(at: cell.position, with: paletteSymbol)
+                highlightedValue = paletteSymbol
+                checkForCompletion()
+            } else {
+                let symbol = config.symbols[paletteSymbol]
+                message = KidSudokuMessage(text: "That \(symbol) is already there!", type: .warning)
+            }
+            return
+        }
+        
+        // Otherwise, select the cell and highlight its value
+        selectedPosition = cell.position
+        highlightedValue = cell.value
     }
 
     func clearSelection() {
@@ -77,6 +99,12 @@ final class GameViewModel: ObservableObject {
     
     func highlightSymbol(at symbolIndex: Int) {
         highlightedValue = symbolIndex
+    }
+    
+    func selectPaletteSymbol(_ symbolIndex: Int) {
+        selectedPaletteSymbol = symbolIndex
+        highlightedValue = symbolIndex
+        message = nil
     }
 
     func placeSymbol(at symbolIndex: Int) {

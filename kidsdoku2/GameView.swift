@@ -142,16 +142,11 @@ struct GameView: View {
     }
 
     private func paletteButton(symbolIndex: Int, symbol: String) -> some View {
-        let isHighlighted = {
-            guard let position = viewModel.selectedPosition else { return false }
-            let current = viewModel.puzzle.cell(at: position)
-            return current.value == symbolIndex
-        }()
+        let isSelected = viewModel.selectedPaletteSymbol == symbolIndex
 
         return Button {
             withAnimation(.spring(response: 0.35, dampingFraction: 0.6)) {
-                viewModel.highlightSymbol(at: symbolIndex)
-                viewModel.placeSymbol(at: symbolIndex)
+                viewModel.selectPaletteSymbol(symbolIndex)
             }
         } label: {
             Text(symbol)
@@ -159,11 +154,11 @@ struct GameView: View {
                 .frame(width: 56, height: 56)
                 .background(
                     Circle()
-                        .fill(isHighlighted ? Color.accentColor.opacity(0.25) : Color(.systemGray6))
+                        .fill(isSelected ? Color.accentColor.opacity(0.25) : Color(.systemGray6))
                 )
                 .overlay(
                     Circle()
-                        .stroke(isHighlighted ? Color.accentColor : Color.clear, lineWidth: 3)
+                        .stroke(isSelected ? Color.accentColor : Color.clear, lineWidth: 3)
                 )
         }
         .buttonStyle(.plain)
