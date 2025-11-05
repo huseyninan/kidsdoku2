@@ -42,7 +42,7 @@ struct PremadePuzzleStore {
     // MARK: - 4x4 Puzzles
     private let fourByFourPuzzles: [PremadePuzzle] = [
         // Easy 4x4
-        puzzle(1, 4, .easy, "☀️",
+        puzzle(1, 4, .easy,
                initial:  """
                       .234
                       3...
@@ -56,7 +56,7 @@ struct PremadePuzzleStore {
                       4321
                       """),
         
-        puzzle(2, 4, .easy, "🌻",
+        puzzle(2, 4, .easy,
                initial:  """
                       12.4
                       ..12
@@ -70,7 +70,7 @@ struct PremadePuzzleStore {
                       4321
                       """),
         
-        puzzle(3, 4, .easy, "🐞",
+        puzzle(3, 4, .easy,
                initial:  """
                       ..3.
                       3.1.
@@ -83,7 +83,7 @@ struct PremadePuzzleStore {
                       2143
                       4321
                       """),
-       puzzle(4, 4, .easy, "☀️",
+       puzzle(4, 4, .easy,
                initial:  """
                       .23.
                       3412
@@ -97,7 +97,7 @@ struct PremadePuzzleStore {
                       4321
                       """),
         
-        puzzle(5, 4, .easy, "🌻",
+        puzzle(5, 4, .easy,
                initial:  """
                       .2.4
                       341.
@@ -111,7 +111,7 @@ struct PremadePuzzleStore {
                       4321
                       """),
         
-        puzzle(6, 4, .easy, "🐞",
+        puzzle(6, 4, .easy,
                initial:  """
                       12..
                       .4.2
@@ -124,7 +124,7 @@ struct PremadePuzzleStore {
                       2143
                       4321
                       """),
-        puzzle(7, 4, .easy, "🌻",
+        puzzle(7, 4, .easy,
                initial:  """
                       .2.4
                       .41.
@@ -137,7 +137,7 @@ struct PremadePuzzleStore {
                       2143
                       4321
                       """),
-       puzzle(8, 4, .easy, "🌻",
+       puzzle(8, 4, .easy,
                initial:  """
                       .2.4
                       3.1.
@@ -151,7 +151,7 @@ struct PremadePuzzleStore {
                       4321
                       """),
         
-        puzzle(9, 4, .easy, "🐞",
+        puzzle(9, 4, .easy,
                initial:  """
                       123.
                       3.1.
@@ -164,7 +164,7 @@ struct PremadePuzzleStore {
                       2143
                       4321
                       """),
-        puzzle(10, 4, .easy, "🐞",
+        puzzle(10, 4, .easy,
                initial:  """
                       12.4
                       34.2
@@ -179,7 +179,7 @@ struct PremadePuzzleStore {
                       """),
         
         // Normal 4x4
-        puzzle(1, 4, .normal, "🍄",
+        puzzle(1, 4, .normal,
                initial:  """
                       ...3
                       .2..
@@ -193,7 +193,7 @@ struct PremadePuzzleStore {
                       0132
                       """),
         
-        puzzle(2, 4, .normal, "🌿",
+        puzzle(2, 4, .normal,
                initial:  """
                       2...
                       ..3.
@@ -208,7 +208,7 @@ struct PremadePuzzleStore {
                       """),
         
         // Hard 4x4
-        puzzle(1, 4, .hard, "💎",
+        puzzle(1, 4, .hard,
                initial:  """
                       ....
                       .02.

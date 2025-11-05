@@ -339,20 +339,11 @@ private struct BoardGridView: View {
 
                 if isMatchingHighlighted {
                     Circle()
-                        .fill(Color.yellow.opacity(0.3))
+                        .fill(Color.yellow.opacity(0.2))
                         .frame(width: cellSize * 0.7, height: cellSize * 0.7)
-                        .shadow(color: Color.yellow.opacity(glowAnimation ? 0.8 : 0.3), radius: glowAnimation ? 20 : 8)
-                        .shadow(color: Color.orange.opacity(glowAnimation ? 0.6 : 0.2), radius: glowAnimation ? 15 : 6)
-                        .shadow(color: Color.yellow, radius: glowAnimation ? 10 : 4)
-                        .scaleEffect(glowAnimation ? 1.2 : 1.0)
-                        .animation(
-                            Animation.easeInOut(duration: 2.0)
-                                .repeatForever(autoreverses: true),
-                            value: glowAnimation
-                        )
-                        .onAppear {
-                            glowAnimation = true
-                        }
+                        .shadow(color: Color.orange, radius: 16)
+                        .shadow(color: Color.red.opacity(0.9), radius: 4)
+                        .scaleEffect(1.0)
                 }
 
                 Text(symbol(for: cell))
