@@ -336,9 +336,7 @@ private struct BoardGridView: View {
                     .fill(cellBackground(for: cell, isSelected: isSelected))
 
                 if isMatchingHighlighted {
-                    Circle()
-                        .stroke(Color.red, lineWidth: 3)
-                        .frame(width: cellSize * 0.7, height: cellSize * 0.7)
+                    HighlightGlow(size: cellSize * 0.7)
                 }
 
                 Text(symbol(for: cell))
@@ -408,6 +406,59 @@ private struct BoardGridView: View {
                 context.stroke(path, with: .color(lineColor), style: StrokeStyle(lineWidth: 3, dash: [6, 4]))
             }
         }
+    }
+}
+
+private struct HighlightGlow: View {
+    let size: CGFloat
+
+    @State private var animate = false
+    @State private var animationTask: DispatchWorkItem?
+
+    private let glowColor = Color.orange
+    private let pulseDuration: Double = 1.0
+    private let totalDuration: Double = 2.0
+
+    var body: some View {
+        ZStack {
+            Circle()
+                .stroke(glowColor.opacity(animate ? 0.2 : 0.8), lineWidth: 8)
+                .blur(radius: 10)
+                .scaleEffect(animate ? 1.08 : 0.92)
+
+            Circle()
+                .stroke(Color.red.opacity(animate ? 0.8 : 0.2), lineWidth: 3)
+                .blur(radius: 6)
+                .scaleEffect(animate ? 1.04 : 1.0)
+        }
+        .frame(width: size, height: size)
+        .shadow(color: glowColor.opacity(animate ? 0.55 : 0.25), radius: animate ? 18 : 10)
+        .onAppear(perform: startAnimation)
+        .onDisappear(perform: reset)
+    }
+
+    private func startAnimation() {
+        reset()
+
+        let workItem = DispatchWorkItem {
+            withAnimation(.easeInOut(duration: pulseDuration)) {
+                animate = false
+            }
+        }
+
+        animationTask = workItem
+
+        withAnimation(.easeInOut(duration: pulseDuration).repeatCount(2, autoreverses: true)) {
+            animate = true
+        }
+
+        DispatchQueue.main.asyncAfter(deadline: .now() + totalDuration, execute: workItem)
+    }
+
+    private func reset() {
+        animationTask?.cancel()
+        animationTask = nil
+        animate = false
     }
 }
 
