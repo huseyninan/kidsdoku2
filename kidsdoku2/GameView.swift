@@ -4,6 +4,7 @@ import Combine
 struct GameView: View {
     let config: KidSudokuConfig
     @StateObject private var viewModel: GameViewModel
+    @StateObject private var soundManager = SoundManager.shared
     @Environment(\.dismiss) private var dismiss
 
     init(config: KidSudokuConfig) {
@@ -60,6 +61,17 @@ struct GameView: View {
                     .foregroundStyle(Color(.label))
                 
                 Spacer()
+                
+                // Sound toggle button
+                Button(action: {
+                    soundManager.toggleSound()
+                }) {
+                    Image(systemName: soundManager.isSoundEnabled ? "speaker.wave.2.fill" : "speaker.slash.fill")
+                        .font(.system(size: 20))
+                        .foregroundColor(soundManager.isSoundEnabled ? .blue : .gray)
+                        .frame(width: 40, height: 40)
+                }
+                .buttonStyle(.plain)
                 
                 HStack(spacing: 4) {
                     ForEach(0..<3) { _ in

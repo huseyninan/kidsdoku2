@@ -14,6 +14,7 @@ final class GameViewModel: ObservableObject {
     let config: KidSudokuConfig
     private let isPremadePuzzle: Bool
     private let originalPremadePuzzle: PremadePuzzle?
+    private let soundManager = SoundManager.shared
 
     init(config: KidSudokuConfig) {
         self.config = config
@@ -56,12 +57,16 @@ final class GameViewModel: ObservableObject {
         // If cell is fixed, just highlight it
         if cell.isFixed {
             highlightedValue = cell.value
+            soundManager.playHighlightSound()
+            soundManager.playHaptic(style: .light)
             return
         }
         
         // If a palette symbol is selected and the cell is empty, fill it
         if let paletteSymbol = selectedPaletteSymbol, cell.value == nil {
             if isValid(paletteSymbol, at: cell.position) {
+                soundManager.playCorrectPlacementSound()
+                soundManager.playSuccessHaptic()
                 objectWillChange.send()
                 puzzle.updateCell(at: cell.position, with: paletteSymbol)
                 highlightedValue = paletteSymbol
@@ -69,6 +74,8 @@ final class GameViewModel: ObservableObject {
             } else {
                 let symbol = config.symbols[paletteSymbol]
                 message = KidSudokuMessage(text: "That \(symbol) is already there!", type: .warning)
+                soundManager.playErrorSound()
+                soundManager.playWarningHaptic()
             }
             return
         }
@@ -76,6 +83,8 @@ final class GameViewModel: ObservableObject {
         // Otherwise, select the cell and highlight its value
         selectedPosition = cell.position
         highlightedValue = cell.value
+        soundManager.playTapSound()
+        soundManager.playHaptic(style: .light)
     }
 
     func clearSelection() {
@@ -92,6 +101,8 @@ final class GameViewModel: ObservableObject {
         guard cell.isFixed == false else { return }
 
         if cell.value != nil {
+            soundManager.playEraseSound()
+            soundManager.playHaptic(style: .medium)
             objectWillChange.send()
             puzzle.updateCell(at: position, with: nil)
         }
@@ -105,6 +116,8 @@ final class GameViewModel: ObservableObject {
         selectedPaletteSymbol = symbolIndex
         highlightedValue = symbolIndex
         message = nil
+        soundManager.playSelectSound()
+        soundManager.playHaptic(style: .light)
     }
 
     func placeSymbol(at symbolIndex: Int) {
@@ -117,12 +130,16 @@ final class GameViewModel: ObservableObject {
         guard cell.isFixed == false else { return }
 
         if cell.value == symbolIndex {
+            soundManager.playEraseSound()
+            soundManager.playHaptic(style: .medium)
             objectWillChange.send()
             puzzle.updateCell(at: position, with: nil)
             return
         }
 
         if isValid(symbolIndex, at: position) {
+            soundManager.playCorrectPlacementSound()
+            soundManager.playSuccessHaptic()
             objectWillChange.send()
             puzzle.updateCell(at: position, with: symbolIndex)
             highlightedValue = symbolIndex
@@ -131,6 +148,8 @@ final class GameViewModel: ObservableObject {
         } else {
             let symbol = config.symbols[symbolIndex]
             message = KidSudokuMessage(text: "That \(symbol) is already there!", type: .warning)
+            soundManager.playErrorSound()
+            soundManager.playWarningHaptic()
         }
     }
 
@@ -147,6 +166,8 @@ final class GameViewModel: ObservableObject {
                 return
             }
         }
+        soundManager.playCelebrationSound()
+        soundManager.playSuccessHaptic()
         showCelebration = true
         message = KidSudokuMessage(text: "Amazing! Puzzle complete!", type: .success)
     }
