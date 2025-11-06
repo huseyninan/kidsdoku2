@@ -288,8 +288,6 @@ private struct BoardGridView: View {
     let highlightedValue: Int?
     let onTap: (KidSudokuCell) -> Void
     
-    @State private var glowAnimation = false
-
     var body: some View {
         GeometryReader { geometry in
             let side = min(geometry.size.width, geometry.size.height)
@@ -338,12 +336,7 @@ private struct BoardGridView: View {
                     .fill(cellBackground(for: cell, isSelected: isSelected))
 
                 if isMatchingHighlighted {
-                    Circle()
-                        .fill(Color.yellow.opacity(0.2))
-                        .frame(width: cellSize * 0.7, height: cellSize * 0.7)
-                        .shadow(color: Color.orange, radius: 16)
-                        .shadow(color: Color.red.opacity(0.9), radius: 4)
-                        .scaleEffect(1.0)
+                    GlowingHighlight(size: cellSize)
                 }
 
                 Text(symbol(for: cell))
@@ -411,6 +404,53 @@ private struct BoardGridView: View {
                 context.stroke(path, with: .color(lineColor), lineWidth: 4)
             } else {
                 context.stroke(path, with: .color(lineColor), style: StrokeStyle(lineWidth: 3, dash: [6, 4]))
+            }
+        }
+    }
+
+    private struct GlowingHighlight: View {
+        let size: CGFloat
+
+        @State private var animate = false
+
+        var body: some View {
+            ZStack {
+                Circle()
+                    .fill(Color.orange.opacity(0.22))
+                    .frame(width: size * 0.78, height: size * 0.78)
+
+                Circle()
+                    .fill(
+                        RadialGradient(
+                            colors: [
+                                Color.orange.opacity(0.55),
+                                Color.orange.opacity(0.0)
+                            ],
+                            center: .center,
+                            startRadius: size * 0.08,
+                            endRadius: size * 0.48
+                        )
+                    )
+                    .frame(width: size * 0.92, height: size * 0.92)
+                    .blur(radius: size * 0.18)
+
+                Circle()
+                    .stroke(Color.orange.opacity(0.05), lineWidth: size * 0.06)
+                    .blur(radius: size * 0.16)
+                    .frame(width: size * 0.74, height: size * 0.74)
+
+                Circle()
+                    .stroke(Color.orange.opacity(0.08), lineWidth: 2)
+                    .frame(width: size * 0.74, height: size * 0.74)
+            }
+            .scaleEffect(animate ? 1.08 : 0.92)
+            .hueRotation(.degrees(animate ? 180 : 0))
+            .animation(.easeInOut(duration: 1.6).repeatForever(autoreverses: true), value: animate)
+            .onAppear {
+                animate = true
+            }
+            .onDisappear {
+                animate = false
             }
         }
     }
