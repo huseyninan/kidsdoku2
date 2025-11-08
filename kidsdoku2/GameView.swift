@@ -4,6 +4,7 @@ import Combine
 struct GameView: View {
     let config: KidSudokuConfig
     @StateObject private var viewModel: GameViewModel
+    @StateObject private var soundManager = SoundManager.shared
     @Environment(\.dismiss) private var dismiss
 
     init(config: KidSudokuConfig) {
@@ -60,6 +61,17 @@ struct GameView: View {
                     .foregroundStyle(Color(.label))
                 
                 Spacer()
+                
+                // Sound toggle button
+                Button(action: {
+                    soundManager.toggleSound()
+                }) {
+                    Image(systemName: soundManager.isSoundEnabled ? "speaker.wave.2.fill" : "speaker.slash.fill")
+                        .font(.system(size: 20))
+                        .foregroundColor(soundManager.isSoundEnabled ? .blue : .gray)
+                }
+                .buttonStyle(.plain)
+                .padding(.trailing, 8)
                 
                 HStack(spacing: 4) {
                     ForEach(0..<3) { _ in
@@ -168,7 +180,9 @@ struct GameView: View {
         HStack(spacing: 12) {
             // Undo button
             Button(action: {
-                // Undo action
+                withAnimation(.easeInOut(duration: 0.2)) {
+                    viewModel.undo()
+                }
             }) {
                 HStack(spacing: 8) {
                     Image(systemName: "arrow.uturn.backward")
@@ -176,7 +190,7 @@ struct GameView: View {
                     Text("Undo")
                         .font(.system(size: 16, weight: .semibold, design: .rounded))
                 }
-                .foregroundColor(Color(.label))
+                .foregroundColor(viewModel.canUndo ? Color(.label) : Color(.systemGray3))
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 14)
                 .background(
@@ -185,6 +199,7 @@ struct GameView: View {
                 )
             }
             .buttonStyle(.plain)
+            .disabled(!viewModel.canUndo)
             
             // Erase button
             Button(action: {
@@ -210,7 +225,9 @@ struct GameView: View {
             
             // Hint button
             Button(action: {
-                // Hint action
+                withAnimation(.easeInOut(duration: 0.2)) {
+                    viewModel.provideHint()
+                }
             }) {
                 HStack(spacing: 8) {
                     Image(systemName: "lightbulb")
