@@ -59,7 +59,7 @@ struct PremadePuzzleStore {
         puzzle(2, 4, .easy,
                initial:  """
                       12.4
-                      ..12
+                      .412
                       21.3
                       ..21
                       """,
@@ -72,7 +72,7 @@ struct PremadePuzzleStore {
         
         puzzle(3, 4, .easy,
                initial:  """
-                      ..3.
+                      .2..
                       3.1.
                       .143
                       4321
@@ -413,7 +413,7 @@ struct PremadePuzzleStore {
                       .941.7
                       5.1.4.
                       9.3571
-                      71..3.
+                      71..39
                       43.7.5
                       """,
                solution: """
@@ -431,7 +431,7 @@ struct PremadePuzzleStore {
                       51.268
                       2.8.13
                       1..6.2
-                      6.21.5
+                      6.2135
                       """,
                solution: """
                       351826
@@ -514,7 +514,7 @@ struct PremadePuzzleStore {
                       315...
                       .2.315
                       15.4.2
-                      .4.5.1
+                      .4.531
                       5.1.48
                       .821.3
                       """,
@@ -581,7 +581,7 @@ struct PremadePuzzleStore {
                initial:  """
                       .9352.
                       5.71.3
-                      31..7.
+                      319.7.
                       .5..31
                       9.17.2
                       .7531.
@@ -600,7 +600,7 @@ struct PremadePuzzleStore {
                       .7.1.5
                       3.1.9.
                       72.5.3
-                      513.2.
+                      513.29
                       2973.1
                       """,
                solution: """
