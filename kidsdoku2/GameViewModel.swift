@@ -161,6 +161,11 @@ final class GameViewModel: ObservableObject {
         showCelebration = true
         message = KidSudokuMessage(text: "Amazing! Puzzle complete!", type: .success)
         soundManager.play(.victory, volume: 0.7)
+        
+        // Mark premade puzzle as completed
+        if let premadePuzzle = originalPremadePuzzle {
+            PuzzleCompletionManager.shared.markCompleted(puzzle: premadePuzzle)
+        }
     }
 
     private func isValid(_ value: Int, at position: KidSudokuPosition) -> Bool {

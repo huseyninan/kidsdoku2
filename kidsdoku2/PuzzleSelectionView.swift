@@ -9,6 +9,7 @@ struct DifficultyTheme {
 struct PuzzleSelectionView: View {
     let size: Int
     @Binding var path: [KidSudokuRoute]
+    @ObservedObject private var completionManager = PuzzleCompletionManager.shared
     
     private let themes: [PuzzleDifficulty: DifficultyTheme] = [
         .easy: DifficultyTheme(name: "Sunny Meadow", backgroundColor: Color(red: 0.45, green: 0.55, blue: 0.45), emoji: "🌻"),
@@ -132,6 +133,25 @@ struct PuzzleSelectionView: View {
                         .padding(.bottom, 8)
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
+                
+                // Checkmark for completed puzzles
+                if completionManager.isCompleted(puzzle: puzzle) {
+                    VStack {
+                        HStack {
+                            Spacer()
+                            Image(systemName: "checkmark.circle.fill")
+                                .font(.system(size: 28))
+                                .foregroundStyle(.white)
+                                .background(
+                                    Circle()
+                                        .fill(Color(red: 0.2, green: 0.7, blue: 0.3))
+                                        .frame(width: 30, height: 30)
+                                )
+                                .padding(8)
+                        }
+                        Spacer()
+                    }
+                }
             }
         }
         .buttonStyle(.plain)
