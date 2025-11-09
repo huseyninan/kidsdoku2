@@ -135,7 +135,7 @@ struct GameView: View {
     }
 
     private var paletteSection: some View {
-        HStack(spacing: 12) {
+        HStack(spacing: 10) {
             ForEach(Array(config.symbols.enumerated()).filter { entry in
                 guard let firstRow = viewModel.puzzle.solution.first else { return true }
                 let symbolIndicesInFirstRow = Set(firstRow.map { $0 })
@@ -146,7 +146,7 @@ struct GameView: View {
         }
         .frame(maxWidth: .infinity)
         .padding(.vertical, 16)
-        .padding(.horizontal, 20)
+        .padding(.horizontal, 10)
         .background(
             RoundedRectangle(cornerRadius: 20, style: .continuous)
                 .fill(Color.green.opacity(0.15))
@@ -163,7 +163,7 @@ struct GameView: View {
         } label: {
             Text(symbol)
                 .font(.system(size: 32))
-                .frame(width: 56, height: 56)
+                .frame(width: 50, height: 50)
                 .background(
                     Circle()
                         .fill(isSelected ? Color.accentColor.opacity(0.25) : Color(.systemGray6))
