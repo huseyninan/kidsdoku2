@@ -5,17 +5,11 @@ struct MainMenuView: View {
 
     var body: some View {
         ZStack {
-            // Forest/Nature themed gradient background
-            LinearGradient(
-                gradient: Gradient(colors: [
-                    Color(red: 0.4, green: 0.65, blue: 0.6),
-                    Color(red: 0.5, green: 0.7, blue: 0.5),
-                    Color(red: 0.6, green: 0.75, blue: 0.5)
-                ]),
-                startPoint: .top,
-                endPoint: .bottom
-            )
-            .ignoresSafeArea()
+            // Fox background image
+            Image("fox_bg")
+                .resizable()
+                .scaledToFill()
+                .ignoresSafeArea()
 
             VStack(spacing: 0) {
                 // Settings button in top right
