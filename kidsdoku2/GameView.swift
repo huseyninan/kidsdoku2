@@ -434,7 +434,7 @@ private struct BoardGridView: View {
             ZStack {
                 Circle()
                     .fill(Color.orange.opacity(0.22))
-                    .frame(width: size * 0.78, height: size * 0.78)
+                    .frame(width: size * 0.7, height: size * 0.7)
 
                 Circle()
                     .fill(
@@ -462,7 +462,7 @@ private struct BoardGridView: View {
             }
             .scaleEffect(animate ? 1.08 : 0.92)
             .hueRotation(.degrees(animate ? 180 : 0))
-            .animation(.easeInOut(duration: 1.6).repeatForever(autoreverses: true), value: animate)
+            .animation(.easeInOut(duration: 0.5).repeatCount(1, autoreverses: true), value: animate)
             .onAppear {
                 animate = true
             }
