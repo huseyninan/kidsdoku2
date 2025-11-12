@@ -161,9 +161,10 @@ struct GameView: View {
                 viewModel.selectPaletteSymbol(symbolIndex)
             }
         } label: {
-            Text(symbol)
-                .font(.system(size: 32))
-                .frame(width: 50, height: 50)
+            Image(symbol)
+                .resizable()
+                .scaledToFit()
+                .frame(width: 50.0, height: 50.0)
                 .background(
                     Circle()
                         .fill(isSelected ? Color.accentColor.opacity(0.25) : Color(.systemGray6))
@@ -356,10 +357,10 @@ private struct BoardGridView: View {
                     GlowingHighlight(size: cellSize)
                 }
 
-                Text(symbol(for: cell))
-                    .font(.system(size: cellFontSize))
-                    .minimumScaleFactor(0.6)
-                    .foregroundStyle(Color(.label))
+                Image(symbol(for: cell))
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: cellSize * 0.7, height: cellSize * 0.7)
             }
         }
         .buttonStyle(.plain)

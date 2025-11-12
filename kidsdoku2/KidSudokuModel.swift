@@ -13,17 +13,17 @@ enum SymbolGroup: Int, CaseIterable, Hashable {
     var symbols: [String] {
             switch self {
             case .animals:
-                return ["🐶", "🐱", "🐻", "🐼", "🐸", "🦊", "🦁", "🐯", "🐰", "🐨"]
+                return ["animal1", "animal2", "animal3", "animal4", "animal5", "animal6", "animal7", "animal8", "animal9", "animal10"]
             case .fruits:
-                return ["🍎", "🍊", "🍓", "🍉", "🍇", "🍌", "🍒", "🍍", "🥝", "🍑"]
+                return ["animal11", "animal12", "animal13", "animal14", "animal15", "animal1", "animal2", "animal3", "animal4", "animal5"]
             case .sports:
-                return ["⚽️", "🏀", "⚾️", "🎾", "🏈", "🏐", "🎱", "🏓", "🏸", "🏒"]
+                return ["animal6", "animal7", "animal8", "animal9", "animal10", "animal11", "animal12", "animal13", "animal14", "animal15"]
             case .weather:
-                return ["☀️", "⛅️", "☁️", "🌧️", "⚡️", "🌈", "❄️", "💨", "🌪️", "🌊"]
+                return ["animal1", "animal3", "animal5", "animal7", "animal9", "animal11", "animal13", "animal15", "animal2", "animal4"]
             case .vehicles:
-                return ["🚗", "🚕", "🚙", "🚌", "🚎", "🏎️", "🚓", "🚑", "🚒", "🚚"]
+                return ["animal6", "animal8", "animal10", "animal12", "animal14", "animal1", "animal3", "animal5", "animal7", "animal9"]
             case .nature:
-                return ["🌸", "🌺", "🌻", "🌷", "🌹", "🌼", "🌳", "🌲", "🍁", "🍄"]
+                return ["animal2", "animal4", "animal6", "animal8", "animal10", "animal12", "animal14", "animal11", "animal13", "animal15"]
             }
         }
     
