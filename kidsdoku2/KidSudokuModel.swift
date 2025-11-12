@@ -45,7 +45,7 @@ struct KidSudokuConfig: Hashable {
         size: 4,
         subgridRows: 2,
         subgridCols: 2,
-        symbolGroup: .birds
+        symbolGroup: .animals
     )
 
     static let sixBySix = KidSudokuConfig(
