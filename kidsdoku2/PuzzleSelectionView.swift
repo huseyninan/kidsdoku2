@@ -110,69 +110,87 @@ struct PuzzleSelectionView: View {
         Button {
             path.append(.premadePuzzle(puzzle: puzzle))
         } label: {
-            ZStack(alignment: .topLeading) {
+            ZStack {
                 RoundedRectangle(cornerRadius: 20, style: .continuous)
                     .fill(Color.white.opacity(0.9))
                     .frame(height: 100)
                 
-                VStack(spacing: -2) {
-                    Text("\(puzzle.number)")
-                        .font(.system(size: 18, weight: .bold, design: .rounded))
-                        .foregroundStyle(Color(red: 0.4, green: 0.4, blue: 0.35))
-                        .frame(width: 32, height: 32)
-                        .background(
-                            Circle()
-                                .fill(Color(red: 0.85, green: 0.82, blue: 0.65))
+                VStack(alignment: .leading, spacing: 0) {
+                    HStack(alignment: .top) {
+                        numberBadge(
+                            number: puzzle.number,
+                            backgroundColor: Color(red: 0.93, green: 0.90, blue: 0.78),
+                            textColor: Color(red: 0.38, green: 0.34, blue: 0.28)
                         )
-                        .padding(.top, 10)
-                    
-                    Spacer()
-                    
+                        
+                        Spacer()
+                        
+                        if completionManager.isCompleted(puzzle: puzzle) {
+                            completionBadge
+                                .padding(.top, 4)
+                        }
+                    }
+                    .padding(.leading, -12)
+                                        
                     Text(puzzle.displayEmoji)
                         .font(.system(size: 44))
-                        .padding(.bottom, 8)
+                        .frame(maxWidth: .infinity, alignment: .center)
                 }
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-                
-                // Checkmark for completed puzzles
-                if completionManager.isCompleted(puzzle: puzzle) {
-                    VStack {
-                        HStack {
-                            Spacer()
-                            Image(systemName: "checkmark.circle.fill")
-                                .font(.system(size: 28))
-                                .foregroundStyle(.white)
-                                .background(
-                                    Circle()
-                                        .fill(Color(red: 0.2, green: 0.7, blue: 0.3))
-                                        .frame(width: 30, height: 30)
-                                )
-                                .padding(8)
-                        }
-                        Spacer()
-                    }
-                }
+                .padding(12)
             }
         }
         .buttonStyle(.plain)
     }
     
     private func emptyPuzzleSlot(number: Int, theme: DifficultyTheme) -> some View {
-        ZStack(alignment: .topLeading) {
+        ZStack {
             RoundedRectangle(cornerRadius: 20, style: .continuous)
                 .fill(Color.white.opacity(0.2))
                 .frame(height: 100)
             
+            VStack(alignment: .leading, spacing: 0) {
+                numberBadge(
+                    number: number,
+                    backgroundColor: Color.white.opacity(0.22),
+                    textColor: Color.white.opacity(0.65)
+                )
+                
+                Spacer()
+            }
+            .padding(12)
+        }
+    }
+    
+    private func numberBadge(number: Int, backgroundColor: Color, textColor: Color) -> some View {
+        ZStack(alignment: .topLeading) {
+            UnevenRoundedRectangle(
+                cornerRadii: .init(topLeading: 18, bottomLeading: 0, bottomTrailing: 142, topTrailing: 0),
+                style: .continuous
+            )
+            .fill(backgroundColor)
+            .frame(width: 46, height: 46)
+            
             Text("\(number)")
                 .font(.system(size: 18, weight: .bold, design: .rounded))
-                .foregroundStyle(Color.white.opacity(0.5))
-                .frame(width: 32, height: 32)
-                .background(
-                    Circle()
-                        .fill(Color.black.opacity(0.15))
-                )
-                .padding(8)
+                .foregroundStyle(textColor)
+                .padding(.top, 8)
+                .padding(.leading, 12)
         }
+    }
+    
+    private var completionBadge: some View {
+        ZStack {
+            Circle()
+                .fill(Color.white)
+            
+            Circle()
+                .stroke(Color(red: 0.24, green: 0.65, blue: 0.33), lineWidth: 3)
+            
+            Image(systemName: "checkmark")
+                .font(.system(size: 16, weight: .bold, design: .rounded))
+                .foregroundStyle(Color(red: 0.24, green: 0.65, blue: 0.33))
+        }
+        .frame(width: 34, height: 34)
     }
     
     private var randomAdventureButton: some View {
