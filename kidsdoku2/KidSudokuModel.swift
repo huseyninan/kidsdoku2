@@ -4,7 +4,7 @@ import SwiftUI
 
 enum SymbolGroup: Int, CaseIterable, Hashable {
     case animals = 1
-    case fruits = 2
+    case birds2 = 2
     case sports = 3
     case weather = 4
     case sea = 5
@@ -14,8 +14,8 @@ enum SymbolGroup: Int, CaseIterable, Hashable {
             switch self {
             case .animals:
                 return ["animal1", "animal2", "animal3", "animal4", "animal5", "animal6", "animal7", "animal8", "animal9", "animal10"]
-            case .fruits:
-                return ["animal11", "animal12", "animal13", "animal14", "animal15", "animal1", "animal2", "animal3", "animal4", "animal5"]
+            case .birds2:
+                return ["bird_2_11", "bird_2_12", "bird_2_13", "bird_2_14", "bird_2_15", "bird_2_1", "bird_2_2", "bird_2_3", "bird_2_4", "bird_2_5"]
             case .sports:
                 return ["animal6", "animal7", "animal8", "animal9", "animal10", "animal11", "animal12", "animal13", "animal14", "animal15"]
             case .weather:
@@ -45,14 +45,14 @@ struct KidSudokuConfig: Hashable {
         size: 4,
         subgridRows: 2,
         subgridCols: 2,
-        symbolGroup: .animals
+        symbolGroup: .birds2
     )
 
     static let sixBySix = KidSudokuConfig(
         size: 6,
         subgridRows: 2,
         subgridCols: 3,
-        symbolGroup: .sea
+        symbolGroup: .birds2
     )
 
     static func configuration(for size: Int) -> KidSudokuConfig? {
