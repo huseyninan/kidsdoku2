@@ -7,7 +7,7 @@ enum SymbolGroup: Int, CaseIterable, Hashable {
     case fruits = 2
     case sports = 3
     case weather = 4
-    case vehicles = 5
+    case sea = 5
     case birds = 6
     
     var symbols: [String] {
@@ -20,8 +20,8 @@ enum SymbolGroup: Int, CaseIterable, Hashable {
                 return ["animal6", "animal7", "animal8", "animal9", "animal10", "animal11", "animal12", "animal13", "animal14", "animal15"]
             case .weather:
                 return ["animal1", "animal3", "animal5", "animal7", "animal9", "animal11", "animal13", "animal15", "animal2", "animal4"]
-            case .vehicles:
-                return ["animal6", "animal8", "animal10", "animal12", "animal14", "animal1", "animal3", "animal5", "animal7", "animal9"]
+            case .sea:
+                return ["sea6", "sea8", "sea10", "sea12", "sea14", "sea1", "sea3", "sea5", "sea7", "sea9"]
             case .birds:
                 return ["bird2", "bird4", "bird6", "bird8", "bird10", "bird12", "bird14", "bird11", "bird13", "bird15"]            }
         }
@@ -52,7 +52,7 @@ struct KidSudokuConfig: Hashable {
         size: 6,
         subgridRows: 2,
         subgridCols: 3,
-        symbolGroup: .birds
+        symbolGroup: .sea
     )
 
     static func configuration(for size: Int) -> KidSudokuConfig? {
