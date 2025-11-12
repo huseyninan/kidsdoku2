@@ -115,7 +115,7 @@ struct PuzzleSelectionView: View {
                     .fill(Color.white.opacity(0.9))
                     .frame(height: 100)
                 
-                VStack(alignment: .leading, spacing: 0) {
+                VStack(alignment: .leading, spacing: -26) {
                     HStack(alignment: .top) {
                         numberBadge(
                             number: puzzle.number,
@@ -132,9 +132,9 @@ struct PuzzleSelectionView: View {
                     }
                     .padding(.leading, -12)
                                         
-                    Text(puzzle.displayEmoji)
-                        .font(.system(size: 44))
-                        .frame(maxWidth: .infinity, alignment: .center)
+                    Image(puzzle.displayEmoji)
+                        .resizable()
+                        .frame(width: 80, height: 80)
                 }
                 .padding(12)
             }

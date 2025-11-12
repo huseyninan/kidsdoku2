@@ -180,7 +180,7 @@ struct PremadePuzzle: Hashable, Identifiable {
     }
     
     var displayEmoji: String {
-        return emoji ?? "🎯"
+        return config.symbolGroup.symbols.first ?? ""
     }
 }
 
