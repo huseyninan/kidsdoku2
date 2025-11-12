@@ -4,18 +4,24 @@ import SwiftUI
 
 enum SymbolGroup: Int, CaseIterable, Hashable {
     case animals = 1
-    case birds2 = 2
-    case sports = 3
-    case weather = 4
-    case sea = 5
-    case birds = 6
+    case birds2
+    case sports
+    case weather
+    case sea
+    case birds
+    case animals2
+    case birds3
     
     var symbols: [String] {
             switch self {
             case .animals:
                 return ["animal1", "animal2", "animal3", "animal4", "animal5", "animal6", "animal7", "animal8", "animal9", "animal10"]
+            case .animals2:
+                return ["animal11", "animal12", "animal13", "animal14", "animal15", "animal6", "animal7", "animal8", "animal9", "animal10"]
             case .birds2:
                 return ["bird_2_11", "bird_2_12", "bird_2_13", "bird_2_14", "bird_2_15", "bird_2_1", "bird_2_2", "bird_2_3", "bird_2_4", "bird_2_5"]
+            case .birds3:
+                return ["bird_2_1", "bird_2_2", "bird_2_3", "bird_2_4", "bird_2_5", "bird_2_6", "bird_2_7", "bird_2_8", "bird_2_8", "bird_2_10"]
             case .sports:
                 return ["animal6", "animal7", "animal8", "animal9", "animal10", "animal11", "animal12", "animal13", "animal14", "animal15"]
             case .weather:

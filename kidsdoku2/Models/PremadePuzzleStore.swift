@@ -1439,7 +1439,13 @@ private func puzzle(
     initial: String,
     solution: String
 ) -> PremadePuzzle {
-    let config: KidSudokuConfig = size == 4 ? .fourByFour : .sixBySix
+    let symbolGroup = assignSymbolGroup(size: size, difficulty: difficulty, number: number)
+    let config = KidSudokuConfig(
+        size: size,
+        subgridRows: size == 4 ? 2 : 2,
+        subgridCols: size == 4 ? 2 : 3,
+        symbolGroup: symbolGroup
+    )
     
     let initialBoard = parseBoard(initial, size: size)
     let solutionBoard = parseSolutionBoard(solution, size: size)
@@ -1461,6 +1467,14 @@ private func puzzle(
         solutionBoard: solutionBoard,
         emoji: assignedEmoji
     )
+}
+
+private func assignSymbolGroup(size: Int, difficulty: PuzzleDifficulty, number: Int) -> SymbolGroup {
+    // Create a deterministic assignment based on puzzle characteristics
+    let seed = size * 1000 + (difficulty == .easy ? 0 : difficulty == .normal ? 100 : 200) + number
+    let groupIndex = abs(seed) % SymbolGroup.allCases.count
+    print("hinan groupIndex", groupIndex)
+    return SymbolGroup.allCases[groupIndex]
 }
 
 private func autoAssignEmoji(size: Int, difficulty: PuzzleDifficulty, number: Int) -> String {
