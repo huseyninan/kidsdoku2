@@ -432,38 +432,58 @@ private struct BoardGridView: View {
         @State private var animate = false
 
         var body: some View {
-            ZStack {
-                Circle()
-                    .fill(Color.orange.opacity(0.22))
-                    .frame(width: size * 0.7, height: size * 0.7)
+            let cornerRadius = size * 0.28
 
-                Circle()
+            return ZStack {
+                RoundedRectangle(cornerRadius: cornerRadius)
+                    .fill(
+                        LinearGradient(
+                            colors: [
+                                Color(red: 0.23, green: 0.78, blue: 1.0),
+                                Color(red: 0.0, green: 0.58, blue: 0.93)
+                            ],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
+                    )
+                    .frame(width: size * 0.82, height: size * 0.82)
+                    .shadow(color: Color.cyan.opacity(0.35), radius: 0.1)
+                    .shadow(color: Color(red: 0.1, green: 0.7, blue: 0.95).opacity(0.6), radius: 0.82)
+
+                RoundedRectangle(cornerRadius: cornerRadius)
+                    .stroke(Color.white.opacity(0.18), lineWidth: size * 0.05)
+                    .frame(width: size * 0.92, height: size * 0.92)
+                    .blur(radius: size * 0.02)
+
+                RoundedRectangle(cornerRadius: cornerRadius * 0.92)
                     .fill(
                         RadialGradient(
                             colors: [
-                                Color.orange.opacity(0.55),
-                                Color.orange.opacity(0.0)
+                                Color.white.opacity(0.7),
+                                Color.white.opacity(0.25),
+                                Color.white.opacity(0.0)
                             ],
                             center: .center,
-                            startRadius: size * 0.08,
-                            endRadius: size * 0.48
+                            startRadius: 0,
+                            endRadius: size * 0.45
                         )
                     )
-                    .frame(width: size * 0.92, height: size * 0.92)
-                    .blur(radius: size * 0.18)
+                    .frame(width: size * 0.82, height: size * 0.82)
 
-                Circle()
-                    .stroke(Color.orange.opacity(0.05), lineWidth: size * 0.06)
-                    .blur(radius: size * 0.16)
-                    .frame(width: size * 0.74, height: size * 0.74)
+                RoundedRectangle(cornerRadius: cornerRadius)
+                    .stroke(Color.white.opacity(0.55), lineWidth: size * 0.03)
+                    .frame(width: size * 0.8, height: size * 0.8)
+                    .blendMode(.screen)
+                    .opacity(animate ? 0.95 : 0.55)
 
-                Circle()
-                    .stroke(Color.orange.opacity(0.08), lineWidth: 2)
-                    .frame(width: size * 0.74, height: size * 0.74)
+                RoundedRectangle(cornerRadius: cornerRadius)
+                    .stroke(Color.cyan.opacity(animate ? 0.65 : 0.25), lineWidth: size * 0.14)
+                    .frame(width: size * 0.54, height: size * 0.54)
+                    .blur(radius: size * 0.1)
+                    .opacity(animate ? 1 : 0.7)
             }
-            .scaleEffect(animate ? 1.08 : 0.92)
-            .hueRotation(.degrees(animate ? 180 : 0))
-            .animation(.easeInOut(duration: 0.5).repeatCount(1, autoreverses: true), value: animate)
+            .scaleEffect(animate ? 1.06 : 0.94)
+            .animation(.easeInOut(duration: 1.4).repeatForever(autoreverses: true), value: animate)
             .onAppear {
                 animate = true
             }
