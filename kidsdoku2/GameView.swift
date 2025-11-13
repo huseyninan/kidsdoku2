@@ -21,10 +21,6 @@ struct GameView: View {
         VStack(spacing: 20) {
             header
 
-            if let message = viewModel.message {
-                messageBanner(message)
-            }
-
             boardSection
 
             paletteSection
@@ -360,7 +356,7 @@ private struct BoardGridView: View {
                 Image(symbol(for: cell))
                     .resizable()
                     .scaledToFit()
-                    .frame(width: cellSize * 0.7, height: cellSize * 0.7)
+                    .frame(width: cellSize * 0.9, height: cellSize * 0.9)
             }
         }
         .buttonStyle(.plain)
