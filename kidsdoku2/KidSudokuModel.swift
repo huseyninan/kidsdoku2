@@ -11,25 +11,32 @@ enum SymbolGroup: Int, CaseIterable, Hashable {
     case birds
     case animals2
     case birds3
-    
+    case birds4
+    case animals4
+
     var symbols: [String] {
             switch self {
             case .animals:
-                return ["animal1", "animal2", "animal3", "animal4", "animal5", "animal6", "animal7", "animal8", "animal9", "animal10"]
+                return ["animal1", "animal1", "animal2", "animal4", "animal8", "animal10", "animal15"]
             case .animals2:
-                return ["animal11", "animal12", "animal13", "animal14", "animal15", "animal6", "animal7", "animal8", "animal9", "animal10"]
+                return ["animal3", "animal3", "animal6", "animal12", "animal14", "animal15", "animal10"]
             case .birds2:
-                return ["bird_2_11", "bird_2_12", "bird_2_13", "bird_2_14", "bird_2_15", "bird_2_1", "bird_2_2", "bird_2_3", "bird_2_4", "bird_2_5"]
+                return ["bird_2_11", "bird_2_11", "bird_2_12", "bird_2_13", "bird_2_14", "bird_2_15", "bird_2_10"]
             case .birds3:
-                return ["bird_2_1", "bird_2_2", "bird_2_3", "bird_2_4", "bird_2_5", "bird_2_6", "bird_2_7", "bird_2_8", "bird_2_8", "bird_2_10"]
+                return ["bird_2_1", "bird_2_1", "bird_2_2", "bird_2_3", "bird_2_4", "bird_2_5", "bird_2_6"]
             case .animals3:
-                return ["animal_2_6", "animal_2_7", "animal_2_8", "animal_2_9", "animal_2_10", "animal_2_11", "animal_2_12", "animal_2_13", "animal_2_14", "animal_2_1"]
+                return ["animal_2_6", "animal_2_6", "animal_2_7", "animal_2_8", "animal_2_9", "animal_2_10", "animal_2_11"]
+            case .animals4:
+                return ["animal_2_1", "animal_2_1", "animal_2_3", "animal_2_5", "animal_2_4", "animal_2_12", "animal_2_13"]
             case .weather:
-                return ["animal1", "animal3", "animal5", "animal7", "animal9", "animal11", "animal13", "animal15", "animal2", "animal4"]
+                return ["sea6", "sea6", "sea8", "sea10", "sea12", "sea14", "sea1"]
             case .sea:
-                return ["sea6", "sea8", "sea10", "sea12", "sea14", "sea1", "sea3", "sea5", "sea7", "sea9"]
+                return ["sea7", "sea7", "sea11", "sea3", "sea5", "sea9", "sea13"]
             case .birds:
-                return ["bird2", "bird4", "bird6", "bird8", "bird10", "bird12", "bird14", "bird11", "bird13", "bird15"]            }
+                return ["bird1", "bird1", "bird4", "bird6", "bird7", "bird9", "bird13"]
+            case .birds4:
+                return ["bird2", "bird2", "bird3", "bird5", "bird14", "bird15", "bird11"]
+            }
         }
     
     var id: Int {
