@@ -4,28 +4,40 @@ import SwiftUI
 
 enum SymbolGroup: Int, CaseIterable, Hashable {
     case animals = 1
-    case fruits = 2
-    case sports = 3
-    case weather = 4
-    case vehicles = 5
-    case nature = 6
-    
+    case birds2
+    case animals3
+    case weather
+    case sea
+    case birds
+    case animals2
+    case birds3
+    case birds4
+    case animals4
+
     var symbols: [String] {
-        switch self {
-        case .animals:
-            return ["🐶", "🐱", "🐻", "🐼", "🐸", "🦊"]
-        case .fruits:
-            return ["🍎", "🍊", "🍓", "🍉", "🍇", "🍌"]
-        case .sports:
-            return ["⚽️", "🏀", "⚾️", "🎾", "🏈", "🏐"]
-        case .weather:
-            return ["☀️", "⛅️", "☁️", "🌧️", "⚡️", "🌈"]
-        case .vehicles:
-            return ["🚗", "🚕", "🚙", "🚌", "🚎", "🏎️"]
-        case .nature:
-            return ["🌸", "🌺", "🌻", "🌷", "🌹", "🌼"]
+            switch self {
+            case .animals:
+                return ["animal1", "animal1", "animal2", "animal4", "animal8", "animal10", "animal15"]
+            case .animals2:
+                return ["animal3", "animal3", "animal6", "animal12", "animal14", "animal15", "animal10"]
+            case .birds2:
+                return ["bird_2_11", "bird_2_11", "bird_2_12", "bird_2_13", "bird_2_14", "bird_2_15", "bird_2_10"]
+            case .birds3:
+                return ["bird_2_1", "bird_2_1", "bird_2_2", "bird_2_3", "bird_2_4", "bird_2_5", "bird_2_6"]
+            case .animals3:
+                return ["animal_2_6", "animal_2_6", "animal_2_7", "animal_2_8", "animal_2_9", "animal_2_10", "animal_2_11"]
+            case .animals4:
+                return ["animal_2_1", "animal_2_1", "animal_2_3", "animal_2_5", "animal_2_4", "animal_2_12", "animal_2_13"]
+            case .weather:
+                return ["sea6", "sea6", "sea8", "sea10", "sea12", "sea14", "sea1"]
+            case .sea:
+                return ["sea7", "sea7", "sea11", "sea3", "sea5", "sea9", "sea13"]
+            case .birds:
+                return ["bird1", "bird1", "bird4", "bird6", "bird7", "bird9", "bird13"]
+            case .birds4:
+                return ["bird2", "bird2", "bird3", "bird5", "bird14", "bird15", "bird11"]
+            }
         }
-    }
     
     var id: Int {
         return rawValue
@@ -39,21 +51,21 @@ struct KidSudokuConfig: Hashable {
     let symbolGroup: SymbolGroup
     
     var symbols: [String] {
-        return Array(symbolGroup.symbols.prefix(size))
+        return Array(symbolGroup.symbols)
     }
 
     static let fourByFour = KidSudokuConfig(
         size: 4,
         subgridRows: 2,
         subgridCols: 2,
-        symbolGroup: .sports
+        symbolGroup: .birds2
     )
 
     static let sixBySix = KidSudokuConfig(
         size: 6,
         subgridRows: 2,
         subgridCols: 3,
-        symbolGroup: .fruits
+        symbolGroup: .birds2
     )
 
     static func configuration(for size: Int) -> KidSudokuConfig? {
@@ -150,6 +162,7 @@ enum KidSudokuRoute: Hashable {
     case game(size: Int)
     case puzzleSelection(size: Int)
     case premadePuzzle(puzzle: PremadePuzzle)
+    case settings
 }
 
 enum PuzzleDifficulty: String, CaseIterable {
@@ -181,7 +194,7 @@ struct PremadePuzzle: Hashable, Identifiable {
     }
     
     var displayEmoji: String {
-        return emoji ?? "🎯"
+        return config.symbolGroup.symbols.first ?? ""
     }
 }
 

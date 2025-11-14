@@ -25,6 +25,8 @@ struct ContentView: View {
                         PuzzleSelectionView(size: size, path: $path)
                     case .premadePuzzle(let puzzle):
                         GameView(config: puzzle.config, premadePuzzle: puzzle)
+                    case .settings:
+                        SettingsView()
                     }
                 }
         }

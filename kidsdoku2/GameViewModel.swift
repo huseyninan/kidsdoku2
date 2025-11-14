@@ -9,10 +9,13 @@ final class GameViewModel: ObservableObject {
     @Published var message: KidSudokuMessage?
     @Published var showCelebration = false
     @Published var highlightedValue: Int?
+    @Published var selectedPaletteSymbol: Int?
 
     let config: KidSudokuConfig
     private let isPremadePuzzle: Bool
     private let originalPremadePuzzle: PremadePuzzle?
+    private let soundManager = SoundManager.shared
+    private var moveHistory: [(position: KidSudokuPosition, oldValue: Int?)] = []
 
     init(config: KidSudokuConfig) {
         self.config = config
@@ -40,6 +43,8 @@ final class GameViewModel: ObservableObject {
         message = KidSudokuMessage(text: "New puzzle ready!", type: .info)
         showCelebration = false
         highlightedValue = nil
+        selectedPaletteSymbol = nil
+        moveHistory.removeAll()
     }
 
     func select(position: KidSudokuPosition) {
@@ -49,11 +54,34 @@ final class GameViewModel: ObservableObject {
     }
 
     func didTapCell(_ cell: KidSudokuCell) {
-        highlightedValue = cell.value
         message = nil
-        if cell.isFixed == false {
-            selectedPosition = cell.position
+        
+        // If cell is fixed, just highlight it
+        if cell.isFixed {
+            highlightedValue = cell.value
+            return
         }
+        
+        // If a palette symbol is selected and the cell is empty, fill it
+        if let paletteSymbol = selectedPaletteSymbol, cell.value == nil {
+            if isValid(paletteSymbol, at: cell.position) {
+                moveHistory.append((position: cell.position, oldValue: cell.value))
+                objectWillChange.send()
+                puzzle.updateCell(at: cell.position, with: paletteSymbol)
+                highlightedValue = paletteSymbol
+                soundManager.play(.correctPlacement, volume: 0.6)
+                checkForCompletion()
+            } else {
+                let symbol = config.symbols[paletteSymbol]
+                message = KidSudokuMessage(text: "That \(symbol) is already there!", type: .warning)
+                soundManager.play(.incorrectPlacement, volume: 0.5)
+            }
+            return
+        }
+        
+        // Otherwise, select the cell and highlight its value
+        selectedPosition = cell.position
+        highlightedValue = cell.value
     }
 
     func clearSelection() {
@@ -70,9 +98,20 @@ final class GameViewModel: ObservableObject {
         guard cell.isFixed == false else { return }
 
         if cell.value != nil {
+            moveHistory.append((position: position, oldValue: cell.value))
             objectWillChange.send()
             puzzle.updateCell(at: position, with: nil)
         }
+    }
+    
+    func highlightSymbol(at symbolIndex: Int) {
+        highlightedValue = symbolIndex
+    }
+    
+    func selectPaletteSymbol(_ symbolIndex: Int) {
+        selectedPaletteSymbol = symbolIndex
+        highlightedValue = symbolIndex
+        message = nil
     }
 
     func placeSymbol(at symbolIndex: Int) {
@@ -85,20 +124,24 @@ final class GameViewModel: ObservableObject {
         guard cell.isFixed == false else { return }
 
         if cell.value == symbolIndex {
+            moveHistory.append((position: position, oldValue: cell.value))
             objectWillChange.send()
             puzzle.updateCell(at: position, with: nil)
             return
         }
 
         if isValid(symbolIndex, at: position) {
+            moveHistory.append((position: position, oldValue: cell.value))
             objectWillChange.send()
             puzzle.updateCell(at: position, with: symbolIndex)
             highlightedValue = symbolIndex
             message = nil
+            soundManager.play(.correctPlacement, volume: 0.6)
             checkForCompletion()
         } else {
             let symbol = config.symbols[symbolIndex]
             message = KidSudokuMessage(text: "That \(symbol) is already there!", type: .warning)
+            soundManager.play(.incorrectPlacement, volume: 0.5)
         }
     }
 
@@ -117,6 +160,12 @@ final class GameViewModel: ObservableObject {
         }
         showCelebration = true
         message = KidSudokuMessage(text: "Amazing! Puzzle complete!", type: .success)
+        soundManager.play(.victory, volume: 0.7)
+        
+        // Mark premade puzzle as completed
+        if let premadePuzzle = originalPremadePuzzle {
+            PuzzleCompletionManager.shared.markCompleted(puzzle: premadePuzzle)
+        }
     }
 
     private func isValid(_ value: Int, at position: KidSudokuPosition) -> Bool {
@@ -164,6 +213,47 @@ final class GameViewModel: ObservableObject {
         } else {
             return "\(config.size) x \(config.size) Puzzle"
         }
+    }
+    
+    func provideHint() {
+        // Find an empty cell that can be filled
+        let emptyCells = puzzleCells.filter { !$0.isFixed && $0.value == nil }
+        
+        guard !emptyCells.isEmpty else {
+            message = KidSudokuMessage(text: "No hints available!", type: .info)
+            return
+        }
+        
+        // Pick a random empty cell
+        if let randomCell = emptyCells.randomElement() {
+            moveHistory.append((position: randomCell.position, oldValue: randomCell.value))
+            objectWillChange.send()
+            puzzle.updateCell(at: randomCell.position, with: randomCell.solution)
+            highlightedValue = randomCell.solution
+            selectedPosition = randomCell.position
+            message = KidSudokuMessage(text: "Here's a hint! ✨", type: .info)
+            soundManager.play(.hint, volume: 0.6)
+            
+            // Check if this completes the puzzle
+            checkForCompletion()
+        }
+    }
+    
+    func undo() {
+        guard let lastMove = moveHistory.popLast() else {
+            message = KidSudokuMessage(text: "Nothing to undo!", type: .info)
+            return
+        }
+        
+        objectWillChange.send()
+        puzzle.updateCell(at: lastMove.position, with: lastMove.oldValue)
+        selectedPosition = lastMove.position
+        highlightedValue = lastMove.oldValue
+        message = nil
+    }
+    
+    var canUndo: Bool {
+        return !moveHistory.isEmpty
     }
 }
 

@@ -2,27 +2,54 @@ import SwiftUI
 
 struct MainMenuView: View {
     @Binding var path: [KidSudokuRoute]
+    @State private var isShowingTutorial = false
 
     var body: some View {
         ZStack {
-            // Forest/Nature themed gradient background
-            LinearGradient(
-                gradient: Gradient(colors: [
-                    Color(red: 0.4, green: 0.65, blue: 0.6),
-                    Color(red: 0.5, green: 0.7, blue: 0.5),
-                    Color(red: 0.6, green: 0.75, blue: 0.5)
-                ]),
-                startPoint: .top,
-                endPoint: .bottom
-            )
-            .ignoresSafeArea()
+            // Fox background image
+            Image("fox_bg")
+                .resizable()
+                .scaledToFill()
+                .ignoresSafeArea()
 
             VStack(spacing: 0) {
-                // Settings button in top right
+                // Push content below safe area
+                Rectangle()
+                    .fill(Color.clear)
+                    .frame(height: 20)
+                    .ignoresSafeArea(.all, edges: .top)
+                
+                // Header buttons
                 HStack {
-                    Spacer()
+                    // Tutorial button in top left
                     Button(action: {
-                        // Settings action
+                        isShowingTutorial = true
+                    }) {
+                        HStack(spacing: 8) {
+                            Image(systemName: "questionmark.circle.fill")
+                                .font(.system(size: 24))
+                            Text("How to Play")
+                                .font(.system(size: 16, weight: .semibold, design: .rounded))
+                        }
+                        .foregroundColor(.white)
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 10)
+                        .background(
+                            RoundedRectangle(cornerRadius: 20)
+                                .fill(Color.black.opacity(0.3))
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 20)
+                                        .strokeBorder(Color.white.opacity(0.5), lineWidth: 1)
+                                )
+                        )
+                    }
+                    .padding(.leading, 20)
+                    
+                    Spacer()
+                    
+                    // Settings button in top right
+                    Button(action: {
+                        path.append(.settings)
                     }) {
                         Image(systemName: "gearshape.fill")
                             .font(.system(size: 28))
@@ -30,9 +57,10 @@ struct MainMenuView: View {
                             .padding()
                     }
                 }
+                .padding(.top, 10)
                 
                 Spacer()
-                    .frame(height: 60)
+                    .frame(height: 30)
                 
                 // Quest Log Title Card
                 VStack(spacing: 8) {
@@ -80,6 +108,9 @@ struct MainMenuView: View {
 
                 Spacer()
             }
+        }
+        .fullScreenCover(isPresented: $isShowingTutorial) {
+            TutorialView()
         }
     }
 

@@ -4,6 +4,9 @@ import Combine
 struct GameView: View {
     let config: KidSudokuConfig
     @StateObject private var viewModel: GameViewModel
+    @StateObject private var soundManager = SoundManager.shared
+    @StateObject private var hapticManager = HapticManager.shared
+    @Environment(\.dismiss) private var dismiss
 
     init(config: KidSudokuConfig) {
         self.config = config
@@ -16,38 +19,41 @@ struct GameView: View {
     }
 
     var body: some View {
-        VStack(spacing: 20) {
-            header
+        ZStack {
+            VStack(spacing: 20) {
+                header
 
-            if let message = viewModel.message {
-                messageBanner(message)
+                boardSection
+
+                paletteSection
+                
+                actionButtons
+
+                Spacer()
             }
-
-            boardSection
-
-            paletteSection
+            .padding(.horizontal, 20)
+            .padding(.top, 16)
+            .padding(.bottom, 28)
+            .background(Color(.systemGroupedBackground).ignoresSafeArea())
+            .navigationBarBackButtonHidden(false)
+            .navigationTitle("")
+            .navigationBarTitleDisplayMode(.inline)
+            .alert("🎉 You're a Star! 🎉", isPresented: Binding(
+                get: { viewModel.showCelebration },
+                set: { viewModel.showCelebration = $0 }
+            )) {
+                Button("Yay!") {
+                    dismiss()
+                }
+            } message: {
+                Text("You did it! Amazing job solving the puzzle! ⭐️")
+            }
             
-            actionButtons
-
-            Spacer()
-        }
-        .padding(.horizontal, 20)
-        .padding(.top, 16)
-        .padding(.bottom, 28)
-        .background(Color(.systemGroupedBackground).ignoresSafeArea())
-        .navigationBarBackButtonHidden(false)
-        .navigationTitle("")
-        .navigationBarTitleDisplayMode(.inline)
-        .alert("Great job!", isPresented: Binding(
-            get: { viewModel.showCelebration },
-            set: { viewModel.showCelebration = $0 }
-        )) {
-            Button("Play again") {
-                viewModel.startNewPuzzle()
+            // Confetti overlay
+            if viewModel.showCelebration {
+                ConfettiView()
+                    .allowsHitTesting(false)
             }
-            Button("Keep playing", role: .cancel) { }
-        } message: {
-            Text("You solved the puzzle perfectly!")
         }
     }
 
@@ -60,6 +66,18 @@ struct GameView: View {
                     .foregroundStyle(Color(.label))
                 
                 Spacer()
+                
+                // Sound toggle button
+                Button(action: {
+                    soundManager.toggleSound()
+                    hapticManager.trigger(.selection)
+                }) {
+                    Image(systemName: soundManager.isSoundEnabled ? "speaker.wave.2.fill" : "speaker.slash.fill")
+                        .font(.system(size: 20))
+                        .foregroundColor(soundManager.isSoundEnabled ? .blue : .gray)
+                }
+                .buttonStyle(.plain)
+                .padding(.trailing, 8)
                 
                 HStack(spacing: 4) {
                     ForEach(0..<3) { _ in
@@ -113,6 +131,7 @@ struct GameView: View {
                         withAnimation(.easeInOut(duration: 0.15)) {
                             viewModel.didTapCell(cell)
                         }
+                        hapticManager.trigger(.selection)
                     }
                 )
                 .frame(width: boardSize, height: boardSize)
@@ -123,14 +142,18 @@ struct GameView: View {
     }
 
     private var paletteSection: some View {
-        HStack(spacing: 12) {
-            ForEach(Array(config.symbols.enumerated()), id: \.offset) { entry in
+        HStack(spacing: 10) {
+            ForEach(Array(config.symbols.enumerated()).filter { entry in
+                guard let firstRow = viewModel.puzzle.solution.first else { return true }
+                let symbolIndicesInFirstRow = Set(firstRow.map { $0 })
+                return symbolIndicesInFirstRow.contains(entry.offset)
+            }, id: \.offset) { entry in
                 paletteButton(symbolIndex: entry.offset, symbol: entry.element)
             }
         }
         .frame(maxWidth: .infinity)
         .padding(.vertical, 16)
-        .padding(.horizontal, 20)
+        .padding(.horizontal, 10)
         .background(
             RoundedRectangle(cornerRadius: 20, style: .continuous)
                 .fill(Color.green.opacity(0.15))
@@ -138,27 +161,25 @@ struct GameView: View {
     }
 
     private func paletteButton(symbolIndex: Int, symbol: String) -> some View {
-        let isHighlighted = {
-            guard let position = viewModel.selectedPosition else { return false }
-            let current = viewModel.puzzle.cell(at: position)
-            return current.value == symbolIndex
-        }()
+        let isSelected = viewModel.selectedPaletteSymbol == symbolIndex
 
         return Button {
             withAnimation(.spring(response: 0.35, dampingFraction: 0.6)) {
-                viewModel.placeSymbol(at: symbolIndex)
+                viewModel.selectPaletteSymbol(symbolIndex)
             }
+            hapticManager.trigger(.selection)
         } label: {
-            Text(symbol)
-                .font(.system(size: 32))
-                .frame(width: 56, height: 56)
+            Image(symbol)
+                .resizable()
+                .scaledToFit()
+                .frame(width: 50.0, height: 50.0)
                 .background(
                     Circle()
-                        .fill(isHighlighted ? Color.accentColor.opacity(0.25) : Color(.systemGray6))
+                        .fill(isSelected ? Color.accentColor.opacity(0.25) : Color(.systemGray6))
                 )
                 .overlay(
                     Circle()
-                        .stroke(isHighlighted ? Color.accentColor : Color.clear, lineWidth: 3)
+                        .stroke(isSelected ? Color.accentColor : Color.clear, lineWidth: 3)
                 )
         }
         .buttonStyle(.plain)
@@ -168,7 +189,10 @@ struct GameView: View {
         HStack(spacing: 12) {
             // Undo button
             Button(action: {
-                // Undo action
+                withAnimation(.easeInOut(duration: 0.2)) {
+                    viewModel.undo()
+                }
+                hapticManager.trigger(.light)
             }) {
                 HStack(spacing: 8) {
                     Image(systemName: "arrow.uturn.backward")
@@ -176,7 +200,7 @@ struct GameView: View {
                     Text("Undo")
                         .font(.system(size: 16, weight: .semibold, design: .rounded))
                 }
-                .foregroundColor(Color(.label))
+                .foregroundColor(viewModel.canUndo ? Color(.label) : Color(.systemGray3))
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 14)
                 .background(
@@ -185,12 +209,14 @@ struct GameView: View {
                 )
             }
             .buttonStyle(.plain)
+            .disabled(!viewModel.canUndo)
             
             // Erase button
             Button(action: {
                 withAnimation(.easeInOut(duration: 0.2)) {
                     viewModel.removeValue()
                 }
+                hapticManager.trigger(.light)
             }) {
                 HStack(spacing: 8) {
                     Image(systemName: "xmark.circle")
@@ -210,7 +236,10 @@ struct GameView: View {
             
             // Hint button
             Button(action: {
-                // Hint action
+                withAnimation(.easeInOut(duration: 0.2)) {
+                    viewModel.provideHint()
+                }
+                hapticManager.trigger(.medium)
             }) {
                 HStack(spacing: 8) {
                     Image(systemName: "lightbulb")
@@ -227,6 +256,11 @@ struct GameView: View {
                 )
             }
             .buttonStyle(.plain)
+        }
+        .onChange(of: viewModel.showCelebration) { isShowing in
+            if isShowing {
+                hapticManager.trigger(.success)
+            }
         }
     }
 
@@ -287,7 +321,7 @@ private struct BoardGridView: View {
     let selected: KidSudokuPosition?
     let highlightedValue: Int?
     let onTap: (KidSudokuCell) -> Void
-
+    
     var body: some View {
         GeometryReader { geometry in
             let side = min(geometry.size.width, geometry.size.height)
@@ -336,15 +370,13 @@ private struct BoardGridView: View {
                     .fill(cellBackground(for: cell, isSelected: isSelected))
 
                 if isMatchingHighlighted {
-                    Circle()
-                        .stroke(Color.red, lineWidth: 3)
-                        .frame(width: cellSize * 0.7, height: cellSize * 0.7)
+                    GlowingHighlight(size: cellSize)
                 }
 
-                Text(symbol(for: cell))
-                    .font(.system(size: cellFontSize))
-                    .minimumScaleFactor(0.6)
-                    .foregroundStyle(Color(.label))
+                Image(symbol(for: cell))
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: cellSize * 0.9, height: cellSize * 0.9)
             }
         }
         .buttonStyle(.plain)
@@ -367,7 +399,8 @@ private struct BoardGridView: View {
 
     private func symbol(for cell: KidSudokuCell) -> String {
         guard let value = cell.value else { return "" }
-        return config.symbols[value]
+        let symbol = config.symbols[value]
+        return symbol
     }
 
     private var cellFontSize: CGFloat {
@@ -405,6 +438,73 @@ private struct BoardGridView: View {
                 context.stroke(path, with: .color(lineColor), lineWidth: 4)
             } else {
                 context.stroke(path, with: .color(lineColor), style: StrokeStyle(lineWidth: 3, dash: [6, 4]))
+            }
+        }
+    }
+
+    private struct GlowingHighlight: View {
+        let size: CGFloat
+
+        @State private var animate = false
+
+        var body: some View {
+            let cornerRadius = size * 0.28
+
+            return ZStack {
+                RoundedRectangle(cornerRadius: cornerRadius)
+                    .fill(
+                        LinearGradient(
+                            colors: [
+                                Color(red: 0.23, green: 0.78, blue: 1.0),
+                                Color(red: 0.0, green: 0.58, blue: 0.93)
+                            ],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
+                    )
+                    .frame(width: size * 0.82, height: size * 0.82)
+                    .shadow(color: Color.cyan.opacity(0.35), radius: 0.1)
+                    .shadow(color: Color(red: 0.1, green: 0.7, blue: 0.95).opacity(0.6), radius: 0.82)
+
+                RoundedRectangle(cornerRadius: cornerRadius)
+                    .stroke(Color.white.opacity(0.18), lineWidth: size * 0.05)
+                    .frame(width: size * 0.92, height: size * 0.92)
+                    .blur(radius: size * 0.02)
+
+                RoundedRectangle(cornerRadius: cornerRadius * 0.92)
+                    .fill(
+                        RadialGradient(
+                            colors: [
+                                Color.white.opacity(0.7),
+                                Color.white.opacity(0.25),
+                                Color.white.opacity(0.0)
+                            ],
+                            center: .center,
+                            startRadius: 0,
+                            endRadius: size * 0.45
+                        )
+                    )
+                    .frame(width: size * 0.82, height: size * 0.82)
+
+                RoundedRectangle(cornerRadius: cornerRadius)
+                    .stroke(Color.white.opacity(0.55), lineWidth: size * 0.03)
+                    .frame(width: size * 0.8, height: size * 0.8)
+                    .blendMode(.screen)
+                    .opacity(animate ? 0.95 : 0.55)
+
+                RoundedRectangle(cornerRadius: cornerRadius)
+                    .stroke(Color.cyan.opacity(animate ? 0.65 : 0.25), lineWidth: size * 0.14)
+                    .frame(width: size * 0.54, height: size * 0.54)
+                    .blur(radius: size * 0.1)
+                    .opacity(animate ? 1 : 0.7)
+            }
+            .scaleEffect(animate ? 1.06 : 0.94)
+            .animation(.easeInOut(duration: 1.4).repeatForever(autoreverses: true), value: animate)
+            .onAppear {
+                animate = true
+            }
+            .onDisappear {
+                animate = false
             }
         }
     }
