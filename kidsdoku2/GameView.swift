@@ -5,6 +5,7 @@ struct GameView: View {
     let config: KidSudokuConfig
     @StateObject private var viewModel: GameViewModel
     @StateObject private var soundManager = SoundManager.shared
+    @StateObject private var hapticManager = HapticManager.shared
     @Environment(\.dismiss) private var dismiss
 
     init(config: KidSudokuConfig) {
@@ -61,6 +62,7 @@ struct GameView: View {
                 // Sound toggle button
                 Button(action: {
                     soundManager.toggleSound()
+                    hapticManager.trigger(.selection)
                 }) {
                     Image(systemName: soundManager.isSoundEnabled ? "speaker.wave.2.fill" : "speaker.slash.fill")
                         .font(.system(size: 20))
@@ -121,6 +123,7 @@ struct GameView: View {
                         withAnimation(.easeInOut(duration: 0.15)) {
                             viewModel.didTapCell(cell)
                         }
+                        hapticManager.trigger(.selection)
                     }
                 )
                 .frame(width: boardSize, height: boardSize)
@@ -156,6 +159,7 @@ struct GameView: View {
             withAnimation(.spring(response: 0.35, dampingFraction: 0.6)) {
                 viewModel.selectPaletteSymbol(symbolIndex)
             }
+            hapticManager.trigger(.selection)
         } label: {
             Image(symbol)
                 .resizable()
@@ -180,6 +184,7 @@ struct GameView: View {
                 withAnimation(.easeInOut(duration: 0.2)) {
                     viewModel.undo()
                 }
+                hapticManager.trigger(.light)
             }) {
                 HStack(spacing: 8) {
                     Image(systemName: "arrow.uturn.backward")
@@ -203,6 +208,7 @@ struct GameView: View {
                 withAnimation(.easeInOut(duration: 0.2)) {
                     viewModel.removeValue()
                 }
+                hapticManager.trigger(.light)
             }) {
                 HStack(spacing: 8) {
                     Image(systemName: "xmark.circle")
@@ -225,6 +231,7 @@ struct GameView: View {
                 withAnimation(.easeInOut(duration: 0.2)) {
                     viewModel.provideHint()
                 }
+                hapticManager.trigger(.medium)
             }) {
                 HStack(spacing: 8) {
                     Image(systemName: "lightbulb")
@@ -241,6 +248,11 @@ struct GameView: View {
                 )
             }
             .buttonStyle(.plain)
+        }
+        .onChange(of: viewModel.showCelebration) { isShowing in
+            if isShowing {
+                hapticManager.trigger(.success)
+            }
         }
     }
 
