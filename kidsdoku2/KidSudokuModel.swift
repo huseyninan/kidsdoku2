@@ -162,6 +162,7 @@ enum KidSudokuRoute: Hashable {
     case game(size: Int)
     case puzzleSelection(size: Int)
     case premadePuzzle(puzzle: PremadePuzzle)
+    case settings
 }
 
 enum PuzzleDifficulty: String, CaseIterable {

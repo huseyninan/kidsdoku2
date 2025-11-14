@@ -49,7 +49,7 @@ struct MainMenuView: View {
                     
                     // Settings button in top right
                     Button(action: {
-                        // Settings action
+                        path.append(.settings)
                     }) {
                         Image(systemName: "gearshape.fill")
                             .font(.system(size: 28))
