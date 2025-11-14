@@ -27,13 +27,20 @@ struct TutorialView: View {
                         // Tutorial content based on current step
                         tutorialContent
                         
-                        // Navigation buttons
-                        navigationButtons
-                        
                         Spacer(minLength: 40)
                     }
                     .padding(.horizontal, 20)
                     .padding(.top, 20)
+                }
+                .safeAreaInset(edge: .bottom) {
+                    navigationButtons
+                        .padding(.horizontal, 20)
+                        .padding(.top, 12)
+                        .padding(.bottom, 12)
+                        .background(.ultraThinMaterial)
+                        .cornerRadius(28)
+                        .padding(.horizontal, 20)
+                        .shadow(color: .black.opacity(0.1), radius: 10, x: 0, y: 4)
                 }
             }
             .navigationTitle("How to Play")
