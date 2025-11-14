@@ -19,33 +19,41 @@ struct GameView: View {
     }
 
     var body: some View {
-        VStack(spacing: 20) {
-            header
+        ZStack {
+            VStack(spacing: 20) {
+                header
 
-            boardSection
+                boardSection
 
-            paletteSection
-            
-            actionButtons
+                paletteSection
+                
+                actionButtons
 
-            Spacer()
-        }
-        .padding(.horizontal, 20)
-        .padding(.top, 16)
-        .padding(.bottom, 28)
-        .background(Color(.systemGroupedBackground).ignoresSafeArea())
-        .navigationBarBackButtonHidden(false)
-        .navigationTitle("")
-        .navigationBarTitleDisplayMode(.inline)
-        .alert("🎉 You're a Star! 🎉", isPresented: Binding(
-            get: { viewModel.showCelebration },
-            set: { viewModel.showCelebration = $0 }
-        )) {
-            Button("Yay!") {
-                dismiss()
+                Spacer()
             }
-        } message: {
-            Text("You did it! Amazing job solving the puzzle! ⭐️")
+            .padding(.horizontal, 20)
+            .padding(.top, 16)
+            .padding(.bottom, 28)
+            .background(Color(.systemGroupedBackground).ignoresSafeArea())
+            .navigationBarBackButtonHidden(false)
+            .navigationTitle("")
+            .navigationBarTitleDisplayMode(.inline)
+            .alert("🎉 You're a Star! 🎉", isPresented: Binding(
+                get: { viewModel.showCelebration },
+                set: { viewModel.showCelebration = $0 }
+            )) {
+                Button("Yay!") {
+                    dismiss()
+                }
+            } message: {
+                Text("You did it! Amazing job solving the puzzle! ⭐️")
+            }
+            
+            // Confetti overlay
+            if viewModel.showCelebration {
+                ConfettiView()
+                    .allowsHitTesting(false)
+            }
         }
     }
 
