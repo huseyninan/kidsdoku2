@@ -52,9 +52,6 @@ struct TutorialView: View {
     
     private var headerSection: some View {
         VStack(spacing: 16) {
-            Text("🧩")
-                .font(.system(size: 60))
-            
             Text("Sudoku for Kids")
                 .font(.largeTitle)
                 .fontWeight(.bold)
@@ -416,7 +413,7 @@ struct TutorialView: View {
             }) {
                 HStack {
                     Image(systemName: "chevron.left")
-                    Text("Previous")
+                    Text("")
                 }
                 .font(.headline)
                 .foregroundColor(.white)
@@ -448,7 +445,7 @@ struct TutorialView: View {
                 }
             }) {
                 HStack {
-                    Text(currentStep < totalSteps - 1 ? "Next" : "Start Playing!")
+                    Text(currentStep < totalSteps - 1 ? "" : "")
                     if currentStep < totalSteps - 1 {
                         Image(systemName: "chevron.right")
                     } else {

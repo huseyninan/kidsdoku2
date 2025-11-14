@@ -13,6 +13,12 @@ struct MainMenuView: View {
                 .ignoresSafeArea()
 
             VStack(spacing: 0) {
+                // Push content below safe area
+                Rectangle()
+                    .fill(Color.clear)
+                    .frame(height: 20)
+                    .ignoresSafeArea(.all, edges: .top)
+                
                 // Header buttons
                 HStack {
                     // Tutorial button in top left
@@ -51,9 +57,10 @@ struct MainMenuView: View {
                             .padding()
                     }
                 }
+                .padding(.top, 10)
                 
                 Spacer()
-                    .frame(height: 60)
+                    .frame(height: 30)
                 
                 // Quest Log Title Card
                 VStack(spacing: 8) {
