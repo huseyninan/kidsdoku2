@@ -12,9 +12,32 @@ struct MainMenuView: View {
                 .ignoresSafeArea()
 
             VStack(spacing: 0) {
-                // Settings button in top right
+                // Tutorial and Settings buttons in top bar
                 HStack {
+                    // Tutorial button on the left
+                    Button(action: {
+                        path.append(.tutorial)
+                    }) {
+                        HStack(spacing: 6) {
+                            Image(systemName: "questionmark.circle.fill")
+                                .font(.system(size: 24))
+                            Text("How to Play")
+                                .font(.system(size: 16, weight: .semibold, design: .rounded))
+                        }
+                        .foregroundColor(.white)
+                        .padding(.vertical, 10)
+                        .padding(.horizontal, 16)
+                        .background(
+                            Capsule()
+                                .fill(Color.white.opacity(0.25))
+                        )
+                    }
+                    .buttonStyle(.plain)
+                    .padding(.leading, 16)
+                    
                     Spacer()
+                    
+                    // Settings button on the right
                     Button(action: {
                         // Settings action
                     }) {
