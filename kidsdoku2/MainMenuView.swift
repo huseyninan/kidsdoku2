@@ -2,6 +2,7 @@ import SwiftUI
 
 struct MainMenuView: View {
     @Binding var path: [KidSudokuRoute]
+    @State private var isShowingTutorial = false
 
     var body: some View {
         ZStack {
@@ -12,9 +13,35 @@ struct MainMenuView: View {
                 .ignoresSafeArea()
 
             VStack(spacing: 0) {
-                // Settings button in top right
+                // Header buttons
                 HStack {
+                    // Tutorial button in top left
+                    Button(action: {
+                        isShowingTutorial = true
+                    }) {
+                        HStack(spacing: 8) {
+                            Image(systemName: "questionmark.circle.fill")
+                                .font(.system(size: 24))
+                            Text("How to Play")
+                                .font(.system(size: 16, weight: .semibold, design: .rounded))
+                        }
+                        .foregroundColor(.white)
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 10)
+                        .background(
+                            RoundedRectangle(cornerRadius: 20)
+                                .fill(Color.black.opacity(0.3))
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 20)
+                                        .strokeBorder(Color.white.opacity(0.5), lineWidth: 1)
+                                )
+                        )
+                    }
+                    .padding(.leading, 20)
+                    
                     Spacer()
+                    
+                    // Settings button in top right
                     Button(action: {
                         // Settings action
                     }) {
@@ -74,6 +101,9 @@ struct MainMenuView: View {
 
                 Spacer()
             }
+        }
+        .fullScreenCover(isPresented: $isShowingTutorial) {
+            TutorialView()
         }
     }
 
