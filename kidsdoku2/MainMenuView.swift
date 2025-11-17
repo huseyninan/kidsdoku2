@@ -54,8 +54,45 @@ struct MainMenuView: View {
                         Button(action: {
                             isShowingSheet.toggle()
                         }) {
-                            Text("Subscripe")
+                            HStack(spacing: 6) {
+                                Image(systemName: "crown.fill")
+                                    .font(.system(size: 16))
+                                Text("Go Premium")
+                                    .font(.system(size: 15, weight: .bold, design: .rounded))
+                            }
+                            .foregroundColor(.white)
+                            .padding(.horizontal, 18)
+                            .padding(.vertical, 10)
+                            .background(
+                                RoundedRectangle(cornerRadius: 20)
+                                    .fill(
+                                        LinearGradient(
+                                            colors: [
+                                                Color(red: 0.95, green: 0.77, blue: 0.06),
+                                                Color(red: 0.85, green: 0.55, blue: 0.0)
+                                            ],
+                                            startPoint: .topLeading,
+                                            endPoint: .bottomTrailing
+                                        )
+                                    )
+                                    .overlay(
+                                        RoundedRectangle(cornerRadius: 20)
+                                            .strokeBorder(
+                                                LinearGradient(
+                                                    colors: [
+                                                        Color(red: 1.0, green: 0.95, blue: 0.7),
+                                                        Color(red: 0.95, green: 0.85, blue: 0.5)
+                                                    ],
+                                                    startPoint: .top,
+                                                    endPoint: .bottom
+                                                ),
+                                                lineWidth: 2
+                                            )
+                                    )
+                                    .shadow(color: Color(red: 0.85, green: 0.55, blue: 0.0).opacity(0.4), radius: 8, x: 0, y: 4)
+                            )
                         }
+                        .padding(.trailing, 8)
                     }
                     
                     // Settings button in top right
