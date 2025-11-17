@@ -79,3 +79,4 @@ PremadePuzzleStore / KidSudokuGenerator
 
 With this overview plus the `PUZZLE_GUIDE.md`, you should have everything needed to evolve Kidsdoku2’s features, content, and presentation.
 
+

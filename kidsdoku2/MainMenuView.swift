@@ -1,8 +1,11 @@
 import SwiftUI
+import RevenueCatUI
 
 struct MainMenuView: View {
     @Binding var path: [KidSudokuRoute]
+    @EnvironmentObject var appEnvironment: AppEnvironment
     @State private var isShowingTutorial = false
+    @State private var isShowingSheet = false
 
     var body: some View {
         ZStack {
@@ -46,6 +49,14 @@ struct MainMenuView: View {
                     .padding(.leading, 20)
                     
                     Spacer()
+                    
+                    if !appEnvironment.isPremium {
+                        Button(action: {
+                            isShowingSheet.toggle()
+                        }) {
+                            Text("Subscripe")
+                        }
+                    }
                     
                     // Settings button in top right
                     Button(action: {
@@ -112,6 +123,13 @@ struct MainMenuView: View {
         .fullScreenCover(isPresented: $isShowingTutorial) {
             TutorialView()
         }
+        .sheet(isPresented: $isShowingSheet) {
+            PaywallView()
+                .onPurchaseCompleted { customerInfo in
+                    print("hinan customerInfo: \(customerInfo)")
+                    appEnvironment.refreshSubscriptionStatus()
+                }
+        }
     }
 
     private func questButton(title: String, subtitle: String, action: @escaping () -> Void) -> some View {
@@ -156,5 +174,6 @@ struct MainMenuView: View {
 
 #Preview {
     MainMenuView(path: .constant([]))
+        .environmentObject(AppEnvironment())
 }
 

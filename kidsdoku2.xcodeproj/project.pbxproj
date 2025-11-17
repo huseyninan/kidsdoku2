@@ -6,6 +6,11 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		E2623D9C2EC9C0B800B29CC0 /* RevenueCat in Frameworks */ = {isa = PBXBuildFile; productRef = E2623D9B2EC9C0B800B29CC0 /* RevenueCat */; };
+		E2623D9E2EC9C0B800B29CC0 /* RevenueCatUI in Frameworks */ = {isa = PBXBuildFile; productRef = E2623D9D2EC9C0B800B29CC0 /* RevenueCatUI */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXFileReference section */
 		E2543EC22EB3D3500014D580 /* kidsdoku2.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = kidsdoku2.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -36,6 +41,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				E2623D9E2EC9C0B800B29CC0 /* RevenueCatUI in Frameworks */,
+				E2623D9C2EC9C0B800B29CC0 /* RevenueCat in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -78,6 +85,8 @@
 			);
 			name = kidsdoku2;
 			packageProductDependencies = (
+				E2623D9B2EC9C0B800B29CC0 /* RevenueCat */,
+				E2623D9D2EC9C0B800B29CC0 /* RevenueCatUI */,
 			);
 			productName = kidsdoku2;
 			productReference = E2543EC22EB3D3500014D580 /* kidsdoku2.app */;
@@ -107,6 +116,9 @@
 			);
 			mainGroup = E2543EB92EB3D3500014D580;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				E2623D9A2EC9C0B800B29CC0 /* XCRemoteSwiftPackageReference "purchases-ios" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = E2543EC32EB3D3500014D580 /* Products */;
 			projectDirPath = "";
@@ -349,6 +361,30 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		E2623D9A2EC9C0B800B29CC0 /* XCRemoteSwiftPackageReference "purchases-ios" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/RevenueCat/purchases-ios.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 5.48.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		E2623D9B2EC9C0B800B29CC0 /* RevenueCat */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = E2623D9A2EC9C0B800B29CC0 /* XCRemoteSwiftPackageReference "purchases-ios" */;
+			productName = RevenueCat;
+		};
+		E2623D9D2EC9C0B800B29CC0 /* RevenueCatUI */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = E2623D9A2EC9C0B800B29CC0 /* XCRemoteSwiftPackageReference "purchases-ios" */;
+			productName = RevenueCatUI;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = E2543EBA2EB3D3500014D580 /* Project object */;
 }

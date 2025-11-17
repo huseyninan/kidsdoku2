@@ -6,12 +6,21 @@
 //
 
 import SwiftUI
+import RevenueCat
 
 @main
 struct kidsdoku2App: App {
+    @StateObject private var appEnvironment = AppEnvironment()
+    
+    init() {
+        Purchases.logLevel = .debug
+        Purchases.configure(withAPIKey: "appl_frvSEfXIYrnGMynyOnMHUmlGqzo")
+    }
+    
     var body: some Scene {
         WindowGroup {
             ContentView()
+                .environmentObject(appEnvironment)
         }
     }
 }
