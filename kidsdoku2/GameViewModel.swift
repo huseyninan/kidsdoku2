@@ -216,7 +216,7 @@ final class GameViewModel: ObservableObject {
     
     var navigationTitle: String {
         if let premadePuzzle = originalPremadePuzzle {
-            return "\(premadePuzzle.displayName) (\(premadePuzzle.difficulty.rawValue))"
+            return "\(premadePuzzle.displayName)"
         } else {
             return "\(config.size) x \(config.size) Puzzle"
         }

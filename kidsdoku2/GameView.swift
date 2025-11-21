@@ -7,6 +7,9 @@ struct GameView: View {
     @StateObject private var soundManager = SoundManager.shared
     @StateObject private var hapticManager = HapticManager.shared
     @Environment(\.dismiss) private var dismiss
+    
+    @State private var elapsedTime: TimeInterval = 0
+    @State private var timer: Timer?
 
     init(config: KidSudokuConfig) {
         self.config = config
@@ -38,6 +41,12 @@ struct GameView: View {
             .navigationBarBackButtonHidden(false)
             .navigationTitle("")
             .navigationBarTitleDisplayMode(.inline)
+            .onAppear {
+                startTimer()
+            }
+            .onDisappear {
+                stopTimer()
+            }
             
             // Confetti overlay
             if viewModel.showCelebration {
@@ -61,31 +70,111 @@ struct GameView: View {
         VStack(spacing: 12) {
             // Top bar with pause button, title, and stars
             HStack {
+                // Puzzle name - kid friendly
                 Text(viewModel.navigationTitle)
-                    .font(.system(size: 20, weight: .semibold, design: .rounded))
-                    .foregroundStyle(Color(.label))
+                    .font(.system(size: 18, weight: .heavy, design: .rounded))
+                    .foregroundStyle(
+                        LinearGradient(
+                            colors: [.purple, .blue],
+                            startPoint: .leading,
+                            endPoint: .trailing
+                        )
+                    )
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 6)
+                    .background(
+                        RoundedRectangle(cornerRadius: 10)
+                            .fill(
+                                LinearGradient(
+                                    colors: [Color.purple.opacity(0.15), Color.blue.opacity(0.15)],
+                                    startPoint: .topLeading,
+                                    endPoint: .bottomTrailing
+                                )
+                            )
+                    )
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 10)
+                            .stroke(Color.purple.opacity(0.3), lineWidth: 2)
+                    )
                 
                 Spacer()
                 
-                // Sound toggle button
+                // Sound toggle button - kid friendly
                 Button(action: {
                     soundManager.toggleSound()
                     hapticManager.trigger(.selection)
                 }) {
-                    Image(systemName: soundManager.isSoundEnabled ? "speaker.wave.2.fill" : "speaker.slash.fill")
-                        .font(.system(size: 20))
-                        .foregroundColor(soundManager.isSoundEnabled ? .blue : .gray)
+                    HStack(spacing: 4) {
+                        Text(soundManager.isSoundEnabled ? "🔊" : "🔇")
+                            .font(.system(size: 22))
+                    }
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 8)
+                    .background(
+                        RoundedRectangle(cornerRadius: 10)
+                            .fill(
+                                soundManager.isSoundEnabled 
+                                    ? LinearGradient(
+                                        colors: [Color.green.opacity(0.3), Color.mint.opacity(0.2)],
+                                        startPoint: .topLeading,
+                                        endPoint: .bottomTrailing
+                                    )
+                                    : LinearGradient(
+                                        colors: [Color.gray.opacity(0.2), Color.gray.opacity(0.15)],
+                                        startPoint: .topLeading,
+                                        endPoint: .bottomTrailing
+                                    )
+                            )
+                    )
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 10)
+                            .stroke(
+                                soundManager.isSoundEnabled ? Color.green.opacity(0.5) : Color.gray.opacity(0.3),
+                                lineWidth: 2
+                            )
+                    )
+                    .shadow(
+                        color: soundManager.isSoundEnabled ? Color.green.opacity(0.2) : Color.clear,
+                        radius: 4,
+                        x: 0,
+                        y: 2
+                    )
                 }
                 .buttonStyle(.plain)
                 .padding(.trailing, 8)
                 
-                HStack(spacing: 4) {
-                    ForEach(0..<3) { _ in
-                        Image(systemName: "star.fill")
-                            .font(.system(size: 24))
-                            .foregroundColor(.yellow)
-                    }
+                // Timer display - kid friendly
+                HStack(spacing: 6) {
+                    Text("⏱️")
+                        .font(.system(size: 24))
+                    Text(formattedTime)
+                        .font(.system(size: 22, weight: .bold, design: .rounded))
+                        .foregroundStyle(
+                            LinearGradient(
+                                colors: [.orange, .pink],
+                                startPoint: .leading,
+                                endPoint: .trailing
+                            )
+                        )
+                        .monospacedDigit()
                 }
+                .padding(.horizontal, 16)
+                .padding(.vertical, 8)
+                .background(
+                    RoundedRectangle(cornerRadius: 12)
+                        .fill(
+                            LinearGradient(
+                                colors: [Color.yellow.opacity(0.3), Color.orange.opacity(0.2)],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            )
+                        )
+                )
+                .overlay(
+                    RoundedRectangle(cornerRadius: 12)
+                        .stroke(Color.orange.opacity(0.5), lineWidth: 2)
+                )
+                .shadow(color: Color.orange.opacity(0.2), radius: 4, x: 0, y: 2)
             }
             
             // Theme title
@@ -259,6 +348,7 @@ struct GameView: View {
         }
         .onChange(of: viewModel.showCelebration) { isShowing in
             if isShowing {
+                stopTimer()
                 hapticManager.trigger(.success)
             }
         }
@@ -312,6 +402,25 @@ struct GameView: View {
         default:
             return 360
         }
+    }
+    
+    private var formattedTime: String {
+        let minutes = Int(elapsedTime) / 60
+        let seconds = Int(elapsedTime) % 60
+        return String(format: "%02d:%02d", minutes, seconds)
+    }
+    
+    private func startTimer() {
+        timer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { _ in
+            if !viewModel.showCelebration {
+                elapsedTime += 1
+            }
+        }
+    }
+    
+    private func stopTimer() {
+        timer?.invalidate()
+        timer = nil
     }
 }
 
