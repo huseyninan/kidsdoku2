@@ -38,21 +38,56 @@ struct GameView: View {
             .navigationBarBackButtonHidden(false)
             .navigationTitle("")
             .navigationBarTitleDisplayMode(.inline)
-            .alert("🎉 You're a Star! 🎉", isPresented: Binding(
-                get: { viewModel.showCelebration },
-                set: { viewModel.showCelebration = $0 }
-            )) {
-                Button("Yay!") {
-                    dismiss()
-                }
-            } message: {
-                Text("You did it! Amazing job solving the puzzle! ⭐️")
-            }
-            
-            // Confetti overlay
+            // Completion Overlay
             if viewModel.showCelebration {
-                ConfettiView()
-                    .allowsHitTesting(false)
+                ZStack {
+                    Color.black.opacity(0.4)
+                        .ignoresSafeArea()
+                    
+                    ConfettiView()
+                        .allowsHitTesting(false)
+                    
+                    VStack(spacing: 24) {
+                        Text("🎉 Puzzle Solved! 🎉")
+                            .font(.system(size: 32, weight: .heavy, design: .rounded))
+                            .foregroundStyle(Color.white)
+                            .shadow(radius: 2)
+                        
+                        HStack(spacing: 8) {
+                            ForEach(0..<3, id: \.self) { index in
+                                Image(systemName: getStarImageName(index: index))
+                                    .font(.system(size: 48))
+                                    .foregroundColor(getStarColor(index: index))
+                                    .shadow(radius: 2)
+                            }
+                        }
+                        
+                        Button(action: {
+                            dismiss()
+                        }) {
+                            Text("Yay!")
+                                .font(.system(size: 24, weight: .bold, design: .rounded))
+                                .foregroundColor(.white)
+                                .padding(.horizontal, 40)
+                                .padding(.vertical, 16)
+                                .background(
+                                    Capsule()
+                                        .fill(Color.green)
+                                        .shadow(radius: 4, y: 4)
+                                )
+                        }
+                    }
+                    .padding(40)
+                    .background(
+                        RoundedRectangle(cornerRadius: 24)
+                            .fill(Color.white.opacity(0.2))
+                            .background(.ultraThinMaterial)
+                            .clipShape(RoundedRectangle(cornerRadius: 24))
+                    )
+                    .padding(.horizontal, 20)
+                }
+                .transition(.opacity)
+                .zIndex(100)
             }
         }
     }
@@ -80,10 +115,10 @@ struct GameView: View {
                 .padding(.trailing, 8)
                 
                 HStack(spacing: 4) {
-                    ForEach(0..<3) { _ in
-                        Image(systemName: "star.fill")
+                    ForEach(0..<3, id: \.self) { index in
+                        Image(systemName: getStarImageName(index: index))
                             .font(.system(size: 24))
-                            .foregroundColor(.yellow)
+                            .foregroundColor(getStarColor(index: index))
                     }
                 }
             }
@@ -311,6 +346,26 @@ struct GameView: View {
             return 360
         default:
             return 360
+        }
+    }
+    
+    private func getStarImageName(index: Int) -> String {
+        let starValue = (index + 1) * 2
+        if viewModel.score >= starValue {
+            return "star.fill"
+        } else if viewModel.score == starValue - 1 {
+            return "star.leadinghalf.filled"
+        } else {
+            return "star"
+        }
+    }
+    
+    private func getStarColor(index: Int) -> Color {
+        let starValue = (index + 1) * 2
+        if viewModel.score >= starValue - 1 {
+            return .yellow
+        } else {
+            return .gray
         }
     }
 }

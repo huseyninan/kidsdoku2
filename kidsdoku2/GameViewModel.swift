@@ -10,6 +10,7 @@ final class GameViewModel: ObservableObject {
     @Published var showCelebration = false
     @Published var highlightedValue: Int?
     @Published var selectedPaletteSymbol: Int?
+    @Published var score: Int = 6
 
     let config: KidSudokuConfig
     private let isPremadePuzzle: Bool
@@ -23,6 +24,7 @@ final class GameViewModel: ObservableObject {
         self.originalPremadePuzzle = nil
         self.puzzle = KidSudokuGenerator.generatePuzzle(config: config)
         self.highlightedValue = nil
+        self.score = 6
     }
     
     init(config: KidSudokuConfig, premadePuzzle: PremadePuzzle) {
@@ -31,6 +33,7 @@ final class GameViewModel: ObservableObject {
         self.originalPremadePuzzle = premadePuzzle
         self.puzzle = KidSudokuPuzzle(from: premadePuzzle)
         self.highlightedValue = nil
+        self.score = 6
     }
 
     func startNewPuzzle() {
@@ -45,6 +48,7 @@ final class GameViewModel: ObservableObject {
         highlightedValue = nil
         selectedPaletteSymbol = nil
         moveHistory.removeAll()
+        score = 6
     }
 
     func select(position: KidSudokuPosition) {
@@ -75,6 +79,9 @@ final class GameViewModel: ObservableObject {
                 let symbol = config.symbols[paletteSymbol]
                 message = KidSudokuMessage(text: "That \(symbol) is already there!", type: .warning)
                 soundManager.play(.incorrectPlacement, volume: 0.5)
+                if score > 0 {
+                    score -= 1
+                }
             }
             return
         }
@@ -142,6 +149,9 @@ final class GameViewModel: ObservableObject {
             let symbol = config.symbols[symbolIndex]
             message = KidSudokuMessage(text: "That \(symbol) is already there!", type: .warning)
             soundManager.play(.incorrectPlacement, volume: 0.5)
+            if score > 0 {
+                score -= 1
+            }
         }
     }
 
@@ -233,6 +243,9 @@ final class GameViewModel: ObservableObject {
             selectedPosition = randomCell.position
             message = KidSudokuMessage(text: "Here's a hint! ✨", type: .info)
             soundManager.play(.hint, volume: 0.6)
+            if score > 0 {
+                score -= 1
+            }
             
             // Check if this completes the puzzle
             checkForCompletion()
