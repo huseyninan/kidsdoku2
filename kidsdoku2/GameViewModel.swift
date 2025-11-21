@@ -10,6 +10,8 @@ final class GameViewModel: ObservableObject {
     @Published var showCelebration = false
     @Published var highlightedValue: Int?
     @Published var selectedPaletteSymbol: Int?
+    @Published private(set) var mistakeCount = 0
+    @Published private(set) var hintCount = 0
 
     let config: KidSudokuConfig
     private let isPremadePuzzle: Bool
@@ -45,6 +47,8 @@ final class GameViewModel: ObservableObject {
         highlightedValue = nil
         selectedPaletteSymbol = nil
         moveHistory.removeAll()
+        mistakeCount = 0
+        hintCount = 0
     }
 
     func select(position: KidSudokuPosition) {
@@ -72,6 +76,7 @@ final class GameViewModel: ObservableObject {
                 soundManager.play(.correctPlacement, volume: 0.6)
                 checkForCompletion()
             } else {
+                mistakeCount += 1
                 let symbol = config.symbols[paletteSymbol]
                 message = KidSudokuMessage(text: "That \(symbol) is already there!", type: .warning)
                 soundManager.play(.incorrectPlacement, volume: 0.5)
@@ -139,6 +144,7 @@ final class GameViewModel: ObservableObject {
             soundManager.play(.correctPlacement, volume: 0.6)
             checkForCompletion()
         } else {
+            mistakeCount += 1
             let symbol = config.symbols[symbolIndex]
             message = KidSudokuMessage(text: "That \(symbol) is already there!", type: .warning)
             soundManager.play(.incorrectPlacement, volume: 0.5)
@@ -226,6 +232,7 @@ final class GameViewModel: ObservableObject {
         
         // Pick a random empty cell
         if let randomCell = emptyCells.randomElement() {
+            hintCount += 1
             moveHistory.append((position: randomCell.position, oldValue: randomCell.value))
             objectWillChange.send()
             puzzle.updateCell(at: randomCell.position, with: randomCell.solution)
@@ -254,6 +261,28 @@ final class GameViewModel: ObservableObject {
     
     var canUndo: Bool {
         return !moveHistory.isEmpty
+    }
+    
+    /// Calculate star rating based on mistakes and hints (0 to 3 stars with half-star increments)
+    func calculateStars() -> Double {
+        let totalPenalties = mistakeCount + hintCount
+        
+        switch totalPenalties {
+        case 0:
+            return 3.0  // Perfect!
+        case 1...2:
+            return 2.5
+        case 3...4:
+            return 2.0
+        case 5...6:
+            return 1.5
+        case 7...8:
+            return 1.0
+        case 9...10:
+            return 0.5
+        default:
+            return 0.0  // 11+ penalties
+        }
     }
 }
 

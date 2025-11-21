@@ -38,21 +38,21 @@ struct GameView: View {
             .navigationBarBackButtonHidden(false)
             .navigationTitle("")
             .navigationBarTitleDisplayMode(.inline)
-            .alert("🎉 You're a Star! 🎉", isPresented: Binding(
-                get: { viewModel.showCelebration },
-                set: { viewModel.showCelebration = $0 }
-            )) {
-                Button("Yay!") {
-                    dismiss()
-                }
-            } message: {
-                Text("You did it! Amazing job solving the puzzle! ⭐️")
-            }
             
             // Confetti overlay
             if viewModel.showCelebration {
                 ConfettiView()
                     .allowsHitTesting(false)
+                
+                // Custom celebration overlay
+                CelebrationOverlay(
+                    rating: viewModel.calculateStars(),
+                    mistakeCount: viewModel.mistakeCount,
+                    hintCount: viewModel.hintCount,
+                    onDismiss: {
+                        dismiss()
+                    }
+                )
             }
         }
     }
@@ -507,6 +507,177 @@ private struct BoardGridView: View {
                 animate = false
             }
         }
+    }
+}
+
+private struct CelebrationOverlay: View {
+    let rating: Double
+    let mistakeCount: Int
+    let hintCount: Int
+    let onDismiss: () -> Void
+    
+    var body: some View {
+        ZStack {
+            // Blurred background
+            Color.black.opacity(0.3)
+                .ignoresSafeArea()
+                .blur(radius: 2)
+            
+            // Liquid glass card
+            VStack(spacing: 20) {
+                Text("🎉 You're a Star! 🎉")
+                    .font(.system(size: 28, weight: .bold, design: .rounded))
+                    .multilineTextAlignment(.center)
+                    .foregroundStyle(
+                        LinearGradient(
+                            colors: [.blue, .purple],
+                            startPoint: .leading,
+                            endPoint: .trailing
+                        )
+                    )
+                
+                Text("You did it! Amazing job\nsolving the puzzle!")
+                    .font(.system(size: 18, weight: .medium, design: .rounded))
+                    .multilineTextAlignment(.center)
+                    .foregroundColor(.primary.opacity(0.8))
+                
+                // Star rating with glow
+                HStack(spacing: 4) {
+                    StarRatingView(rating: rating)
+                }
+                .padding(.vertical, 8)
+                .shadow(color: .yellow.opacity(0.5), radius: 10)
+                
+                // Stats
+                let penalties = mistakeCount + hintCount
+                if penalties == 0 {
+                    Text("Perfect game! ⭐️")
+                        .font(.system(size: 16, weight: .semibold, design: .rounded))
+                        .foregroundStyle(
+                            LinearGradient(
+                                colors: [.green, .mint],
+                                startPoint: .leading,
+                                endPoint: .trailing
+                            )
+                        )
+                } else {
+                    Text("\(mistakeCount) mistakes • \(hintCount) hints")
+                        .font(.system(size: 16, weight: .medium, design: .rounded))
+                        .foregroundColor(.primary.opacity(0.7))
+                }
+                
+                // Glass button
+                Button(action: onDismiss) {
+                    Text("Yay!")
+                        .font(.system(size: 18, weight: .semibold, design: .rounded))
+                        .foregroundColor(.white)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 16)
+                        .background(
+                            ZStack {
+                                RoundedRectangle(cornerRadius: 16)
+                                    .fill(
+                                        LinearGradient(
+                                            colors: [
+                                                Color.blue.opacity(0.8),
+                                                Color.purple.opacity(0.6)
+                                            ],
+                                            startPoint: .topLeading,
+                                            endPoint: .bottomTrailing
+                                        )
+                                    )
+                                
+                                RoundedRectangle(cornerRadius: 16)
+                                    .stroke(
+                                        LinearGradient(
+                                            colors: [
+                                                Color.white.opacity(0.5),
+                                                Color.white.opacity(0.2)
+                                            ],
+                                            startPoint: .topLeading,
+                                            endPoint: .bottomTrailing
+                                        ),
+                                        lineWidth: 1
+                                    )
+                            }
+                        )
+                        .shadow(color: .blue.opacity(0.4), radius: 15, x: 0, y: 8)
+                }
+                .buttonStyle(.plain)
+            }
+            .padding(32)
+            .background(
+                ZStack {
+                    // Glassmorphic background
+                    RoundedRectangle(cornerRadius: 28)
+                        .fill(.ultraThinMaterial)
+                        .background(
+                            RoundedRectangle(cornerRadius: 28)
+                                .fill(
+                                    LinearGradient(
+                                        colors: [
+                                            Color.white.opacity(0.25),
+                                            Color.white.opacity(0.1)
+                                        ],
+                                        startPoint: .topLeading,
+                                        endPoint: .bottomTrailing
+                                    )
+                                )
+                        )
+                    
+                    // Border with gradient
+                    RoundedRectangle(cornerRadius: 28)
+                        .stroke(
+                            LinearGradient(
+                                colors: [
+                                    Color.white.opacity(0.6),
+                                    Color.white.opacity(0.2),
+                                    Color.white.opacity(0.1)
+                                ],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            ),
+                            lineWidth: 1.5
+                        )
+                }
+            )
+            .shadow(color: .black.opacity(0.2), radius: 30, x: 0, y: 15)
+            .shadow(color: .blue.opacity(0.2), radius: 20, x: 0, y: 10)
+            .padding(.horizontal, 40)
+        }
+    }
+}
+
+private struct StarRatingView: View {
+    let rating: Double
+    
+    var body: some View {
+        HStack(spacing: 4) {
+            ForEach(0..<3, id: \.self) { index in
+                starView(for: index)
+            }
+        }
+    }
+    
+    private func starView(for index: Int) -> some View {
+        let starValue = rating - Double(index)
+        
+        return Group {
+            if starValue >= 1.0 {
+                // Full star
+                Image(systemName: "star.fill")
+                    .foregroundColor(.yellow)
+            } else if starValue >= 0.5 {
+                // Half star
+                Image(systemName: "star.leadinghalf.filled")
+                    .foregroundColor(.yellow)
+            } else {
+                // Empty star
+                Image(systemName: "star")
+                    .foregroundColor(.gray)
+            }
+        }
+        .font(.system(size: 40))
     }
 }
 
