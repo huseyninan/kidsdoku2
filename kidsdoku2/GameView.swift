@@ -23,6 +23,9 @@ struct GameView: View {
 
     var body: some View {
         ZStack {
+            // Storybook background
+            StorybookBackground()
+            
             VStack(spacing: 20) {
                 header
 
@@ -37,7 +40,6 @@ struct GameView: View {
             .padding(.horizontal, 20)
             .padding(.top, 16)
             .padding(.bottom, 28)
-            .background(Color(.systemGroupedBackground).ignoresSafeArea())
             .navigationBarBackButtonHidden(false)
             .navigationTitle("")
             .navigationBarTitleDisplayMode(.inline)
@@ -70,80 +72,70 @@ struct GameView: View {
         VStack(spacing: 12) {
             // Top bar with pause button, title, and stars
             HStack {
-                // Puzzle name - kid friendly
-                Text(viewModel.navigationTitle)
-                    .font(.system(size: 18, weight: .heavy, design: .rounded))
-                    .foregroundStyle(
-                        LinearGradient(
-                            colors: [.purple, .blue],
-                            startPoint: .leading,
-                            endPoint: .trailing
+                // Puzzle name - storybook style
+                HStack(spacing: 6) {
+                    Text("📖")
+                        .font(.system(size: 20))
+                    Text(viewModel.navigationTitle)
+                        .font(.system(size: 18, weight: .heavy, design: .rounded))
+                        .foregroundStyle(
+                            LinearGradient(
+                                colors: [Color(red: 0.8, green: 0.4, blue: 0.9), Color(red: 0.4, green: 0.6, blue: 1.0)],
+                                startPoint: .leading,
+                                endPoint: .trailing
+                            )
                         )
-                    )
-                    .padding(.horizontal, 12)
-                    .padding(.vertical, 6)
-                    .background(
-                        RoundedRectangle(cornerRadius: 10)
-                            .fill(
+                }
+                .padding(.horizontal, 14)
+                .padding(.vertical, 8)
+                .background(
+                    ZStack {
+                        RoundedRectangle(cornerRadius: 16)
+                            .fill(Color.white)
+                            .shadow(color: Color.purple.opacity(0.2), radius: 4, x: 0, y: 2)
+                        
+                        RoundedRectangle(cornerRadius: 16)
+                            .stroke(
                                 LinearGradient(
-                                    colors: [Color.purple.opacity(0.15), Color.blue.opacity(0.15)],
+                                    colors: [Color.purple.opacity(0.4), Color.blue.opacity(0.4)],
                                     startPoint: .topLeading,
                                     endPoint: .bottomTrailing
-                                )
+                                ),
+                                lineWidth: 2.5
                             )
-                    )
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 10)
-                            .stroke(Color.purple.opacity(0.3), lineWidth: 2)
-                    )
+                    }
+                )
                 
                 Spacer()
                 
-                // Sound toggle button - kid friendly
+                // Sound toggle button - storybook style
                 Button(action: {
                     soundManager.toggleSound()
                     hapticManager.trigger(.selection)
                 }) {
-                    HStack(spacing: 4) {
-                        Text(soundManager.isSoundEnabled ? "🔊" : "🔇")
-                            .font(.system(size: 22))
-                    }
-                    .padding(.horizontal, 12)
-                    .padding(.vertical, 8)
-                    .background(
-                        RoundedRectangle(cornerRadius: 10)
-                            .fill(
-                                soundManager.isSoundEnabled 
-                                    ? LinearGradient(
-                                        colors: [Color.green.opacity(0.3), Color.mint.opacity(0.2)],
-                                        startPoint: .topLeading,
-                                        endPoint: .bottomTrailing
+                    Text(soundManager.isSoundEnabled ? "🔊" : "🔇")
+                        .font(.system(size: 24))
+                        .padding(10)
+                        .background(
+                            ZStack {
+                                Circle()
+                                    .fill(Color.white)
+                                    .shadow(color: soundManager.isSoundEnabled ? Color.green.opacity(0.3) : Color.gray.opacity(0.2), radius: 4, x: 0, y: 2)
+                                
+                                Circle()
+                                    .stroke(
+                                        soundManager.isSoundEnabled 
+                                            ? Color.green.opacity(0.6)
+                                            : Color.gray.opacity(0.4),
+                                        lineWidth: 2.5
                                     )
-                                    : LinearGradient(
-                                        colors: [Color.gray.opacity(0.2), Color.gray.opacity(0.15)],
-                                        startPoint: .topLeading,
-                                        endPoint: .bottomTrailing
-                                    )
-                            )
-                    )
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 10)
-                            .stroke(
-                                soundManager.isSoundEnabled ? Color.green.opacity(0.5) : Color.gray.opacity(0.3),
-                                lineWidth: 2
-                            )
-                    )
-                    .shadow(
-                        color: soundManager.isSoundEnabled ? Color.green.opacity(0.2) : Color.clear,
-                        radius: 4,
-                        x: 0,
-                        y: 2
-                    )
+                            }
+                        )
                 }
                 .buttonStyle(.plain)
                 .padding(.trailing, 8)
                 
-                // Timer display - kid friendly
+                // Timer display - storybook style
                 HStack(spacing: 6) {
                     Text("⏱️")
                         .font(.system(size: 24))
@@ -151,7 +143,7 @@ struct GameView: View {
                         .font(.system(size: 22, weight: .bold, design: .rounded))
                         .foregroundStyle(
                             LinearGradient(
-                                colors: [.orange, .pink],
+                                colors: [Color(red: 1.0, green: 0.6, blue: 0.2), Color(red: 1.0, green: 0.4, blue: 0.6)],
                                 startPoint: .leading,
                                 endPoint: .trailing
                             )
@@ -159,51 +151,88 @@ struct GameView: View {
                         .monospacedDigit()
                 }
                 .padding(.horizontal, 16)
-                .padding(.vertical, 8)
+                .padding(.vertical, 10)
                 .background(
-                    RoundedRectangle(cornerRadius: 12)
-                        .fill(
-                            LinearGradient(
-                                colors: [Color.yellow.opacity(0.3), Color.orange.opacity(0.2)],
-                                startPoint: .topLeading,
-                                endPoint: .bottomTrailing
+                    ZStack {
+                        RoundedRectangle(cornerRadius: 16)
+                            .fill(Color.white)
+                            .shadow(color: Color.orange.opacity(0.2), radius: 4, x: 0, y: 2)
+                        
+                        RoundedRectangle(cornerRadius: 16)
+                            .stroke(
+                                LinearGradient(
+                                    colors: [Color.orange.opacity(0.5), Color.pink.opacity(0.5)],
+                                    startPoint: .topLeading,
+                                    endPoint: .bottomTrailing
+                                ),
+                                lineWidth: 2.5
                             )
-                        )
+                    }
                 )
-                .overlay(
-                    RoundedRectangle(cornerRadius: 12)
-                        .stroke(Color.orange.opacity(0.5), lineWidth: 2)
-                )
-                .shadow(color: Color.orange.opacity(0.2), radius: 4, x: 0, y: 2)
             }
             
-            // Theme title
-            Text(titleText)
-                .font(.system(size: 32, weight: .heavy, design: .rounded))
-                .foregroundStyle(Color.green)
+            // Theme title - storybook style
+            HStack(spacing: 8) {
+                Text("🌟")
+                    .font(.system(size: 28))
+                Text(titleText)
+                    .font(.system(size: 32, weight: .heavy, design: .rounded))
+                    .foregroundStyle(
+                        LinearGradient(
+                            colors: [Color(red: 0.2, green: 0.8, blue: 0.4), Color(red: 0.4, green: 0.9, blue: 0.6)],
+                            startPoint: .leading,
+                            endPoint: .trailing
+                        )
+                    )
+                    .shadow(color: Color.green.opacity(0.3), radius: 2, x: 0, y: 1)
+                Text("🌟")
+                    .font(.system(size: 28))
+            }
             
             // Progress text above bar
             Text(progressText)
                 .font(.system(size: 16, weight: .medium, design: .rounded))
                 .foregroundStyle(Color(.secondaryLabel))
 
-            // Progress bar with gradient
+            // Progress bar - storybook style
             GeometryReader { geometry in
                 ZStack(alignment: .leading) {
-                    RoundedRectangle(cornerRadius: 8)
-                        .fill(Color(.systemGray5))
-                        .frame(height: 12)
+                    // Background track
+                    RoundedRectangle(cornerRadius: 12)
+                        .fill(Color.white)
+                        .frame(height: 16)
+                        .shadow(color: Color.black.opacity(0.08), radius: 2, x: 0, y: 1)
                     
-                    LinearGradient(
-                        colors: [Color.orange, Color.yellow, Color.green.opacity(0.4)],
-                        startPoint: .leading,
-                        endPoint: .trailing
-                    )
-                    .frame(width: geometry.size.width * progressRatio, height: 12)
-                    .cornerRadius(8)
+                    RoundedRectangle(cornerRadius: 12)
+                        .stroke(Color.gray.opacity(0.3), lineWidth: 2)
+                        .frame(height: 16)
+                    
+                    // Progress fill with magical gradient
+                    ZStack(alignment: .trailing) {
+                        LinearGradient(
+                            colors: [
+                                Color(red: 1.0, green: 0.6, blue: 0.2),
+                                Color(red: 1.0, green: 0.9, blue: 0.3),
+                                Color(red: 0.4, green: 0.9, blue: 0.5)
+                            ],
+                            startPoint: .leading,
+                            endPoint: .trailing
+                        )
+                        .frame(width: max(0, geometry.size.width * progressRatio), height: 12)
+                        .cornerRadius(10)
+                        .shadow(color: Color.yellow.opacity(0.4), radius: 3, x: 0, y: 0)
+                        
+                        // Sparkle at the end
+                        if progressRatio > 0.05 {
+                            Text("✨")
+                                .font(.system(size: 16))
+                                .offset(x: -4)
+                        }
+                    }
+                    .padding(.leading, 2)
                 }
             }
-            .frame(height: 12)
+            .frame(height: 16)
         }
     }
 
@@ -231,21 +260,59 @@ struct GameView: View {
     }
 
     private var paletteSection: some View {
-        HStack(spacing: 10) {
-            ForEach(Array(config.symbols.enumerated()).filter { entry in
-                guard let firstRow = viewModel.puzzle.solution.first else { return true }
-                let symbolIndicesInFirstRow = Set(firstRow.map { $0 })
-                return symbolIndicesInFirstRow.contains(entry.offset)
-            }, id: \.offset) { entry in
-                paletteButton(symbolIndex: entry.offset, symbol: entry.element)
+        VStack(spacing: 8) {
+            // Decorative label
+            HStack(spacing: 6) {
+                Text("🎨")
+                    .font(.system(size: 18))
+                Text("Pick a Friend!")
+                    .font(.system(size: 16, weight: .bold, design: .rounded))
+                    .foregroundStyle(
+                        LinearGradient(
+                            colors: [Color.purple, Color.blue],
+                            startPoint: .leading,
+                            endPoint: .trailing
+                        )
+                    )
+                Text("🎨")
+                    .font(.system(size: 18))
             }
+            .padding(.top, 8)
+            
+            HStack(spacing: 10) {
+                ForEach(Array(config.symbols.enumerated()).filter { entry in
+                    guard let firstRow = viewModel.puzzle.solution.first else { return true }
+                    let symbolIndicesInFirstRow = Set(firstRow.map { $0 })
+                    return symbolIndicesInFirstRow.contains(entry.offset)
+                }, id: \.offset) { entry in
+                    paletteButton(symbolIndex: entry.offset, symbol: entry.element)
+                }
+            }
+            .padding(.bottom, 8)
         }
         .frame(maxWidth: .infinity)
-        .padding(.vertical, 16)
+        .padding(.vertical, 12)
         .padding(.horizontal, 10)
         .background(
-            RoundedRectangle(cornerRadius: 20, style: .continuous)
-                .fill(Color.green.opacity(0.15))
+            ZStack {
+                RoundedRectangle(cornerRadius: 24, style: .continuous)
+                    .fill(Color.white)
+                    .shadow(color: Color.green.opacity(0.15), radius: 8, x: 0, y: 3)
+                
+                RoundedRectangle(cornerRadius: 24, style: .continuous)
+                    .stroke(
+                        LinearGradient(
+                            colors: [
+                                Color.green.opacity(0.4),
+                                Color.mint.opacity(0.4),
+                                Color.cyan.opacity(0.3)
+                            ],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        ),
+                        lineWidth: 2.5
+                    )
+            }
         )
     }
 
@@ -258,90 +325,182 @@ struct GameView: View {
             }
             hapticManager.trigger(.selection)
         } label: {
-            Image(symbol)
-                .resizable()
-                .scaledToFit()
-                .frame(width: 50.0, height: 50.0)
-                .background(
+            ZStack {
+                // Magical glow for selected
+                if isSelected {
                     Circle()
-                        .fill(isSelected ? Color.accentColor.opacity(0.25) : Color(.systemGray6))
-                )
-                .overlay(
-                    Circle()
-                        .stroke(isSelected ? Color.accentColor : Color.clear, lineWidth: 3)
-                )
+                        .fill(
+                            RadialGradient(
+                                colors: [
+                                    Color.yellow.opacity(0.4),
+                                    Color.orange.opacity(0.2),
+                                    Color.clear
+                                ],
+                                center: .center,
+                                startRadius: 10,
+                                endRadius: 35
+                            )
+                        )
+                        .frame(width: 60, height: 60)
+                }
+                
+                Image(symbol)
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 50.0, height: 50.0)
+                    .background(
+                        Circle()
+                            .fill(
+                                isSelected 
+                                    ? LinearGradient(
+                                        colors: [Color.yellow.opacity(0.3), Color.orange.opacity(0.2)],
+                                        startPoint: .topLeading,
+                                        endPoint: .bottomTrailing
+                                    )
+                                    : LinearGradient(
+                                        colors: [Color.white, Color(.systemGray6).opacity(0.5)],
+                                        startPoint: .topLeading,
+                                        endPoint: .bottomTrailing
+                                    )
+                            )
+                            .shadow(color: isSelected ? Color.yellow.opacity(0.3) : Color.black.opacity(0.1), radius: isSelected ? 6 : 3, x: 0, y: 2)
+                    )
+                    .overlay(
+                        Circle()
+                            .stroke(
+                                isSelected 
+                                    ? LinearGradient(
+                                        colors: [Color.yellow, Color.orange],
+                                        startPoint: .topLeading,
+                                        endPoint: .bottomTrailing
+                                    )
+                                    : LinearGradient(
+                                        colors: [Color.gray.opacity(0.3)],
+                                        startPoint: .topLeading,
+                                        endPoint: .bottomTrailing
+                                    ),
+                                lineWidth: isSelected ? 3 : 2
+                            )
+                    )
+                    .scaleEffect(isSelected ? 1.1 : 1.0)
+            }
         }
         .buttonStyle(.plain)
     }
 
     private var actionButtons: some View {
         HStack(spacing: 12) {
-            // Undo button
+            // Undo button - storybook style
             Button(action: {
                 withAnimation(.easeInOut(duration: 0.2)) {
                     viewModel.undo()
                 }
                 hapticManager.trigger(.light)
             }) {
-                HStack(spacing: 8) {
-                    Image(systemName: "arrow.uturn.backward")
-                        .font(.system(size: 18, weight: .semibold))
+                VStack(spacing: 4) {
+                    Image(systemName: "arrow.uturn.backward.circle.fill")
+                        .font(.system(size: 28, weight: .semibold))
                     Text("Undo")
-                        .font(.system(size: 16, weight: .semibold, design: .rounded))
+                        .font(.system(size: 14, weight: .bold, design: .rounded))
                 }
-                .foregroundColor(viewModel.canUndo ? Color(.label) : Color(.systemGray3))
+                .foregroundStyle(
+                    viewModel.canUndo 
+                        ? LinearGradient(
+                            colors: [Color.blue, Color.cyan],
+                            startPoint: .top,
+                            endPoint: .bottom
+                        )
+                        : LinearGradient(
+                            colors: [Color.gray.opacity(0.4)],
+                            startPoint: .top,
+                            endPoint: .bottom
+                        )
+                )
                 .frame(maxWidth: .infinity)
-                .padding(.vertical, 14)
+                .padding(.vertical, 12)
                 .background(
-                    RoundedRectangle(cornerRadius: 12)
-                        .fill(Color(.systemGray5))
+                    ZStack {
+                        RoundedRectangle(cornerRadius: 16)
+                            .fill(Color.white)
+                            .shadow(color: viewModel.canUndo ? Color.blue.opacity(0.2) : Color.gray.opacity(0.1), radius: 4, x: 0, y: 2)
+                        
+                        RoundedRectangle(cornerRadius: 16)
+                            .stroke(
+                                viewModel.canUndo ? Color.blue.opacity(0.4) : Color.gray.opacity(0.3),
+                                lineWidth: 2
+                            )
+                    }
                 )
             }
             .buttonStyle(.plain)
             .disabled(!viewModel.canUndo)
             
-            // Erase button
+            // Erase button - storybook style
             Button(action: {
                 withAnimation(.easeInOut(duration: 0.2)) {
                     viewModel.removeValue()
                 }
                 hapticManager.trigger(.light)
             }) {
-                HStack(spacing: 8) {
-                    Image(systemName: "xmark.circle")
-                        .font(.system(size: 18, weight: .semibold))
+                VStack(spacing: 4) {
+                    Image(systemName: "xmark.circle.fill")
+                        .font(.system(size: 28, weight: .semibold))
                     Text("Erase")
-                        .font(.system(size: 16, weight: .semibold, design: .rounded))
+                        .font(.system(size: 14, weight: .bold, design: .rounded))
                 }
-                .foregroundColor(Color(.label))
+                .foregroundStyle(
+                    LinearGradient(
+                        colors: [Color.red, Color.orange],
+                        startPoint: .top,
+                        endPoint: .bottom
+                    )
+                )
                 .frame(maxWidth: .infinity)
-                .padding(.vertical, 14)
+                .padding(.vertical, 12)
                 .background(
-                    RoundedRectangle(cornerRadius: 12)
-                        .fill(Color(.systemGray5))
+                    ZStack {
+                        RoundedRectangle(cornerRadius: 16)
+                            .fill(Color.white)
+                            .shadow(color: Color.red.opacity(0.2), radius: 4, x: 0, y: 2)
+                        
+                        RoundedRectangle(cornerRadius: 16)
+                            .stroke(Color.red.opacity(0.4), lineWidth: 2)
+                    }
                 )
             }
             .buttonStyle(.plain)
             
-            // Hint button
+            // Hint button - storybook style
             Button(action: {
                 withAnimation(.easeInOut(duration: 0.2)) {
                     viewModel.provideHint()
                 }
                 hapticManager.trigger(.medium)
             }) {
-                HStack(spacing: 8) {
-                    Image(systemName: "lightbulb")
-                        .font(.system(size: 18, weight: .semibold))
+                VStack(spacing: 4) {
+                    Image(systemName: "lightbulb.fill")
+                        .font(.system(size: 28, weight: .semibold))
                     Text("Hint")
-                        .font(.system(size: 16, weight: .semibold, design: .rounded))
+                        .font(.system(size: 14, weight: .bold, design: .rounded))
                 }
-                .foregroundColor(Color(.label))
+                .foregroundStyle(
+                    LinearGradient(
+                        colors: [Color.yellow, Color.orange],
+                        startPoint: .top,
+                        endPoint: .bottom
+                    )
+                )
                 .frame(maxWidth: .infinity)
-                .padding(.vertical, 14)
+                .padding(.vertical, 12)
                 .background(
-                    RoundedRectangle(cornerRadius: 12)
-                        .fill(Color(.systemGray5))
+                    ZStack {
+                        RoundedRectangle(cornerRadius: 16)
+                            .fill(Color.white)
+                            .shadow(color: Color.yellow.opacity(0.3), radius: 4, x: 0, y: 2)
+                        
+                        RoundedRectangle(cornerRadius: 16)
+                            .stroke(Color.yellow.opacity(0.5), lineWidth: 2)
+                    }
                 )
             }
             .buttonStyle(.plain)
@@ -437,9 +596,32 @@ private struct BoardGridView: View {
             let cellSize = side / CGFloat(config.size)
 
             ZStack {
+                // Storybook board background with decorative shadow
                 RoundedRectangle(cornerRadius: 24, style: .continuous)
-                    .fill(Color.white)
+                    .fill(
+                        LinearGradient(
+                            colors: [Color.white, Color(red: 0.98, green: 0.98, blue: 1.0)],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
+                    )
+                    .shadow(color: Color.purple.opacity(0.15), radius: 12, x: 0, y: 6)
                     .shadow(color: Color.black.opacity(0.08), radius: 8, x: 0, y: 4)
+                
+                // Decorative border
+                RoundedRectangle(cornerRadius: 24, style: .continuous)
+                    .stroke(
+                        LinearGradient(
+                            colors: [
+                                Color.purple.opacity(0.2),
+                                Color.blue.opacity(0.2),
+                                Color.green.opacity(0.2)
+                            ],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        ),
+                        lineWidth: 3
+                    )
 
                 VStack(spacing: 0) {
                     ForEach(0..<config.size, id: \.self) { row in
@@ -498,10 +680,10 @@ private struct BoardGridView: View {
 
     private func cellBackground(for cell: KidSudokuCell, isSelected: Bool) -> Color {
         if cell.isFixed {
-            return Color(.systemGray6)
+            return Color(red: 0.97, green: 0.97, blue: 0.99)
         }
         if isSelected {
-            return Color.accentColor.opacity(0.25)
+            return Color(red: 1.0, green: 0.95, blue: 0.7).opacity(0.6)
         }
         return Color.white
     }
@@ -625,30 +807,57 @@ private struct CelebrationOverlay: View {
     let hintCount: Int
     let onDismiss: () -> Void
     
+    @State private var celebrationScale: CGFloat = 0.8
+    @State private var celebrationOpacity: Double = 0
+    
     var body: some View {
         ZStack {
-            // Blurred background
-            Color.black.opacity(0.3)
+            // Magical storybook background
+            Color(red: 0.3, green: 0.2, blue: 0.5)
+                .opacity(0.4)
                 .ignoresSafeArea()
-                .blur(radius: 2)
+                .blur(radius: 3)
             
-            // Liquid glass card
+            // Storybook celebration card
             VStack(spacing: 20) {
-                Text("🎉 You're a Star! 🎉")
-                    .font(.system(size: 28, weight: .bold, design: .rounded))
+                // Magical title with decorations
+                VStack(spacing: 8) {
+                    HStack(spacing: 8) {
+                        Text("✨")
+                            .font(.system(size: 32))
+                        Text("🌟")
+                            .font(.system(size: 32))
+                        Text("✨")
+                            .font(.system(size: 32))
+                    }
+                    
+                    Text("You're a Star!")
+                        .font(.system(size: 32, weight: .heavy, design: .rounded))
+                        .multilineTextAlignment(.center)
+                        .foregroundStyle(
+                            LinearGradient(
+                                colors: [
+                                    Color(red: 1.0, green: 0.8, blue: 0.2),
+                                    Color(red: 1.0, green: 0.6, blue: 0.3),
+                                    Color(red: 1.0, green: 0.4, blue: 0.6)
+                                ],
+                                startPoint: .leading,
+                                endPoint: .trailing
+                            )
+                        )
+                        .shadow(color: Color.yellow.opacity(0.5), radius: 8, x: 0, y: 2)
+                }
+                
+                Text("You did it! Amazing job\nsolving the puzzle!")
+                    .font(.system(size: 20, weight: .semibold, design: .rounded))
                     .multilineTextAlignment(.center)
                     .foregroundStyle(
                         LinearGradient(
-                            colors: [.blue, .purple],
+                            colors: [Color.purple, Color.blue],
                             startPoint: .leading,
                             endPoint: .trailing
                         )
                     )
-                
-                Text("You did it! Amazing job\nsolving the puzzle!")
-                    .font(.system(size: 18, weight: .medium, design: .rounded))
-                    .multilineTextAlignment(.center)
-                    .foregroundColor(.primary.opacity(0.8))
                 
                 // Star rating with glow
                 HStack(spacing: 4) {
@@ -675,84 +884,89 @@ private struct CelebrationOverlay: View {
                         .foregroundColor(.primary.opacity(0.7))
                 }
                 
-                // Glass button
+                // Magical storybook button
                 Button(action: onDismiss) {
-                    Text("Yay!")
-                        .font(.system(size: 18, weight: .semibold, design: .rounded))
-                        .foregroundColor(.white)
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 16)
-                        .background(
-                            ZStack {
-                                RoundedRectangle(cornerRadius: 16)
-                                    .fill(
-                                        LinearGradient(
-                                            colors: [
-                                                Color.blue.opacity(0.8),
-                                                Color.purple.opacity(0.6)
-                                            ],
-                                            startPoint: .topLeading,
-                                            endPoint: .bottomTrailing
-                                        )
-                                    )
-                                
-                                RoundedRectangle(cornerRadius: 16)
-                                    .stroke(
-                                        LinearGradient(
-                                            colors: [
-                                                Color.white.opacity(0.5),
-                                                Color.white.opacity(0.2)
-                                            ],
-                                            startPoint: .topLeading,
-                                            endPoint: .bottomTrailing
-                                        ),
-                                        lineWidth: 1
-                                    )
-                            }
-                        )
-                        .shadow(color: .blue.opacity(0.4), radius: 15, x: 0, y: 8)
-                }
-                .buttonStyle(.plain)
-            }
-            .padding(32)
-            .background(
-                ZStack {
-                    // Glassmorphic background
-                    RoundedRectangle(cornerRadius: 28)
-                        .fill(.ultraThinMaterial)
-                        .background(
-                            RoundedRectangle(cornerRadius: 28)
+                    HStack(spacing: 8) {
+                        Text("🎊")
+                            .font(.system(size: 24))
+                        Text("Hooray!")
+                            .font(.system(size: 22, weight: .bold, design: .rounded))
+                        Text("🎊")
+                            .font(.system(size: 24))
+                    }
+                    .foregroundColor(.white)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 18)
+                    .background(
+                        ZStack {
+                            RoundedRectangle(cornerRadius: 20)
                                 .fill(
                                     LinearGradient(
                                         colors: [
-                                            Color.white.opacity(0.25),
-                                            Color.white.opacity(0.1)
+                                            Color(red: 1.0, green: 0.5, blue: 0.3),
+                                            Color(red: 0.9, green: 0.3, blue: 0.6),
+                                            Color(red: 0.6, green: 0.3, blue: 0.9)
                                         ],
                                         startPoint: .topLeading,
                                         endPoint: .bottomTrailing
                                     )
                                 )
+                                .shadow(color: Color.purple.opacity(0.5), radius: 12, x: 0, y: 6)
+                            
+                            RoundedRectangle(cornerRadius: 20)
+                                .stroke(
+                                    Color.white.opacity(0.5),
+                                    lineWidth: 2
+                                )
+                        }
+                    )
+                }
+                .buttonStyle(.plain)
+            }
+            .padding(36)
+            .background(
+                ZStack {
+                    // Storybook page background
+                    RoundedRectangle(cornerRadius: 32)
+                        .fill(
+                            LinearGradient(
+                                colors: [
+                                    Color(red: 1.0, green: 0.98, blue: 0.95),
+                                    Color.white
+                                ],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            )
                         )
                     
-                    // Border with gradient
-                    RoundedRectangle(cornerRadius: 28)
+                    // Magical border with rainbow gradient
+                    RoundedRectangle(cornerRadius: 32)
                         .stroke(
                             LinearGradient(
                                 colors: [
-                                    Color.white.opacity(0.6),
-                                    Color.white.opacity(0.2),
-                                    Color.white.opacity(0.1)
+                                    Color(red: 1.0, green: 0.7, blue: 0.8),
+                                    Color(red: 0.8, green: 0.6, blue: 1.0),
+                                    Color(red: 0.6, green: 0.8, blue: 1.0),
+                                    Color(red: 0.6, green: 1.0, blue: 0.8)
                                 ],
                                 startPoint: .topLeading,
                                 endPoint: .bottomTrailing
                             ),
-                            lineWidth: 1.5
+                            lineWidth: 4
                         )
                 }
             )
-            .shadow(color: .black.opacity(0.2), radius: 30, x: 0, y: 15)
-            .shadow(color: .blue.opacity(0.2), radius: 20, x: 0, y: 10)
+            .shadow(color: Color.purple.opacity(0.3), radius: 30, x: 0, y: 15)
+            .shadow(color: Color.pink.opacity(0.2), radius: 20, x: 0, y: 10)
             .padding(.horizontal, 40)
+            .scaleEffect(celebrationScale)
+            .opacity(celebrationOpacity)
+            .onAppear {
+                withAnimation(.spring(response: 0.6, dampingFraction: 0.7)) {
+                    celebrationScale = 1.0
+                    celebrationOpacity = 1.0
+                }
+            }
         }
     }
 }
@@ -787,6 +1001,76 @@ private struct StarRatingView: View {
             }
         }
         .font(.system(size: 40))
+    }
+}
+
+// MARK: - Storybook Background
+private struct StorybookBackground: View {
+    @State private var animateStars = false
+    
+    var body: some View {
+        ZStack {
+            // Base gradient - soft pastel storybook colors
+            LinearGradient(
+                colors: [
+                    Color(red: 0.95, green: 0.92, blue: 1.0),
+                    Color(red: 0.98, green: 0.95, blue: 0.98),
+                    Color(red: 0.92, green: 0.95, blue: 1.0)
+                ],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            )
+            .ignoresSafeArea()
+            
+            // Subtle pattern overlay for storybook paper texture
+            Canvas { context, size in
+                let dotSpacing: CGFloat = 30
+                let dotRadius: CGFloat = 1.5
+                
+                for x in stride(from: 0, to: size.width, by: dotSpacing) {
+                    for y in stride(from: 0, to: size.height, by: dotSpacing) {
+                        var path = Path()
+                        path.addEllipse(in: CGRect(x: x, y: y, width: dotRadius, height: dotRadius))
+                        context.fill(path, with: .color(Color.purple.opacity(0.05)))
+                    }
+                }
+            }
+            .ignoresSafeArea()
+            
+            // Decorative floating elements
+            GeometryReader { geometry in
+                // Top left cloud
+                Text("☁️")
+                    .font(.system(size: 40))
+                    .opacity(0.3)
+                    .position(x: 60, y: 80)
+                
+                // Top right stars
+                Text("✨")
+                    .font(.system(size: 24))
+                    .opacity(0.4)
+                    .position(x: geometry.size.width - 50, y: 100)
+                    .scaleEffect(animateStars ? 1.2 : 0.8)
+                    .animation(.easeInOut(duration: 2).repeatForever(autoreverses: true), value: animateStars)
+                
+                // Bottom decoration
+                Text("🌈")
+                    .font(.system(size: 35))
+                    .opacity(0.25)
+                    .position(x: geometry.size.width - 70, y: geometry.size.height - 100)
+                
+                Text("⭐️")
+                    .font(.system(size: 20))
+                    .opacity(0.35)
+                    .position(x: 40, y: geometry.size.height - 150)
+                    .scaleEffect(animateStars ? 0.8 : 1.2)
+                    .animation(.easeInOut(duration: 2.5).repeatForever(autoreverses: true).delay(0.5), value: animateStars)
+            }
+            .ignoresSafeArea()
+        }
+        .onAppear {
+            animateStars = true
+        }
     }
 }
 
