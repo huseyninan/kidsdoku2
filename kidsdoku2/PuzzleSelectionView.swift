@@ -140,6 +140,12 @@ struct PuzzleSelectionView: View {
             }
         }
         .buttonStyle(.plain)
+        .overlay(alignment: .bottom) {
+            if let rating = completionManager.rating(for: puzzle) {
+                PuzzleRankBadge(rating: rating)
+                    .padding(.bottom, 12)
+            }
+        }
     }
     
     private func emptyPuzzleSlot(number: Int, theme: DifficultyTheme) -> some View {
@@ -218,6 +224,180 @@ struct PuzzleSelectionView: View {
             )
         }
         .buttonStyle(.plain)
+    }
+}
+
+private struct PuzzleRankBadge: View {
+    let rating: Double
+    
+    var body: some View {
+        HStack {
+            MiniStarRatingView(rating: rating, size: 14)
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, 2)
+        .padding(.horizontal, 12)
+        .background(
+            UnevenRoundedRectangle(
+                cornerRadii: .init(topLeading: 0, bottomLeading: 142, bottomTrailing: 142, topTrailing: 0),
+                style: .continuous
+            )
+            .fill(rankTier.gradient)
+            .overlay(
+                UnevenRoundedRectangle(
+                    cornerRadii: .init(topLeading: 0, bottomLeading: 142, bottomTrailing: 142, topTrailing: 0),
+                    style: .continuous
+                )
+                .stroke(Color.white.opacity(0.45), lineWidth: 1)
+            )
+        )
+        .shadow(color: rankTier.shadowColor, radius: 8, x: 0, y: 4)
+    }
+    
+    private var rankTier: RankTier {
+        switch rating {
+        case 2.75...:
+            return .legend
+        case 2.25...:
+            return .hero
+        case 1.75...:
+            return .pro
+        case 1.25...:
+            return .apprentice
+        case 0.75...:
+            return .explorer
+        case 0.25...:
+            return .dreamer
+        default:
+            return .rookie
+        }
+    }
+    
+    private enum RankTier {
+        case legend, hero, pro, apprentice, explorer, dreamer, rookie
+        
+        var title: String {
+            switch self {
+            case .legend: return "Legend Rank"
+            case .hero: return "Hero Rank"
+            case .pro: return "Pro Rank"
+            case .apprentice: return "Apprentice"
+            case .explorer: return "Explorer"
+            case .dreamer: return "Dreamer"
+            case .rookie: return "Rookie"
+            }
+        }
+        
+        var gradient: LinearGradient {
+            switch self {
+            case .legend:
+                return LinearGradient(
+                    colors: [
+                        Color.purple.opacity(0.75),
+                        Color.blue.opacity(0.75)
+                    ],
+                    startPoint: .topLeading,
+                    endPoint: .bottomTrailing
+                )
+            case .hero:
+                return LinearGradient(
+                    colors: [
+                        Color.orange.opacity(0.75),
+                        Color.pink.opacity(0.75)
+                    ],
+                    startPoint: .topLeading,
+                    endPoint: .bottomTrailing
+                )
+            case .pro:
+                return LinearGradient(
+                    colors: [
+                        Color.green.opacity(0.75),
+                        Color.teal.opacity(0.75)
+                    ],
+                    startPoint: .topLeading,
+                    endPoint: .bottomTrailing
+                )
+            case .apprentice:
+                return LinearGradient(
+                    colors: [
+                        Color.mint.opacity(0.75),
+                        Color.cyan.opacity(0.75)
+                    ],
+                    startPoint: .topLeading,
+                    endPoint: .bottomTrailing
+                )
+            case .explorer:
+                return LinearGradient(
+                    colors: [
+                        Color.blue.opacity(0.7),
+                        Color.indigo.opacity(0.7)
+                    ],
+                    startPoint: .topLeading,
+                    endPoint: .bottomTrailing
+                )
+            case .dreamer:
+                return LinearGradient(
+                    colors: [
+                        Color.gray.opacity(0.55),
+                        Color.blue.opacity(0.45)
+                    ],
+                    startPoint: .topLeading,
+                    endPoint: .bottomTrailing
+                )
+            case .rookie:
+                return LinearGradient(
+                    colors: [
+                        Color.gray.opacity(0.4),
+                        Color.gray.opacity(0.25)
+                    ],
+                    startPoint: .topLeading,
+                    endPoint: .bottomTrailing
+                )
+            }
+        }
+        
+        var shadowColor: Color {
+            switch self {
+            case .legend: return Color.purple.opacity(0.4)
+            case .hero: return Color.orange.opacity(0.4)
+            case .pro: return Color.green.opacity(0.4)
+            case .apprentice: return Color.mint.opacity(0.4)
+            case .explorer: return Color.blue.opacity(0.4)
+            case .dreamer: return Color.blue.opacity(0.25)
+            case .rookie: return Color.black.opacity(0.2)
+            }
+        }
+    }
+}
+
+private struct MiniStarRatingView: View {
+    let rating: Double
+    let size: CGFloat
+    
+    var body: some View {
+        HStack(spacing: 2) {
+            ForEach(0..<3, id: \.self) { index in
+                starView(for: index)
+            }
+        }
+    }
+    
+    private func starView(for index: Int) -> some View {
+        let starValue = rating - Double(index)
+        let symbolName: String
+        if starValue >= 1.0 {
+            symbolName = "star.fill"
+        } else if starValue >= 0.5 {
+            symbolName = "star.leadinghalf.filled"
+        } else {
+            symbolName = "star"
+        }
+        
+        let color: Color = starValue >= 0.5 ? .yellow : .white.opacity(0.45)
+        
+        return Image(systemName: symbolName)
+            .font(.system(size: size))
+            .foregroundColor(color)
     }
 }
 

@@ -13,11 +13,14 @@ class PuzzleCompletionManager: ObservableObject {
     static let shared = PuzzleCompletionManager()
     
     @Published private(set) var completedPuzzles: Set<String> = []
+    @Published private(set) var puzzleRatings: [String: Double] = [:]
     
     private let userDefaultsKey = "completedPuzzles"
+    private let ratingsKey = "puzzleRatings"
     
     private init() {
         loadCompletedPuzzles()
+        loadPuzzleRatings()
     }
     
     /// Mark a puzzle as completed
@@ -25,6 +28,19 @@ class PuzzleCompletionManager: ObservableObject {
         let key = puzzleKey(size: puzzle.size, difficulty: puzzle.difficulty, number: puzzle.number)
         completedPuzzles.insert(key)
         saveCompletedPuzzles()
+    }
+    
+    /// Store the earned rating for a puzzle
+    func setRating(_ rating: Double, for puzzle: PremadePuzzle) {
+        let key = puzzleKey(size: puzzle.size, difficulty: puzzle.difficulty, number: puzzle.number)
+        puzzleRatings[key] = rating
+        savePuzzleRatings()
+    }
+    
+    /// Retrieve the saved rating for a puzzle, if any
+    func rating(for puzzle: PremadePuzzle) -> Double? {
+        let key = puzzleKey(size: puzzle.size, difficulty: puzzle.difficulty, number: puzzle.number)
+        return puzzleRatings[key]
     }
     
     /// Check if a puzzle is completed
@@ -56,9 +72,19 @@ class PuzzleCompletionManager: ObservableObject {
             completedPuzzles = Set(data)
         }
     }
+
+    private func loadPuzzleRatings() {
+        if let storedRatings = UserDefaults.standard.dictionary(forKey: ratingsKey) as? [String: Double] {
+            puzzleRatings = storedRatings
+        }
+    }
     
     private func saveCompletedPuzzles() {
         UserDefaults.standard.set(Array(completedPuzzles), forKey: userDefaultsKey)
+    }
+
+    private func savePuzzleRatings() {
+        UserDefaults.standard.set(puzzleRatings, forKey: ratingsKey)
     }
 }
 
