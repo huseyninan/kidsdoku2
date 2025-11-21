@@ -858,132 +858,130 @@ private struct CelebrationOverlay: View {
     var body: some View {
         ZStack {
             // Blurred background
-            Color.black.opacity(0.3)
+            Color.black.opacity(0.4)
                 .ignoresSafeArea()
-                .blur(radius: 2)
+                .blur(radius: 3)
             
-            // Liquid glass card
-            VStack(spacing: 20) {
-                Text("🎉 You're a Star! 🎉")
-                    .font(.system(size: 28, weight: .bold, design: .rounded))
+            // Fun Card
+            VStack(spacing: 24) {
+                // Title with bounce
+                Text("🎉 YOU DID IT! 🎉")
+                    .font(.system(size: 32, weight: .black, design: .rounded))
                     .multilineTextAlignment(.center)
                     .foregroundStyle(
                         LinearGradient(
-                            colors: [.blue, .purple],
-                            startPoint: .leading,
-                            endPoint: .trailing
+                            colors: [Color.orange, Color.pink],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
                         )
                     )
+                    .shadow(color: Color.orange.opacity(0.3), radius: 2, x: 0, y: 2)
                 
-                Text("You did it! Amazing job\nsolving the puzzle!")
-                    .font(.system(size: 18, weight: .medium, design: .rounded))
+                Text("Amazing job!\nYou're a Sudoku Star!")
+                    .font(.system(size: 20, weight: .bold, design: .rounded))
                     .multilineTextAlignment(.center)
-                    .foregroundColor(.primary.opacity(0.8))
+                    .foregroundStyle(Color(red: 0.4, green: 0.3, blue: 0.2))
+                    .padding(.bottom, 4)
                 
                 // Star rating with glow
-                HStack(spacing: 4) {
+                HStack(spacing: 8) {
                     StarRatingView(rating: rating)
+                        .scaleEffect(1.2)
                 }
-                .padding(.vertical, 8)
-                .shadow(color: .yellow.opacity(0.5), radius: 10)
+                .padding(.vertical, 16)
+                .background(
+                    Capsule()
+                        .fill(Color.yellow.opacity(0.15))
+                        .blur(radius: 10)
+                )
                 
                 // Stats
                 let penalties = mistakeCount + hintCount
                 if penalties == 0 {
-                    Text("Perfect game! ⭐️")
-                        .font(.system(size: 16, weight: .semibold, design: .rounded))
-                        .foregroundStyle(
-                            LinearGradient(
-                                colors: [.green, .mint],
-                                startPoint: .leading,
-                                endPoint: .trailing
-                            )
-                        )
+                    HStack(spacing: 8) {
+                        Image(systemName: "trophy.fill")
+                            .foregroundStyle(Color.yellow)
+                        Text("Perfect Game!")
+                    }
+                    .font(.system(size: 20, weight: .heavy, design: .rounded))
+                    .foregroundStyle(Color.green)
                 } else {
-                    Text("\(mistakeCount) mistakes • \(hintCount) hints")
-                        .font(.system(size: 16, weight: .medium, design: .rounded))
-                        .foregroundColor(.primary.opacity(0.7))
+                    HStack(spacing: 16) {
+                        if mistakeCount > 0 {
+                            HStack(spacing: 4) {
+                                Image(systemName: "xmark.circle.fill")
+                                Text("\(mistakeCount)")
+                            }
+                            .foregroundStyle(Color.red.opacity(0.7))
+                        }
+                        if hintCount > 0 {
+                            HStack(spacing: 4) {
+                                Image(systemName: "lightbulb.fill")
+                                Text("\(hintCount)")
+                            }
+                            .foregroundStyle(Color.orange)
+                        }
+                    }
+                    .font(.system(size: 18, weight: .bold, design: .rounded))
                 }
                 
-                // Glass button
+                // Big Fun Button
                 Button(action: onDismiss) {
-                    Text("Yay!")
-                        .font(.system(size: 18, weight: .semibold, design: .rounded))
+                    Text("Play Again!")
+                        .font(.system(size: 22, weight: .heavy, design: .rounded))
                         .foregroundColor(.white)
                         .frame(maxWidth: .infinity)
-                        .padding(.vertical, 16)
+                        .padding(.vertical, 18)
                         .background(
-                            ZStack {
-                                RoundedRectangle(cornerRadius: 16)
-                                    .fill(
-                                        LinearGradient(
-                                            colors: [
-                                                Color.blue.opacity(0.8),
-                                                Color.purple.opacity(0.6)
-                                            ],
-                                            startPoint: .topLeading,
-                                            endPoint: .bottomTrailing
-                                        )
+                            Capsule()
+                                .fill(
+                                    LinearGradient(
+                                        colors: [Color.blue, Color.cyan],
+                                        startPoint: .top,
+                                        endPoint: .bottom
                                     )
-                                
-                                RoundedRectangle(cornerRadius: 16)
-                                    .stroke(
-                                        LinearGradient(
-                                            colors: [
-                                                Color.white.opacity(0.5),
-                                                Color.white.opacity(0.2)
-                                            ],
-                                            startPoint: .topLeading,
-                                            endPoint: .bottomTrailing
-                                        ),
-                                        lineWidth: 1
-                                    )
-                            }
+                                )
+                                .shadow(color: .blue.opacity(0.3), radius: 8, x: 0, y: 5)
                         )
-                        .shadow(color: .blue.opacity(0.4), radius: 15, x: 0, y: 8)
+                        .overlay(
+                            Capsule()
+                                .stroke(Color.white.opacity(0.3), lineWidth: 3)
+                        )
                 }
-                .buttonStyle(.plain)
+                .buttonStyle(ScaleButtonStyle())
+                .padding(.top, 8)
             }
             .padding(32)
             .background(
                 ZStack {
-                    // Glassmorphic background
-                    RoundedRectangle(cornerRadius: 28)
-                        .fill(.ultraThinMaterial)
-                        .background(
-                            RoundedRectangle(cornerRadius: 28)
-                                .fill(
-                                    LinearGradient(
-                                        colors: [
-                                            Color.white.opacity(0.25),
-                                            Color.white.opacity(0.1)
-                                        ],
-                                        startPoint: .topLeading,
-                                        endPoint: .bottomTrailing
-                                    )
-                                )
-                        )
+                    RoundedRectangle(cornerRadius: 32)
+                        .fill(Color.white)
                     
-                    // Border with gradient
-                    RoundedRectangle(cornerRadius: 28)
+                    RoundedRectangle(cornerRadius: 32)
                         .stroke(
                             LinearGradient(
                                 colors: [
-                                    Color.white.opacity(0.6),
-                                    Color.white.opacity(0.2),
-                                    Color.white.opacity(0.1)
+                                    Color(red: 1.0, green: 0.95, blue: 0.8),
+                                    Color(red: 1.0, green: 0.9, blue: 0.9)
                                 ],
                                 startPoint: .topLeading,
                                 endPoint: .bottomTrailing
                             ),
-                            lineWidth: 1.5
+                            lineWidth: 8
                         )
                 }
+                .shadow(color: Color.black.opacity(0.15), radius: 20, x: 0, y: 10)
             )
-            .shadow(color: .black.opacity(0.2), radius: 30, x: 0, y: 15)
-            .shadow(color: .blue.opacity(0.2), radius: 20, x: 0, y: 10)
-            .padding(.horizontal, 40)
+            .padding(.horizontal, 36)
         }
+    }
+}
+
+struct ScaleButtonStyle: ButtonStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .scaleEffect(configuration.isPressed ? 0.95 : 1)
+            .animation(.easeInOut(duration: 0.1), value: configuration.isPressed)
     }
 }
 
