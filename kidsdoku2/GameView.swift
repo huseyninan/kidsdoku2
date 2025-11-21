@@ -22,231 +22,138 @@ struct GameView: View {
     }
 
     var body: some View {
-        ZStack {
-            VStack(spacing: 20) {
-                header
-
-                boardSection
-
-                paletteSection
+        GeometryReader { proxy in
+            ZStack {
+                StorybookBackground()
+                    .ignoresSafeArea()
                 
-                actionButtons
-
-                Spacer()
-            }
-            .padding(.horizontal, 20)
-            .padding(.top, 16)
-            .padding(.bottom, 28)
-            .background(Color(.systemGroupedBackground).ignoresSafeArea())
-            .navigationBarBackButtonHidden(false)
-            .navigationTitle("")
-            .navigationBarTitleDisplayMode(.inline)
-            .onAppear {
-                startTimer()
-            }
-            .onDisappear {
-                stopTimer()
-            }
-            
-            // Confetti overlay
-            if viewModel.showCelebration {
-                ConfettiView()
-                    .allowsHitTesting(false)
-                
-                // Custom celebration overlay
-                CelebrationOverlay(
-                    rating: viewModel.calculateStars(),
-                    mistakeCount: viewModel.mistakeCount,
-                    hintCount: viewModel.hintCount,
-                    onDismiss: {
-                        dismiss()
+                VStack(spacing: 8) {
+                    header
+                    
+                    GeometryReader { innerProxy in
+                        let rawSide = min(innerProxy.size.width, innerProxy.size.height)
+                        let inset: CGFloat = 35
+                        let candidate = max(200, rawSide - inset)
+                        let side = min(candidate, rawSide)
+                         
+                        boardSection(size: side)
+                            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
+                            .animation(.easeInOut(duration: 0.2), value: viewModel.puzzle.cells)
                     }
-                )
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    
+                    paletteSection
+                    
+                    actionButtons
+                }
+                .padding(.horizontal, 10)
+                .padding(.top, 8)
+                .padding(.bottom, max(proxy.safeAreaInsets.bottom, 12))
+                .frame(width: proxy.size.width, height: proxy.size.height, alignment: .top)
+                
+                if viewModel.showCelebration {
+                    ConfettiView()
+                        .allowsHitTesting(false)
+                    
+                    CelebrationOverlay(
+                        rating: viewModel.calculateStars(),
+                        mistakeCount: viewModel.mistakeCount,
+                        hintCount: viewModel.hintCount,
+                        onDismiss: {
+                            dismiss()
+                        }
+                    )
+                }
             }
+        }
+        .navigationBarBackButtonHidden(false)
+        .navigationTitle("")
+        .navigationBarTitleDisplayMode(.inline)
+        .onAppear {
+            startTimer()
+        }
+        .onDisappear {
+            stopTimer()
         }
     }
 
     private var header: some View {
-        VStack(spacing: 12) {
-            // Top bar with pause button, title, and stars
-            HStack {
-                // Puzzle name - kid friendly
-                Text(viewModel.navigationTitle)
-                    .font(.system(size: 18, weight: .heavy, design: .rounded))
-                    .foregroundStyle(
-                        LinearGradient(
-                            colors: [.purple, .blue],
-                            startPoint: .leading,
-                            endPoint: .trailing
-                        )
-                    )
-                    .padding(.horizontal, 12)
-                    .padding(.vertical, 6)
-                    .background(
-                        RoundedRectangle(cornerRadius: 10)
-                            .fill(
-                                LinearGradient(
-                                    colors: [Color.purple.opacity(0.15), Color.blue.opacity(0.15)],
-                                    startPoint: .topLeading,
-                                    endPoint: .bottomTrailing
-                                )
-                            )
-                    )
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 10)
-                            .stroke(Color.purple.opacity(0.3), lineWidth: 2)
-                    )
-                
-                Spacer()
-                
-                // Sound toggle button - kid friendly
-                Button(action: {
-                    soundManager.toggleSound()
-                    hapticManager.trigger(.selection)
-                }) {
-                    HStack(spacing: 4) {
-                        Text(soundManager.isSoundEnabled ? "🔊" : "🔇")
-                            .font(.system(size: 22))
-                    }
-                    .padding(.horizontal, 12)
-                    .padding(.vertical, 8)
-                    .background(
-                        RoundedRectangle(cornerRadius: 10)
-                            .fill(
-                                soundManager.isSoundEnabled 
-                                    ? LinearGradient(
-                                        colors: [Color.green.opacity(0.3), Color.mint.opacity(0.2)],
-                                        startPoint: .topLeading,
-                                        endPoint: .bottomTrailing
-                                    )
-                                    : LinearGradient(
-                                        colors: [Color.gray.opacity(0.2), Color.gray.opacity(0.15)],
-                                        startPoint: .topLeading,
-                                        endPoint: .bottomTrailing
-                                    )
-                            )
-                    )
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 10)
-                            .stroke(
-                                soundManager.isSoundEnabled ? Color.green.opacity(0.5) : Color.gray.opacity(0.3),
-                                lineWidth: 2
-                            )
-                    )
-                    .shadow(
-                        color: soundManager.isSoundEnabled ? Color.green.opacity(0.2) : Color.clear,
-                        radius: 4,
-                        x: 0,
-                        y: 2
-                    )
-                }
-                .buttonStyle(.plain)
-                .padding(.trailing, 8)
-                
-                // Timer display - kid friendly
-                HStack(spacing: 6) {
-                    Text("⏱️")
-                        .font(.system(size: 24))
-                    Text(formattedTime)
-                        .font(.system(size: 22, weight: .bold, design: .rounded))
-                        .foregroundStyle(
-                            LinearGradient(
-                                colors: [.orange, .pink],
-                                startPoint: .leading,
-                                endPoint: .trailing
-                            )
-                        )
-                        .monospacedDigit()
-                }
-                .padding(.horizontal, 16)
-                .padding(.vertical, 8)
-                .background(
-                    RoundedRectangle(cornerRadius: 12)
-                        .fill(
-                            LinearGradient(
-                                colors: [Color.yellow.opacity(0.3), Color.orange.opacity(0.2)],
-                                startPoint: .topLeading,
-                                endPoint: .bottomTrailing
-                            )
-                        )
-                )
-                .overlay(
-                    RoundedRectangle(cornerRadius: 12)
-                        .stroke(Color.orange.opacity(0.5), lineWidth: 2)
-                )
-                .shadow(color: Color.orange.opacity(0.2), radius: 4, x: 0, y: 2)
-            }
+        HStack(spacing: 10) {
+            StorybookBadge(text: viewModel.navigationTitle)
             
-            // Theme title
-            Text(titleText)
-                .font(.system(size: 32, weight: .heavy, design: .rounded))
-                .foregroundStyle(Color.green)
+            Spacer(minLength: 0)
             
-            // Progress text above bar
-            Text(progressText)
-                .font(.system(size: 16, weight: .medium, design: .rounded))
-                .foregroundStyle(Color(.secondaryLabel))
-
-            // Progress bar with gradient
-            GeometryReader { geometry in
-                ZStack(alignment: .leading) {
-                    RoundedRectangle(cornerRadius: 8)
-                        .fill(Color(.systemGray5))
-                        .frame(height: 12)
-                    
-                    LinearGradient(
-                        colors: [Color.orange, Color.yellow, Color.green.opacity(0.4)],
-                        startPoint: .leading,
-                        endPoint: .trailing
-                    )
-                    .frame(width: geometry.size.width * progressRatio, height: 12)
-                    .cornerRadius(8)
-                }
+            StorybookProgressBar(progress: progressRatio)
+                .frame(height: 8, alignment: .center)
+                .frame(maxWidth: 100)
+            
+            StorybookInfoChip(icon: "clock", text: formattedTime)
+            
+            Button(action: {
+                soundManager.toggleSound()
+                hapticManager.trigger(.selection)
+            }) {
+                StorybookIconCircle(
+                    systemName: soundManager.isSoundEnabled ? "music.note" : "speaker.slash.fill",
+                    gradient: soundManager.isSoundEnabled
+                        ? [Color(red: 0.37, green: 0.67, blue: 0.39), Color(red: 0.23, green: 0.52, blue: 0.32)]
+                        : [Color(red: 0.74, green: 0.74, blue: 0.75), Color(red: 0.6, green: 0.6, blue: 0.62)]
+                )
             }
-            .frame(height: 12)
+            .buttonStyle(.plain)
         }
+        .padding(.vertical, 8)
+        .padding(.horizontal, 12)
+        .background(StorybookHeaderCard())
     }
 
-    private var boardSection: some View {
-        GeometryReader { geometry in
-            let boardSize = min(geometry.size.width, geometry.size.height)
-            VStack {
-                BoardGridView(
-                    config: config,
-                    cells: viewModel.puzzle.cells,
-                    selected: viewModel.selectedPosition,
-                    highlightedValue: viewModel.highlightedValue,
-                    onTap: { cell in
-                        withAnimation(.easeInOut(duration: 0.15)) {
-                            viewModel.didTapCell(cell)
-                        }
-                        hapticManager.trigger(.selection)
+    private func boardSection(size: CGFloat) -> some View {
+        ZStack {
+            StorybookBoardMat(size: size)
+            
+            BoardGridView(
+                config: config,
+                cells: viewModel.puzzle.cells,
+                selected: viewModel.selectedPosition,
+                highlightedValue: viewModel.highlightedValue,
+                onTap: { cell in
+                    withAnimation(.easeInOut(duration: 0.15)) {
+                        viewModel.didTapCell(cell)
                     }
-                )
-                .frame(width: boardSize, height: boardSize)
-            }
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    hapticManager.trigger(.selection)
+                }
+            )
+            .frame(width: size, height: size)
         }
-        .frame(height: boardFrameHeight)
+        .frame(maxWidth: .infinity)
     }
 
     private var paletteSection: some View {
-        HStack(spacing: 10) {
-            ForEach(Array(config.symbols.enumerated()).filter { entry in
-                guard let firstRow = viewModel.puzzle.solution.first else { return true }
-                let symbolIndicesInFirstRow = Set(firstRow.map { $0 })
-                return symbolIndicesInFirstRow.contains(entry.offset)
-            }, id: \.offset) { entry in
-                paletteButton(symbolIndex: entry.offset, symbol: entry.element)
+        VStack(spacing: 8) {
+            HStack {
+                Text("Veggie Basket")
+                    .font(.system(size: 16, weight: .heavy, design: .rounded))
+                    .foregroundStyle(Color(red: 0.44, green: 0.3, blue: 0.23))
+                Spacer()
+                Text("Tap a friend below")
+                    .font(.system(size: 12, weight: .semibold, design: .rounded))
+                    .foregroundStyle(Color(red: 0.62, green: 0.47, blue: 0.34))
+            }
+            
+            HStack(spacing: 8) {
+                ForEach(Array(config.symbols.enumerated()).filter { entry in
+                    guard let firstRow = viewModel.puzzle.solution.first else { return true }
+                    let symbolIndicesInFirstRow = Set(firstRow.map { $0 })
+                    return symbolIndicesInFirstRow.contains(entry.offset)
+                }, id: \.offset) { entry in
+                    paletteButton(symbolIndex: entry.offset, symbol: entry.element)
+                }
             }
         }
         .frame(maxWidth: .infinity)
-        .padding(.vertical, 16)
+        .padding(.vertical, 8)
         .padding(.horizontal, 10)
-        .background(
-            RoundedRectangle(cornerRadius: 20, style: .continuous)
-                .fill(Color.green.opacity(0.15))
-        )
+        .background(StorybookPaletteMat())
     }
 
     private func paletteButton(symbolIndex: Int, symbol: String) -> some View {
@@ -258,94 +165,86 @@ struct GameView: View {
             }
             hapticManager.trigger(.selection)
         } label: {
-            Image(symbol)
-                .resizable()
-                .scaledToFit()
-                .frame(width: 50.0, height: 50.0)
-                .background(
-                    Circle()
-                        .fill(isSelected ? Color.accentColor.opacity(0.25) : Color(.systemGray6))
-                )
-                .overlay(
-                    Circle()
-                        .stroke(isSelected ? Color.accentColor : Color.clear, lineWidth: 3)
-                )
+            ZStack {
+                Circle()
+                    .fill(
+                        LinearGradient(
+                            colors: isSelected
+                                ? [Color(red: 1.0, green: 0.89, blue: 0.74), Color(red: 0.96, green: 0.72, blue: 0.46)]
+                                : [Color.white, Color(red: 0.95, green: 0.95, blue: 0.93)],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
+                    )
+                    .shadow(color: Color.black.opacity(0.08), radius: 3, x: 0, y: 2)
+                    .overlay(
+                        Circle()
+                            .stroke(isSelected ? Color(red: 0.92, green: 0.58, blue: 0.26) : Color(red: 0.87, green: 0.87, blue: 0.85), lineWidth: 2.5)
+                    )
+                
+                Image(symbol)
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 36, height: 36)
+                    .padding(3)
+            }
+            .frame(width: 52, height: 52)
+            .scaleEffect(isSelected ? 1.08 : 1.0)
         }
         .buttonStyle(.plain)
     }
 
     private var actionButtons: some View {
         HStack(spacing: 12) {
-            // Undo button
-            Button(action: {
-                withAnimation(.easeInOut(duration: 0.2)) {
-                    viewModel.undo()
+            StorybookActionButton(
+                title: "Undo",
+                icon: "arrow.uturn.backward",
+                isEnabled: viewModel.canUndo,
+                gradient: [
+                    Color(red: 0.98, green: 0.89, blue: 0.75),
+                    Color(red: 0.97, green: 0.78, blue: 0.58)
+                ],
+                action: {
+                    withAnimation(.easeInOut(duration: 0.2)) {
+                        viewModel.undo()
+                    }
+                    hapticManager.trigger(.light)
                 }
-                hapticManager.trigger(.light)
-            }) {
-                HStack(spacing: 8) {
-                    Image(systemName: "arrow.uturn.backward")
-                        .font(.system(size: 18, weight: .semibold))
-                    Text("Undo")
-                        .font(.system(size: 16, weight: .semibold, design: .rounded))
-                }
-                .foregroundColor(viewModel.canUndo ? Color(.label) : Color(.systemGray3))
-                .frame(maxWidth: .infinity)
-                .padding(.vertical, 14)
-                .background(
-                    RoundedRectangle(cornerRadius: 12)
-                        .fill(Color(.systemGray5))
-                )
-            }
-            .buttonStyle(.plain)
-            .disabled(!viewModel.canUndo)
+            )
             
-            // Erase button
-            Button(action: {
-                withAnimation(.easeInOut(duration: 0.2)) {
-                    viewModel.removeValue()
+            StorybookActionButton(
+                title: "Erase",
+                icon: "xmark.circle",
+                isEnabled: true,
+                gradient: [
+                    Color(red: 0.95, green: 0.85, blue: 0.95),
+                    Color(red: 0.88, green: 0.7, blue: 0.92)
+                ],
+                action: {
+                    withAnimation(.easeInOut(duration: 0.2)) {
+                        viewModel.removeValue()
+                    }
+                    hapticManager.trigger(.light)
                 }
-                hapticManager.trigger(.light)
-            }) {
-                HStack(spacing: 8) {
-                    Image(systemName: "xmark.circle")
-                        .font(.system(size: 18, weight: .semibold))
-                    Text("Erase")
-                        .font(.system(size: 16, weight: .semibold, design: .rounded))
-                }
-                .foregroundColor(Color(.label))
-                .frame(maxWidth: .infinity)
-                .padding(.vertical, 14)
-                .background(
-                    RoundedRectangle(cornerRadius: 12)
-                        .fill(Color(.systemGray5))
-                )
-            }
-            .buttonStyle(.plain)
+            )
             
-            // Hint button
-            Button(action: {
-                withAnimation(.easeInOut(duration: 0.2)) {
-                    viewModel.provideHint()
+            StorybookActionButton(
+                title: "Hint",
+                icon: "lightbulb",
+                isEnabled: true,
+                gradient: [
+                    Color(red: 1.0, green: 0.93, blue: 0.76),
+                    Color(red: 0.99, green: 0.82, blue: 0.64)
+                ],
+                action: {
+                    withAnimation(.easeInOut(duration: 0.2)) {
+                        viewModel.provideHint()
+                    }
+                    hapticManager.trigger(.medium)
                 }
-                hapticManager.trigger(.medium)
-            }) {
-                HStack(spacing: 8) {
-                    Image(systemName: "lightbulb")
-                        .font(.system(size: 18, weight: .semibold))
-                    Text("Hint")
-                        .font(.system(size: 16, weight: .semibold, design: .rounded))
-                }
-                .foregroundColor(Color(.label))
-                .frame(maxWidth: .infinity)
-                .padding(.vertical, 14)
-                .background(
-                    RoundedRectangle(cornerRadius: 12)
-                        .fill(Color(.systemGray5))
-                )
-            }
-            .buttonStyle(.plain)
+            )
         }
+        .disabled(viewModel.showCelebration)
         .onChange(of: viewModel.showCelebration) { isShowing in
             if isShowing {
                 stopTimer()
@@ -385,7 +284,7 @@ struct GameView: View {
     private var progressRatio: Double {
         let total = Double(config.size * config.size)
         let filled = Double(viewModel.puzzle.cells.filter { $0.value != nil }.count)
-        return filled / total
+        return min(1.0, max(0.0, filled / total))
     }
 
     private var progressText: String {
@@ -393,17 +292,6 @@ struct GameView: View {
         return "\(filled) of \(config.size * config.size) squares filled"
     }
 
-    private var boardFrameHeight: CGFloat {
-        switch config.size {
-        case 4:
-            return 320
-        case 6:
-            return 360
-        default:
-            return 360
-        }
-    }
-    
     private var formattedTime: String {
         let minutes = Int(elapsedTime) / 60
         let seconds = Int(elapsedTime) % 60
@@ -616,6 +504,344 @@ private struct BoardGridView: View {
                 animate = false
             }
         }
+    }
+}
+
+private struct StorybookBadge: View {
+    let text: String
+    
+    var body: some View {
+        Text(text)
+            .font(.system(size: 15, weight: .heavy, design: .rounded))
+            .foregroundStyle(Color(red: 0.33, green: 0.22, blue: 0.12))
+            .padding(.horizontal, 10)
+            .padding(.vertical, 5)
+            .background(
+                Capsule()
+                    .fill(
+                        LinearGradient(
+                            colors: [
+                                Color(red: 0.99, green: 0.94, blue: 0.82),
+                                Color(red: 0.95, green: 0.87, blue: 0.74)
+                            ],
+                            startPoint: .top,
+                            endPoint: .bottom
+                        )
+                    )
+            )
+            .overlay(
+                Capsule()
+                    .stroke(Color(red: 0.85, green: 0.67, blue: 0.46), lineWidth: 1)
+            )
+    }
+}
+
+private struct StorybookIconCircle: View {
+    let systemName: String
+    let gradient: [Color]
+    
+    var body: some View {
+        Image(systemName: systemName)
+            .font(.system(size: 15, weight: .semibold))
+            .foregroundColor(.white)
+            .frame(width: 30, height: 30)
+            .background(
+                Circle()
+                    .fill(
+                        LinearGradient(
+                            colors: gradient,
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
+                    )
+            )
+            .shadow(color: Color.black.opacity(0.1), radius: 2, x: 0, y: 1)
+    }
+}
+
+private struct StorybookInfoChip: View {
+    let icon: String
+    let text: String
+    
+    var body: some View {
+        HStack(spacing: 4) {
+            Image(systemName: icon)
+                .font(.system(size: 12, weight: .semibold))
+            Text(text)
+                .font(.system(size: 14, weight: .bold, design: .rounded))
+                .monospacedDigit()
+        }
+        .foregroundStyle(Color(red: 0.62, green: 0.34, blue: 0.24))
+        .padding(.horizontal, 8)
+        .padding(.vertical, 4)
+        .background(
+            Capsule().fill(
+                LinearGradient(
+                    colors: [
+                        Color(red: 1.0, green: 0.92, blue: 0.81),
+                        Color(red: 0.98, green: 0.82, blue: 0.65)
+                    ],
+                    startPoint: .topLeading,
+                    endPoint: .bottomTrailing
+                )
+            )
+        )
+    }
+}
+
+private struct StorybookProgressBar: View {
+    let progress: Double
+    
+    var body: some View {
+        GeometryReader { geo in
+            ZStack(alignment: .leading) {
+                RoundedRectangle(cornerRadius: 8)
+                    .fill(Color.white.opacity(0.6))
+                RoundedRectangle(cornerRadius: 8)
+                    .fill(
+                        LinearGradient(
+                            colors: [
+                                Color(red: 0.99, green: 0.78, blue: 0.33),
+                                Color(red: 0.98, green: 0.6, blue: 0.37),
+                                Color(red: 0.4, green: 0.7, blue: 0.35)
+                            ],
+                            startPoint: .leading,
+                            endPoint: .trailing
+                        )
+                    )
+                    .frame(width: max(12, geo.size.width * progress))
+            }
+        }
+    }
+}
+
+private struct StorybookMiniBoardPreview: View {
+    let symbols: [String]
+    
+    private var previewSymbols: [String] {
+        guard !symbols.isEmpty else { return Array(repeating: "", count: 9) }
+        return (0..<9).map { symbols[$0 % symbols.count] }
+    }
+    
+    var body: some View {
+        ZStack {
+            RoundedRectangle(cornerRadius: 20, style: .continuous)
+                .fill(Color.white.opacity(0.85))
+                .shadow(color: Color.black.opacity(0.08), radius: 4, x: 0, y: 3)
+            
+            RoundedRectangle(cornerRadius: 20, style: .continuous)
+                .stroke(style: StrokeStyle(lineWidth: 2, dash: [6, 4]))
+                .foregroundColor(Color(red: 0.94, green: 0.75, blue: 0.57))
+            
+            VStack(spacing: 2) {
+                ForEach(0..<3, id: \.self) { row in
+                    HStack(spacing: 2) {
+                        ForEach(0..<3, id: \.self) { col in
+                            let index = row * 3 + col
+                            ZStack {
+                                RoundedRectangle(cornerRadius: 6)
+                                    .fill(Color(red: 0.98, green: 0.95, blue: 0.9))
+                                    .overlay(
+                                        RoundedRectangle(cornerRadius: 6)
+                                            .stroke(Color(red: 0.93, green: 0.85, blue: 0.74), lineWidth: 1)
+                                    )
+                                if index < previewSymbols.count, !previewSymbols[index].isEmpty {
+                                    Image(previewSymbols[index])
+                                        .resizable()
+                                        .scaledToFit()
+                                        .padding(4)
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            .padding(8)
+        }
+        .frame(width: 104, height: 104)
+    }
+}
+
+private struct StorybookBackground: View {
+    var body: some View {
+        GeometryReader { proxy in
+            let width = proxy.size.width
+            let height = proxy.size.height
+            
+            ZStack(alignment: .bottom) {
+                LinearGradient(
+                    colors: [
+                        Color(red: 0.9, green: 0.95, blue: 1.0),
+                        Color(red: 0.98, green: 0.93, blue: 0.85)
+                    ],
+                    startPoint: .top,
+                    endPoint: .bottom
+                )
+                
+                StorybookCloud()
+                    .scaleEffect(1.1)
+                    .offset(x: -width * 0.25, y: -height * 0.35)
+                StorybookCloud()
+                    .scaleEffect(0.8)
+                    .offset(x: width * 0.35, y: -height * 0.3)
+                StorybookCloud()
+                    .scaleEffect(0.6)
+                    .offset(x: width * 0.05, y: -height * 0.42)
+                
+                StorybookHill(width: width * 1.4, height: height * 0.35, color: Color(red: 0.68, green: 0.86, blue: 0.57))
+                    .offset(x: -width * 0.2, y: height * 0.02)
+                StorybookHill(width: width * 1.2, height: height * 0.28, color: Color(red: 0.5, green: 0.74, blue: 0.47))
+                    .offset(x: width * 0.25, y: height * 0.05)
+            }
+            .frame(width: width, height: height)
+        }
+    }
+}
+
+private struct StorybookCloud: View {
+    var body: some View {
+        ZStack {
+            Circle().fill(Color.white.opacity(0.85)).frame(width: 110, height: 80).offset(x: -40, y: 10)
+            Circle().fill(Color.white.opacity(0.8)).frame(width: 100, height: 70).offset(x: 10, y: 0)
+            Circle().fill(Color.white.opacity(0.9)).frame(width: 120, height: 90).offset(x: 40, y: 12)
+        }
+        .blur(radius: 0.3)
+    }
+}
+
+private struct StorybookHill: View {
+    let width: CGFloat
+    let height: CGFloat
+    let color: Color
+    
+    var body: some View {
+        Ellipse()
+            .fill(color)
+            .frame(width: width, height: height)
+            .shadow(color: color.opacity(0.4), radius: 10, x: 0, y: -6)
+    }
+}
+
+private struct StorybookHeaderCard: View {
+    var body: some View {
+        RoundedRectangle(cornerRadius: 28, style: .continuous)
+            .fill(
+                LinearGradient(
+                    colors: [
+                        Color.white.opacity(0.9),
+                        Color(red: 0.99, green: 0.94, blue: 0.86)
+                    ],
+                    startPoint: .topLeading,
+                    endPoint: .bottomTrailing
+                )
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: 28, style: .continuous)
+                    .stroke(Color(red: 0.91, green: 0.83, blue: 0.7), lineWidth: 2)
+            )
+            .shadow(color: Color.black.opacity(0.08), radius: 8, x: 0, y: 6)
+    }
+}
+
+private struct StorybookPaletteMat: View {
+    var body: some View {
+        RoundedRectangle(cornerRadius: 28, style: .continuous)
+            .fill(
+                LinearGradient(
+                    colors: [
+                        Color(red: 1.0, green: 0.97, blue: 0.91),
+                        Color(red: 0.96, green: 0.92, blue: 0.84)
+                    ],
+                    startPoint: .topLeading,
+                    endPoint: .bottomTrailing
+                )
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: 28, style: .continuous)
+                    .stroke(Color(red: 0.91, green: 0.82, blue: 0.69), lineWidth: 2)
+            )
+            .shadow(color: Color.black.opacity(0.08), radius: 10, x: 0, y: 6)
+    }
+}
+
+private struct StorybookBoardMat: View {
+    let size: CGFloat
+    
+    var body: some View {
+        RoundedRectangle(cornerRadius: 34, style: .continuous)
+            .fill(
+                LinearGradient(
+                    colors: [
+                        Color(red: 1.0, green: 0.97, blue: 0.92),
+                        Color.white
+                    ],
+                    startPoint: .topLeading,
+                    endPoint: .bottomTrailing
+                )
+            )
+            .frame(width: size + 30, height: size + 30)
+            .shadow(color: Color.black.opacity(0.15), radius: 12, x: 0, y: 8)
+            .overlay(
+                RoundedRectangle(cornerRadius: 34, style: .continuous)
+                    .stroke(
+                        LinearGradient(
+                            colors: [
+                                Color(red: 0.94, green: 0.83, blue: 0.67),
+                                Color(red: 0.86, green: 0.68, blue: 0.5)
+                            ],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        ),
+                        style: StrokeStyle(lineWidth: 3, dash: [10, 6])
+                    )
+            )
+    }
+}
+
+private struct StorybookActionButton: View {
+    let title: String
+    let icon: String
+    let isEnabled: Bool
+    let gradient: [Color]
+    let action: () -> Void
+    
+    private var resolvedGradient: [Color] {
+        guard gradient.count >= 2 else {
+            return [Color.white, Color.white.opacity(0.95)]
+        }
+        return gradient
+    }
+    
+    var body: some View {
+        Button(action: action) {
+            HStack(spacing: 8) {
+                Image(systemName: icon)
+                    .font(.system(size: 18, weight: .semibold))
+                Text(title)
+                    .font(.system(size: 16, weight: .semibold, design: .rounded))
+            }
+            .foregroundColor(isEnabled ? Color(red: 0.37, green: 0.28, blue: 0.18) : Color(.systemGray3))
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 10)
+            .background(
+                RoundedRectangle(cornerRadius: 16, style: .continuous)
+                    .fill(
+                        LinearGradient(
+                            colors: resolvedGradient,
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
+                    )
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: 16, style: .continuous)
+                    .stroke(Color.white.opacity(0.4), lineWidth: 1)
+            )
+            .shadow(color: Color.black.opacity(0.06), radius: 6, x: 0, y: 4)
+            .opacity(isEnabled ? 1 : 0.6)
+        }
+        .buttonStyle(.plain)
+        .disabled(!isEnabled)
     }
 }
 

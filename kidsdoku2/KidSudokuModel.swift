@@ -80,12 +80,12 @@ struct KidSudokuConfig: Hashable {
     }
 }
 
-struct KidSudokuPosition: Hashable {
+struct KidSudokuPosition: Hashable, Equatable {
     let row: Int
     let col: Int
 }
 
-struct KidSudokuCell: Identifiable {
+struct KidSudokuCell: Identifiable, Equatable {
     let id: Int
     let position: KidSudokuPosition
     var value: Int?
