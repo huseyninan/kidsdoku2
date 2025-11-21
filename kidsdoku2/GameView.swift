@@ -380,17 +380,20 @@ private struct BoardGridView: View {
         .frame(width: cellSize, height: cellSize)
         .overlay(
             Rectangle()
-                .stroke(Color(.systemGray4), lineWidth: 1)
+                .stroke(Color(red: 0.89, green: 0.84, blue: 0.76), lineWidth: 1)
         )
     }
 
     private func cellBackground(for cell: KidSudokuCell, isSelected: Bool) -> Color {
         if cell.isFixed {
-            return Color(.systemGray6)
+            // Warm beige for fixed cells - like parchment paper in a storybook
+            return Color(red: 0.96, green: 0.94, blue: 0.89)
         }
         if isSelected {
-            return Color.accentColor.opacity(0.25)
+            // Soft peach glow for selected cells - friendly and inviting
+            return Color(red: 1.0, green: 0.89, blue: 0.74).opacity(0.6)
         }
+        // Pure white for empty cells - clean storybook pages
         return Color.white
     }
 
@@ -408,7 +411,8 @@ private struct BoardGridView: View {
     private func drawSubgridLines(context: inout GraphicsContext, size: CGSize) {
         let dimension = min(size.width, size.height)
         let cell = dimension / CGFloat(config.size)
-        let lineColor = Color(.systemGray3)
+        // Warm brown color like storybook illustrations
+        let lineColor = Color(red: 0.76, green: 0.65, blue: 0.52)
 
         for row in 0...config.size where row % config.subgridRows == 0 {
             var path = Path()
