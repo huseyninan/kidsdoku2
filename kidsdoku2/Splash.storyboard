@@ -18,13 +18,19 @@
                             <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="splash_bg2" translatesAutoresizingMaskIntoConstraints="NO" id="ZBz-MF-pQa">
                                 <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
                             </imageView>
+                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="logo_name2" translatesAutoresizingMaskIntoConstraints="NO" id="Vof-ME-5T9">
+                                <rect key="frame" x="0.0" y="146" width="393" height="160"/>
+                            </imageView>
                         </subviews>
                         <viewLayoutGuide key="safeArea" id="Bcu-3y-fUS"/>
                         <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                         <constraints>
+                            <constraint firstItem="Vof-ME-5T9" firstAttribute="width" secondItem="ZBz-MF-pQa" secondAttribute="width" id="18h-M7-HAX"/>
                             <constraint firstItem="ZBz-MF-pQa" firstAttribute="top" secondItem="Ze5-6b-2t3" secondAttribute="top" id="SpF-kC-2Ee"/>
                             <constraint firstItem="Bcu-3y-fUS" firstAttribute="trailing" secondItem="ZBz-MF-pQa" secondAttribute="trailing" id="Vzk-QD-apo"/>
                             <constraint firstItem="ZBz-MF-pQa" firstAttribute="leading" secondItem="Bcu-3y-fUS" secondAttribute="leading" id="WYo-uh-17B"/>
+                            <constraint firstItem="Vof-ME-5T9" firstAttribute="centerY" secondItem="ZBz-MF-pQa" secondAttribute="centerY" constant="-200" id="d5n-tL-IQl"/>
+                            <constraint firstItem="Vof-ME-5T9" firstAttribute="centerX" secondItem="ZBz-MF-pQa" secondAttribute="centerX" id="drh-jb-Rgy"/>
                             <constraint firstAttribute="bottom" secondItem="ZBz-MF-pQa" secondAttribute="bottom" id="tWE-qT-jKU"/>
                         </constraints>
                     </view>
@@ -35,6 +41,7 @@
         </scene>
     </scenes>
     <resources>
+        <image name="logo_name2" width="512" height="160"/>
         <image name="splash_bg2" width="420" height="898"/>
     </resources>
 </document>
