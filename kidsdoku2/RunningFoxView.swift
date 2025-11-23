@@ -10,7 +10,7 @@ import SwiftUI
 struct RunningFoxView: View {
     @State private var isRunning = false
     @State private var currentFrame = 0
-    let foxFrames = ["fox_running1", "fox_running2", "fox_running3"]
+    let foxFrames = ["fox_running1", "fox_running2", "fox_running3", "fox_running4"]
     
     private let travelDuration: Double = 8.0
     private let pauseDuration: Double = 5.0
