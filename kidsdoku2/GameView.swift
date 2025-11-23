@@ -139,7 +139,7 @@ struct GameView: View {
     private var paletteSection: some View {
         VStack(spacing: 8) {
             HStack {
-                Text("Veggie Basket")
+                Text(config.symbolGroup.paletteTitle)
                     .font(.system(size: 16, weight: .heavy, design: .rounded))
                     .foregroundStyle(Color(red: 0.44, green: 0.3, blue: 0.23))
                 Spacer()

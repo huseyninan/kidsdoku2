@@ -42,6 +42,17 @@ enum SymbolGroup: Int, CaseIterable, Hashable {
     var id: Int {
         return rawValue
     }
+    
+    var paletteTitle: String {
+        switch self {
+        case .animals, .animals2, .animals3, .animals4:
+            return "Safari Camp"
+        case .sea, .weather:
+            return "Coral Reef"
+        case .birds, .birds2, .birds3, .birds4:
+            return "Bird's Nest"
+        }
+    }
 }
 
 struct KidSudokuConfig: Hashable {
