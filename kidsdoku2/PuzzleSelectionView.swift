@@ -11,6 +11,9 @@ struct PuzzleSelectionView: View {
     @Binding var path: [KidSudokuRoute]
     @ObservedObject private var completionManager = PuzzleCompletionManager.shared
     
+    @State private var showSettings = false
+    @State private var selectedDifficulties: Set<PuzzleDifficulty> = Set(PuzzleDifficulty.allCases)
+    
     private var themes: [PuzzleDifficulty: DifficultyTheme] {
         switch size {
         case 3:
@@ -42,6 +45,7 @@ struct PuzzleSelectionView: View {
     
     private var puzzlesByDifficulty: [(PuzzleDifficulty, [PremadePuzzle])] {
         PuzzleDifficulty.allCases.compactMap { difficulty in
+            guard selectedDifficulties.contains(difficulty) else { return nil }
             let filteredPuzzles = PremadePuzzleStore.shared.puzzles(for: size, difficulty: difficulty)
             return filteredPuzzles.isEmpty ? nil : (difficulty, filteredPuzzles)
         }
@@ -70,6 +74,10 @@ struct PuzzleSelectionView: View {
         }
         .navigationBarTitleDisplayMode(.inline)
         .navigationBarBackButtonHidden(false)
+        .sheet(isPresented: $showSettings) {
+            DifficultySettingsView(selectedDifficulties: $selectedDifficulties)
+                .presentationDetents([.medium])
+        }
     }
     
     private var headerSection: some View {
@@ -84,7 +92,7 @@ struct PuzzleSelectionView: View {
             Spacer()
             
             Button {
-                // Settings action
+                showSettings = true
             } label: {
                 Image(systemName: "gearshape.fill")
                     .font(.system(size: 28))
@@ -427,5 +435,61 @@ private struct MiniStarRatingView: View {
 #Preview {
     NavigationStack {
         PuzzleSelectionView(size: 4, path: .constant([]))
+    }
+}
+
+private struct DifficultySettingsView: View {
+    @Binding var selectedDifficulties: Set<PuzzleDifficulty>
+    @Environment(\.dismiss) var dismiss
+    
+    var body: some View {
+        NavigationStack {
+            Form {
+                Section {
+                    Text("Choose which difficulty levels to show in the list.")
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                        .listRowBackground(Color.clear)
+                        .listRowInsets(EdgeInsets(top: 0, leading: 0, bottom: 8, trailing: 0))
+                }
+                
+                Section(header: Text("Difficulty Levels")) {
+                    ForEach(PuzzleDifficulty.allCases, id: \.self) { difficulty in
+                        Toggle(isOn: Binding(
+                            get: { selectedDifficulties.contains(difficulty) },
+                            set: { isSelected in
+                                if isSelected {
+                                    selectedDifficulties.insert(difficulty)
+                                } else {
+                                    // Ensure at least one remains selected
+                                    if selectedDifficulties.count > 1 {
+                                        selectedDifficulties.remove(difficulty)
+                                    }
+                                }
+                            }
+                        )) {
+                            HStack {
+                                Circle()
+                                    .fill(difficulty.color)
+                                    .frame(width: 12, height: 12)
+                                Text(difficulty.rawValue)
+                                    .font(.system(.body, design: .rounded))
+                            }
+                        }
+                    }
+                }
+            }
+            .navigationTitle("Settings")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Done") {
+                        dismiss()
+                    }
+                    .font(.system(.body, design: .rounded))
+                    .bold()
+                }
+            }
+        }
     }
 }
