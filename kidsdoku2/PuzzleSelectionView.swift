@@ -11,6 +11,12 @@ struct PuzzleSelectionView: View {
     @Binding var path: [KidSudokuRoute]
     @ObservedObject private var completionManager = PuzzleCompletionManager.shared
     
+    @State private var showSettings = false
+    @AppStorage("showEasyDifficulty") private var showEasy = true
+    @AppStorage("showNormalDifficulty") private var showNormal = true
+    @AppStorage("showHardDifficulty") private var showHard = true
+    @AppStorage("hideFinishedPuzzles") private var hideFinishedPuzzles = false
+    
     private var themes: [PuzzleDifficulty: DifficultyTheme] {
         switch size {
         case 3:
@@ -42,7 +48,23 @@ struct PuzzleSelectionView: View {
     
     private var puzzlesByDifficulty: [(PuzzleDifficulty, [PremadePuzzle])] {
         PuzzleDifficulty.allCases.compactMap { difficulty in
-            let filteredPuzzles = PremadePuzzleStore.shared.puzzles(for: size, difficulty: difficulty)
+            // Check if this difficulty should be shown based on settings
+            let shouldShow: Bool
+            switch difficulty {
+            case .easy: shouldShow = showEasy
+            case .normal: shouldShow = showNormal
+            case .hard: shouldShow = showHard
+            }
+            
+            guard shouldShow else { return nil }
+            
+            var filteredPuzzles = PremadePuzzleStore.shared.puzzles(for: size, difficulty: difficulty)
+            
+            // Filter out completed puzzles if the setting is enabled
+            if hideFinishedPuzzles {
+                filteredPuzzles = filteredPuzzles.filter { !completionManager.isCompleted(puzzle: $0) }
+            }
+            
             return filteredPuzzles.isEmpty ? nil : (difficulty, filteredPuzzles)
         }
     }
@@ -70,6 +92,9 @@ struct PuzzleSelectionView: View {
         }
         .navigationBarTitleDisplayMode(.inline)
         .navigationBarBackButtonHidden(false)
+        .sheet(isPresented: $showSettings) {
+            difficultySettingsView
+        }
     }
     
     private var headerSection: some View {
@@ -84,7 +109,7 @@ struct PuzzleSelectionView: View {
             Spacer()
             
             Button {
-                // Settings action
+                showSettings = true
             } label: {
                 Image(systemName: "gearshape.fill")
                     .font(.system(size: 28))
@@ -247,6 +272,98 @@ struct PuzzleSelectionView: View {
             )
         }
         .buttonStyle(.plain)
+    }
+    
+    private var difficultySettingsView: some View {
+        NavigationStack {
+            ZStack {
+                Color(red: 0.85, green: 0.88, blue: 0.92)
+                    .ignoresSafeArea()
+                
+                VStack(spacing: 24) {
+                    Text("Choose which difficulty levels to show")
+                        .font(.system(size: 16, weight: .medium, design: .rounded))
+                        .foregroundStyle(Color(red: 0.4, green: 0.4, blue: 0.45))
+                        .multilineTextAlignment(.center)
+                        .padding(.top, 8)
+                    
+                    VStack(spacing: 16) {
+                        difficultyToggle(
+                            title: "Easy",
+                            emoji: "🌻",
+                            isOn: $showEasy,
+                            color: Color(red: 0.45, green: 0.55, blue: 0.45)
+                        )
+                        
+                        difficultyToggle(
+                            title: "Normal",
+                            emoji: "🌲",
+                            isOn: $showNormal,
+                            color: Color(red: 0.35, green: 0.45, blue: 0.60)
+                        )
+                        
+                        difficultyToggle(
+                            title: "Hard",
+                            emoji: "💎",
+                            isOn: $showHard,
+                            color: Color(red: 0.30, green: 0.35, blue: 0.50)
+                        )
+                    }
+                    .padding(.horizontal, 20)
+                    
+                    Divider()
+                        .padding(.horizontal, 20)
+                    
+                    VStack(spacing: 16) {
+                        difficultyToggle(
+                            title: "Hide Finished",
+                            emoji: "✅",
+                            isOn: $hideFinishedPuzzles,
+                            color: Color(red: 0.24, green: 0.65, blue: 0.33)
+                        )
+                    }
+                    .padding(.horizontal, 20)
+                    
+                    Spacer()
+                }
+                .padding(.top, 16)
+            }
+            .navigationTitle("Difficulty Settings")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button("Done") {
+                        showSettings = false
+                    }
+                    .font(.system(size: 17, weight: .semibold, design: .rounded))
+                }
+            }
+        }
+        .presentationDetents([.medium])
+    }
+    
+    private func difficultyToggle(title: String, emoji: String, isOn: Binding<Bool>, color: Color) -> some View {
+        HStack(spacing: 16) {
+            Text(emoji)
+                .font(.system(size: 36))
+            
+            Text(title)
+                .font(.system(size: 22, weight: .semibold, design: .rounded))
+                .foregroundStyle(Color(red: 0.3, green: 0.3, blue: 0.35))
+            
+            Spacer()
+            
+            Toggle("", isOn: isOn)
+                .labelsHidden()
+                .tint(color)
+        }
+        .padding(.horizontal, 20)
+        .padding(.vertical, 16)
+        .background(
+            RoundedRectangle(cornerRadius: 16, style: .continuous)
+                .fill(Color.white)
+                .shadow(color: Color.black.opacity(0.1), radius: 4, x: 0, y: 2)
+        )
     }
 }
 

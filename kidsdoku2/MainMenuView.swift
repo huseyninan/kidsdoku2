@@ -19,7 +19,7 @@ struct MainMenuView: View {
                 // Push content below safe area
                 Rectangle()
                     .fill(Color.clear)
-                    .frame(height: 20)
+                    .frame(height: 40)
                     .ignoresSafeArea(.all, edges: .top)
                 
                 // Header buttons
@@ -108,7 +108,7 @@ struct MainMenuView: View {
                 .padding(.top, 10)
                 
                 Spacer()
-                    .frame(height: 30)
+                    .frame(height: 50)
 
                 // Quest Buttons
                 VStack(spacing: 24) {
