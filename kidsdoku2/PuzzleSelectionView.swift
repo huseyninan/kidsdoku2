@@ -1,4 +1,5 @@
 import SwiftUI
+import RevenueCatUI
 
 struct DifficultyTheme {
     let name: String
@@ -10,8 +11,10 @@ struct PuzzleSelectionView: View {
     let size: Int
     @Binding var path: [KidSudokuRoute]
     @ObservedObject private var completionManager = PuzzleCompletionManager.shared
+    @EnvironmentObject var appEnvironment: AppEnvironment
     
     @State private var showSettings = false
+    @State private var showPaywall = false
     @AppStorage("showEasyDifficulty") private var showEasy = true
     @AppStorage("showNormalDifficulty") private var showNormal = true
     @AppStorage("showHardDifficulty") private var showHard = true
@@ -95,6 +98,13 @@ struct PuzzleSelectionView: View {
         .sheet(isPresented: $showSettings) {
             difficultySettingsView
         }
+        .sheet(isPresented: $showPaywall) {
+            PaywallView()
+                .onPurchaseCompleted { customerInfo in
+                    print("Purchase completed: \(customerInfo)")
+                    appEnvironment.refreshSubscriptionStatus()
+                }
+        }
     }
     
     private var headerSection: some View {
@@ -138,7 +148,7 @@ struct PuzzleSelectionView: View {
             ], spacing: 12) {
                 ForEach(0..<puzzles.count, id: \.self) { index in
                     if index < puzzles.count {
-                        puzzleButton(puzzle: puzzles[index], theme: theme)
+                        puzzleButton(puzzle: puzzles[index], index: index, theme: theme)
                     } else {
                         emptyPuzzleSlot(number: index + 1, theme: theme)
                     }
@@ -154,13 +164,19 @@ struct PuzzleSelectionView: View {
         )
     }
     
-    private func puzzleButton(puzzle: PremadePuzzle, theme: DifficultyTheme) -> some View {
-        Button {
-            path.append(.premadePuzzle(puzzle: puzzle))
+    private func puzzleButton(puzzle: PremadePuzzle, index: Int, theme: DifficultyTheme) -> some View {
+        let isLocked = index > 2 && !appEnvironment.isPremium
+        
+        return Button {
+            if isLocked {
+                showPaywall = true
+            } else {
+                path.append(.premadePuzzle(puzzle: puzzle))
+            }
         } label: {
             ZStack {
                 RoundedRectangle(cornerRadius: 20, style: .continuous)
-                    .fill(Color.white.opacity(0.9))
+                    .fill(Color.white.opacity(isLocked ? 0.5 : 0.9))
                     .frame(height: 100)
                 
                 VStack(alignment: .leading, spacing: -26) {
@@ -173,7 +189,10 @@ struct PuzzleSelectionView: View {
                         
                         Spacer()
                         
-                        if completionManager.isCompleted(puzzle: puzzle) {
+                        if isLocked {
+                            lockBadge
+                                .padding(.top, 4)
+                        } else if completionManager.isCompleted(puzzle: puzzle) {
                             completionBadge
                                 .padding(.top, 4)
                         }
@@ -183,13 +202,27 @@ struct PuzzleSelectionView: View {
                     Image(puzzle.displayEmoji)
                         .resizable()
                         .frame(width: 80, height: 80)
+                        .opacity(isLocked ? 0.3 : 1.0)
                 }
                 .padding(12)
+                
+                // Lock overlay
+                if isLocked {
+                    ZStack {
+                        Circle()
+                            .fill(Color.black.opacity(0.7))
+                            .frame(width: 50, height: 50)
+                        
+                        Image(systemName: "lock.fill")
+                            .font(.system(size: 24))
+                            .foregroundColor(.white)
+                    }
+                }
             }
         }
         .buttonStyle(.plain)
         .overlay(alignment: .bottom) {
-            if let rating = completionManager.rating(for: puzzle) {
+            if !isLocked, let rating = completionManager.rating(for: puzzle) {
                 PuzzleRankBadge(rating: rating)
                     .padding(.bottom, 12)
             }
@@ -243,6 +276,21 @@ struct PuzzleSelectionView: View {
             Image(systemName: "checkmark")
                 .font(.system(size: 16, weight: .bold, design: .rounded))
                 .foregroundStyle(Color(red: 0.24, green: 0.65, blue: 0.33))
+        }
+        .frame(width: 34, height: 34)
+    }
+    
+    private var lockBadge: some View {
+        ZStack {
+            Circle()
+                .fill(Color.white)
+            
+            Circle()
+                .stroke(Color(red: 0.95, green: 0.77, blue: 0.06), lineWidth: 3)
+            
+            Image(systemName: "crown.fill")
+                .font(.system(size: 16, weight: .bold, design: .rounded))
+                .foregroundStyle(Color(red: 0.95, green: 0.77, blue: 0.06))
         }
         .frame(width: 34, height: 34)
     }
@@ -544,5 +592,6 @@ private struct MiniStarRatingView: View {
 #Preview {
     NavigationStack {
         PuzzleSelectionView(size: 4, path: .constant([]))
+            .environmentObject(AppEnvironment())
     }
 }
