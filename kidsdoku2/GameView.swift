@@ -404,7 +404,14 @@ private struct BoardGridView: View {
     }
 
     private var cellFontSize: CGFloat {
-        config.size == 4 ? 44 : 36
+        switch config.size {
+        case 3:
+            return 52
+        case 4:
+            return 44
+        default:
+            return 36
+        }
     }
 
     // subgrid lines

@@ -39,6 +39,324 @@ private let emojiPalette: [PuzzleDifficulty: [String]] = [
 struct PremadePuzzleStore {
     static let shared = PremadePuzzleStore()
     
+    // MARK: - 3x3 Puzzles
+    private let threeByThreePuzzles: [PremadePuzzle] = [
+        // Easy 3x3
+        puzzle(1, 3, .easy,
+               initial:  """
+                      1.3
+                      .31
+                      31.
+                      """,
+               solution: """
+                      123
+                      231
+                      312
+                      """),
+        
+        puzzle(2, 3, .easy,
+               initial:  """
+                      1..
+                      231
+                      .1.
+                      """,
+               solution: """
+                      123
+                      231
+                      312
+                      """),
+        
+        puzzle(3, 3, .easy,
+               initial:  """
+                      12.
+                      3.2
+                      .31
+                      """,
+               solution: """
+                      123
+                      312
+                      231
+                      """),
+        
+        puzzle(4, 3, .easy,
+               initial:  """
+                      .23
+                      231
+                      31.
+                      """,
+               solution: """
+                      123
+                      231
+                      312
+                      """),
+        
+        puzzle(5, 3, .easy,
+               initial:  """
+                      1.3
+                      31.
+                      .31
+                      """,
+               solution: """
+                      123
+                      312
+                      231
+                      """),
+        
+        puzzle(6, 3, .easy,
+               initial:  """
+                      .2.
+                      231
+                      3.2
+                      """,
+               solution: """
+                      123
+                      231
+                      312
+                      """),
+        
+        puzzle(7, 3, .easy,
+               initial:  """
+                      1.3
+                      .31
+                      .12
+                      """,
+               solution: """
+                      123
+                      231
+                      312
+                      """),
+        
+        puzzle(8, 3, .easy,
+               initial:  """
+                      12.
+                      .12
+                      .31
+                      """,
+               solution: """
+                      123
+                      312
+                      231
+                      """),
+        
+        puzzle(9, 3, .easy,
+               initial:  """
+                      .23
+                      23.
+                      31.
+                      """,
+               solution: """
+                      123
+                      231
+                      312
+                      """),
+        
+        // Normal 3x3
+        puzzle(1, 3, .normal,
+               initial:  """
+                      ..3
+                      .31
+                      31.
+                      """,
+               solution: """
+                      123
+                      231
+                      312
+                      """),
+        
+        puzzle(2, 3, .normal,
+               initial:  """
+                      1.3
+                      ...
+                      .31
+                      """,
+               solution: """
+                      123
+                      312
+                      231
+                      """),
+        
+        puzzle(3, 3, .normal,
+               initial:  """
+                      1..
+                      .31
+                      3..
+                      """,
+               solution: """
+                      123
+                      231
+                      312
+                      """),
+        
+        puzzle(4, 3, .normal,
+               initial:  """
+                      ..3
+                      .3.
+                      31.
+                      """,
+               solution: """
+                      123
+                      231
+                      312
+                      """),
+        
+        puzzle(5, 3, .normal,
+               initial:  """
+                      1.3
+                      .3.
+                      31.
+                      """,
+               solution: """
+                      123
+                      231
+                      312
+                      """),
+        
+        puzzle(6, 3, .normal,
+               initial:  """
+                      ..3
+                      3.2
+                      .31
+                      """,
+               solution: """
+                      123
+                      312
+                      231
+                      """),
+        
+        puzzle(7, 3, .normal,
+               initial:  """
+                      1..
+                      23.
+                      31.
+                      """,
+               solution: """
+                      123
+                      231
+                      312
+                      """),
+        
+        puzzle(8, 3, .normal,
+               initial:  """
+                      .2.
+                      .31
+                      31.
+                      """,
+               solution: """
+                      123
+                      231
+                      312
+                      """),
+        
+        puzzle(9, 3, .normal,
+               initial:  """
+                      1..
+                      .1.
+                      .31
+                      """,
+               solution: """
+                      123
+                      312
+                      231
+                      """),
+        
+        // Hard 3x3
+        puzzle(1, 3, .hard,
+               initial:  """
+                      1..
+                      ...
+                      31.
+                      """,
+               solution: """
+                      123
+                      231
+                      312
+                      """),
+        
+        puzzle(2, 3, .hard,
+               initial:  """
+                      ..3
+                      .3.
+                      .1.
+                      """,
+               solution: """
+                      123
+                      231
+                      312
+                      """),
+        
+        puzzle(3, 3, .hard,
+               initial:  """
+                      1..
+                      .3.
+                      31.
+                      """,
+               solution: """
+                      123
+                      231
+                      312
+                      """),
+        
+        puzzle(4, 3, .hard,
+               initial:  """
+                      ...
+                      .31
+                      31.
+                      """,
+               solution: """
+                      123
+                      231
+                      312
+                      """),
+        
+        puzzle(5, 3, .hard,
+               initial:  """
+                      1..
+                      31.
+                      ...
+                      """,
+               solution: """
+                      123
+                      312
+                      231
+                      """),
+        
+        puzzle(6, 3, .hard,
+               initial:  """
+                      ..3
+                      ...
+                      31.
+                      """,
+               solution: """
+                      123
+                      231
+                      312
+                      """),
+        
+        puzzle(7, 3, .hard,
+               initial:  """
+                      1..
+                      ...
+                      .31
+                      """,
+               solution: """
+                      123
+                      312
+                      231
+                      """),
+        
+        puzzle(8, 3, .hard,
+               initial:  """
+                      ...
+                      .31
+                      .1.
+                      """,
+               solution: """
+                      123
+                      231
+                      312
+                      """),
+    ]
+    
     // MARK: - 4x4 Puzzles
     private let fourByFourPuzzles: [PremadePuzzle] = [
         // Easy 4x4
@@ -1673,6 +1991,8 @@ struct PremadePuzzleStore {
     // MARK: - Public Interface
     func puzzles(for size: Int) -> [PremadePuzzle] {
         switch size {
+        case 3:
+            return threeByThreePuzzles
         case 4:
             return fourByFourPuzzles
         case 6:
@@ -1707,10 +2027,23 @@ private func puzzle(
     solution: String
 ) -> PremadePuzzle {
     let symbolGroup = assignSymbolGroup(size: size, difficulty: difficulty, number: number)
+    
+    let (subgridRows, subgridCols): (Int, Int)
+    switch size {
+    case 3:
+        (subgridRows, subgridCols) = (1, 3)
+    case 4:
+        (subgridRows, subgridCols) = (2, 2)
+    case 6:
+        (subgridRows, subgridCols) = (2, 3)
+    default:
+        fatalError("Unsupported puzzle size: \(size)")
+    }
+    
     let config = KidSudokuConfig(
         size: size,
-        subgridRows: size == 4 ? 2 : 2,
-        subgridCols: size == 4 ? 2 : 3,
+        subgridRows: subgridRows,
+        subgridCols: subgridCols,
         symbolGroup: symbolGroup
     )
     

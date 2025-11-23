@@ -139,6 +139,13 @@ struct MainMenuView: View {
                 // Quest Buttons
                 VStack(spacing: 24) {
                     questButton(
+                        title: "Path Unlocked: 3x3",
+                        subtitle: "First Steps"
+                    ) {
+                        path.append(.puzzleSelection(size: 3))
+                    }
+
+                    questButton(
                         title: "Path Unlocked: 4x4",
                         subtitle: "Easy Journey"
                     ) {

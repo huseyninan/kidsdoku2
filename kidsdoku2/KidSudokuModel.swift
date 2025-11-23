@@ -54,6 +54,13 @@ struct KidSudokuConfig: Hashable {
         return Array(symbolGroup.symbols)
     }
 
+    static let threeByThree = KidSudokuConfig(
+        size: 3,
+        subgridRows: 1,
+        subgridCols: 3,
+        symbolGroup: .animals
+    )
+
     static let fourByFour = KidSudokuConfig(
         size: 4,
         subgridRows: 2,
@@ -70,6 +77,8 @@ struct KidSudokuConfig: Hashable {
 
     static func configuration(for size: Int) -> KidSudokuConfig? {
         switch size {
+        case 3:
+            return .threeByThree
         case 4:
             return .fourByFour
         case 6:
@@ -295,6 +304,8 @@ enum KidSudokuGenerator {
         let targetGivens: Int
 
         switch size {
+        case 3:
+            targetGivens = 4
         case 4:
             targetGivens = 8
         case 6:
