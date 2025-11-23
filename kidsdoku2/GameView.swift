@@ -27,6 +27,14 @@ struct GameView: View {
                 StorybookBackground()
                     .ignoresSafeArea()
                 
+                // Animated running fox at the bottom of the screen
+                VStack {
+                    Spacer()
+                    RunningFoxView()
+                        .frame(height: 200)
+                        .allowsHitTesting(false)
+                }
+                
                 VStack(spacing: 8) {
                     header
                     
