@@ -18,6 +18,11 @@ class AppEnvironment: ObservableObject {
     /// Whether the app is currently loading subscription status
     @Published var isLoadingSubscription: Bool = true
     
+    /// Grid visibility settings
+    @AppStorage("show3x3Grid") var show3x3Grid: Bool = true
+    @AppStorage("show4x4Grid") var show4x4Grid: Bool = true
+    @AppStorage("show6x6Grid") var show6x6Grid: Bool = true
+    
     /// Reference to the sound manager singleton
     let soundManager = SoundManager.shared
     

@@ -112,25 +112,31 @@ struct MainMenuView: View {
 
                 // Quest Buttons
                 VStack(spacing: 24) {
-                    questButton(
-                        title: "Start Journey: 3x3",
-                        subtitle: "Tiny Tales"
-                    ) {
-                        path.append(.puzzleSelection(size: 3))
+                    if appEnvironment.show3x3Grid {
+                        questButton(
+                            title: "Start Journey: 3x3",
+                            subtitle: "Tiny Tales"
+                        ) {
+                            path.append(.puzzleSelection(size: 3))
+                        }
                     }
 
-                    questButton(
-                        title: "Start Journey: 4x4",
-                        subtitle: "Fable Adventures"
-                    ) {
-                        path.append(.puzzleSelection(size: 4))
+                    if appEnvironment.show4x4Grid {
+                        questButton(
+                            title: "Start Journey: 4x4",
+                            subtitle: "Fable Adventures"
+                        ) {
+                            path.append(.puzzleSelection(size: 4))
+                        }
                     }
 
-                    questButton(
-                        title: "Start Journey: 6x6",
-                        subtitle: "Kingdom Chronicles"
-                    ) {
-                        path.append(.puzzleSelection(size: 6))
+                    if appEnvironment.show6x6Grid {
+                        questButton(
+                            title: "Start Journey: 6x6",
+                            subtitle: "Kingdom Chronicles"
+                        ) {
+                            path.append(.puzzleSelection(size: 6))
+                        }
                     }
                 }
                 .padding(.horizontal, 32)

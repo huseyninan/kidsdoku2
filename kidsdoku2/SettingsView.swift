@@ -9,6 +9,7 @@ import SwiftUI
 
 struct SettingsView: View {
     @Environment(\.dismiss) var dismiss
+    @EnvironmentObject var appEnvironment: AppEnvironment
     @ObservedObject var soundManager = SoundManager.shared
     @ObservedObject var completionManager = PuzzleCompletionManager.shared
     @ObservedObject var hapticManager = HapticManager.shared
@@ -20,6 +21,7 @@ struct SettingsView: View {
     
     enum ResetType {
         case all
+        case size3x3
         case size4x4
         case size6x6
     }
@@ -66,29 +68,72 @@ struct SettingsView: View {
                             )
                         }
                         
+                        // Grid Visibility Section
+                        SettingsSection(
+                            icon: "square.grid.3x3.fill",
+                            title: "Grid Sizes"
+                        ) {
+                            SettingsToggle(
+                                icon: "square.grid.3x3",
+                                title: "Show 3x3 Grid",
+                                subtitle: "Tiny Tales",
+                                isOn: $appEnvironment.show3x3Grid
+                            )
+                            
+                            SettingsToggle(
+                                icon: "square.grid.4x3.fill",
+                                title: "Show 4x4 Grid",
+                                subtitle: "Fable Adventures",
+                                isOn: $appEnvironment.show4x4Grid
+                            )
+                            
+                            SettingsToggle(
+                                icon: "square.grid.3x3.fill",
+                                title: "Show 6x6 Grid",
+                                subtitle: "Kingdom Chronicles",
+                                isOn: $appEnvironment.show6x6Grid
+                            )
+                        }
+                        
                         // Progress Management Section
                         SettingsSection(
                             icon: "chart.bar.fill",
                             title: "Progress Management"
                         ) {
-                            SettingsButton(
-                                icon: "arrow.counterclockwise",
-                                title: "Reset 4x4 Progress",
-                                subtitle: "Clear all completed 4x4 puzzles",
-                                color: .orange
-                            ) {
-                                resetType = .size4x4
-                                showResetAlert = true
+                            if appEnvironment.show3x3Grid {
+                                SettingsButton(
+                                    icon: "arrow.counterclockwise",
+                                    title: "Reset 3x3 Progress",
+                                    subtitle: "Clear all completed 3x3 puzzles",
+                                    color: .orange
+                                ) {
+                                    resetType = .size3x3
+                                    showResetAlert = true
+                                }
                             }
                             
-                            SettingsButton(
-                                icon: "arrow.counterclockwise",
-                                title: "Reset 6x6 Progress",
-                                subtitle: "Clear all completed 6x6 puzzles",
-                                color: .orange
-                            ) {
-                                resetType = .size6x6
-                                showResetAlert = true
+                            if appEnvironment.show4x4Grid {
+                                SettingsButton(
+                                    icon: "arrow.counterclockwise",
+                                    title: "Reset 4x4 Progress",
+                                    subtitle: "Clear all completed 4x4 puzzles",
+                                    color: .orange
+                                ) {
+                                    resetType = .size4x4
+                                    showResetAlert = true
+                                }
+                            }
+                            
+                            if appEnvironment.show6x6Grid {
+                                SettingsButton(
+                                    icon: "arrow.counterclockwise",
+                                    title: "Reset 6x6 Progress",
+                                    subtitle: "Clear all completed 6x6 puzzles",
+                                    color: .orange
+                                ) {
+                                    resetType = .size6x6
+                                    showResetAlert = true
+                                }
                             }
                             
                             SettingsButton(
@@ -157,6 +202,8 @@ struct SettingsView: View {
         switch resetType {
         case .all:
             return "This will clear all your puzzle progress. This action cannot be undone."
+        case .size3x3:
+            return "This will clear all your 3x3 puzzle progress. This action cannot be undone."
         case .size4x4:
             return "This will clear all your 4x4 puzzle progress. This action cannot be undone."
         case .size6x6:
@@ -170,6 +217,8 @@ struct SettingsView: View {
         switch resetType {
         case .all:
             completionManager.resetAll()
+        case .size3x3:
+            completionManager.resetSize(3)
         case .size4x4:
             completionManager.resetSize(4)
         case .size6x6:
@@ -530,5 +579,6 @@ struct PrivacySection: View {
 
 #Preview {
     SettingsView()
+        .environmentObject(AppEnvironment())
 }
 
