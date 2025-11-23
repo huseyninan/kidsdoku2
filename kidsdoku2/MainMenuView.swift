@@ -109,28 +109,6 @@ struct MainMenuView: View {
                 
                 Spacer()
                     .frame(height: 30)
-                
-                // Quest Log Title Card
-                VStack(spacing: 8) {
-                    Text("Let's Play!")
-                        .font(.system(size: 48, weight: .heavy, design: .rounded))
-                        .foregroundStyle(Color(red: 0.4, green: 0.25, blue: 0.15))
-                    
-                    Text("Pick a puzzle size below!")
-                        .font(.system(size: 20, weight: .semibold, design: .rounded))
-                        .foregroundStyle(Color(red: 0.7, green: 0.35, blue: 0.3))
-                }
-                .padding(.vertical, 32)
-                .padding(.horizontal, 40)
-                .background(
-                    RoundedRectangle(cornerRadius: 35, style: .continuous)
-                        .fill(Color(red: 0.95, green: 0.93, blue: 0.87))
-                        .shadow(color: .black.opacity(0.15), radius: 12, x: 0, y: 6)
-                )
-                .padding(.horizontal, 24)
-                
-                Spacer()
-                    .frame(height: 50)
 
                 // Quest Buttons
                 VStack(spacing: 24) {
@@ -158,6 +136,19 @@ struct MainMenuView: View {
                 .padding(.horizontal, 32)
 
                 Spacer()
+
+                // Quest Log Title Card
+                Text("Let's Play!")
+                    .font(.system(size: 30, weight: .heavy, design: .rounded))
+                    .foregroundStyle(Color(red: 0.4, green: 0.25, blue: 0.15))
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 12)
+                    .padding(.horizontal, 40)
+                    .background(
+                        RoundedRectangle(cornerRadius: 0, style: .continuous)
+                            .fill(Color(red: 0.95, green: 0.93, blue: 0.87))
+                            .shadow(color: .black.opacity(0.15), radius: 12, x: 0, y: 6)
+                    )
             }
         }
         .fullScreenCover(isPresented: $isShowingTutorial) {
