@@ -112,15 +112,11 @@ struct MainMenuView: View {
                 
                 // Quest Log Title Card
                 VStack(spacing: 8) {
-                    Text("Quest Log")
+                    Text("Let's Play!")
                         .font(.system(size: 48, weight: .heavy, design: .rounded))
                         .foregroundStyle(Color(red: 0.4, green: 0.25, blue: 0.15))
                     
-                    Text("Welcome! Choose your")
-                        .font(.system(size: 20, weight: .semibold, design: .rounded))
-                        .foregroundStyle(Color(red: 0.7, green: 0.35, blue: 0.3))
-                    
-                    Text("adventure!")
+                    Text("Pick a puzzle size below!")
                         .font(.system(size: 20, weight: .semibold, design: .rounded))
                         .foregroundStyle(Color(red: 0.7, green: 0.35, blue: 0.3))
                 }
@@ -139,22 +135,22 @@ struct MainMenuView: View {
                 // Quest Buttons
                 VStack(spacing: 24) {
                     questButton(
-                        title: "Path Unlocked: 3x3",
-                        subtitle: "First Steps"
+                        title: "Start Journey: 3x3",
+                        subtitle: "Tiny Tales"
                     ) {
                         path.append(.puzzleSelection(size: 3))
                     }
 
                     questButton(
-                        title: "Path Unlocked: 4x4",
-                        subtitle: "Easy Journey"
+                        title: "Start Journey: 4x4",
+                        subtitle: "Fable Adventures"
                     ) {
                         path.append(.puzzleSelection(size: 4))
                     }
 
                     questButton(
-                        title: "Path Unlocked: 6x6",
-                        subtitle: "Brave Expedition"
+                        title: "Start Journey: 6x6",
+                        subtitle: "Kingdom Chronicles"
                     ) {
                         path.append(.puzzleSelection(size: 6))
                     }
