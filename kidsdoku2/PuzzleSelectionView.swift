@@ -86,7 +86,7 @@ struct PuzzleSelectionView: View {
                             difficultyCard(difficulty: difficulty, puzzles: puzzles)
                         }
                         
-                        randomAdventureButton
+//                        randomAdventureButton
                     }
                     .padding(.horizontal, 16)
                     .padding(.bottom, 20)
