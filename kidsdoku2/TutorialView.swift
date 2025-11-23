@@ -2,6 +2,7 @@ import SwiftUI
 
 struct TutorialView: View {
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.colorScheme) private var colorScheme
     @State private var currentStep = 0
     private let totalSteps = 4
     
@@ -10,7 +11,10 @@ struct TutorialView: View {
             ZStack {
                 // Match the fox background theme with a warm gradient
                 LinearGradient(
-                    colors: [
+                    colors: colorScheme == .dark ? [
+                        Color(red: 0.15, green: 0.15, blue: 0.15),
+                        Color(red: 0.1, green: 0.1, blue: 0.1)
+                    ] : [
                         Color(red: 0.95, green: 0.93, blue: 0.87),
                         Color(red: 0.92, green: 0.88, blue: 0.80)
                     ],
@@ -51,7 +55,7 @@ struct TutorialView: View {
                         dismiss()
                     }
                     .font(.headline)
-                    .foregroundColor(Color(red: 0.7, green: 0.35, blue: 0.3))
+                    .foregroundColor(colorScheme == .dark ? Color(red: 0.9, green: 0.5, blue: 0.45) : Color(red: 0.7, green: 0.35, blue: 0.3))
                 }
             }
         }
@@ -62,12 +66,12 @@ struct TutorialView: View {
             Text("Sudoku for Kids")
                 .font(.largeTitle)
                 .fontWeight(.bold)
-                .foregroundStyle(Color(red: 0.4, green: 0.25, blue: 0.15))
+                .foregroundStyle(colorScheme == .dark ? Color(red: 0.9, green: 0.85, blue: 0.8) : Color(red: 0.4, green: 0.25, blue: 0.15))
                 .multilineTextAlignment(.center)
             
             Text("Learn to play step by step!")
                 .font(.title3)
-                .foregroundColor(Color(red: 0.7, green: 0.35, blue: 0.3))
+                .foregroundColor(colorScheme == .dark ? Color(red: 0.9, green: 0.5, blue: 0.45) : Color(red: 0.7, green: 0.35, blue: 0.3))
         }
         .padding(.bottom, 10)
     }
@@ -93,20 +97,24 @@ struct TutorialView: View {
             Text("What is Sudoku?")
                 .font(.title2)
                 .fontWeight(.bold)
+                .foregroundColor(.primary)
                 .frame(maxWidth: .infinity, alignment: .leading)
             
             VStack(alignment: .leading, spacing: 16) {
                 Text("Sudoku is a fun puzzle game where you fill empty boxes with emojis!")
                     .font(.body)
+                    .foregroundColor(.primary)
                 
                 Text("In our 4×4 game, you use 4 different emojis.")
                     .font(.body)
+                    .foregroundColor(.primary)
                 
                 Text("**The Goal:** Place each emoji exactly once in every row, column, and 2×2 box!")
                     .font(.body)
+                    .foregroundColor(.primary)
                     .padding(.vertical, 8)
                     .padding(.horizontal, 16)
-                    .background(Color(red: 0.7, green: 0.35, blue: 0.3).opacity(0.15))
+                    .background((colorScheme == .dark ? Color(red: 0.9, green: 0.5, blue: 0.45) : Color(red: 0.7, green: 0.35, blue: 0.3)).opacity(0.15))
                     .cornerRadius(12)
             }
             
@@ -116,15 +124,15 @@ struct TutorialView: View {
                     Text(emoji)
                         .font(.system(size: 40))
                         .frame(width: 60, height: 60)
-                        .background(Color(red: 0.95, green: 0.93, blue: 0.87))
+                        .background(colorScheme == .dark ? Color(red: 0.25, green: 0.25, blue: 0.25) : Color(red: 0.95, green: 0.93, blue: 0.87))
                         .cornerRadius(12)
-                        .shadow(color: Color(red: 0.4, green: 0.25, blue: 0.15).opacity(0.1), radius: 2, x: 0, y: 1)
+                        .shadow(color: .black.opacity(0.1), radius: 2, x: 0, y: 1)
                 }
             }
             .padding(.top, 8)
         }
         .padding(20)
-        .background(Color.white)
+        .background(colorScheme == .dark ? Color(red: 0.2, green: 0.2, blue: 0.2) : Color.white)
         .cornerRadius(16)
         .shadow(color: .black.opacity(0.05), radius: 8, x: 0, y: 2)
     }
@@ -135,14 +143,16 @@ struct TutorialView: View {
                 Text("Rule 1: Rows")
                     .font(.title2)
                     .fontWeight(.bold)
+                    .foregroundColor(.primary)
                 Text("→")
                     .font(.title)
-                    .foregroundColor(Color(red: 0.7, green: 0.35, blue: 0.3))
+                    .foregroundColor(colorScheme == .dark ? Color(red: 0.9, green: 0.5, blue: 0.45) : Color(red: 0.7, green: 0.35, blue: 0.3))
             }
             .frame(maxWidth: .infinity, alignment: .leading)
             
             Text("Each **ROW** (→) must have all 4 different emojis")
                 .font(.body)
+                .foregroundColor(.primary)
                 .frame(maxWidth: .infinity, alignment: .leading)
             
             // Example row
@@ -158,7 +168,7 @@ struct TutorialView: View {
                         Text(emoji)
                             .font(.system(size: 28))
                             .frame(width: 50, height: 50)
-                            .background(Color.white)
+                            .background(colorScheme == .dark ? Color(red: 0.3, green: 0.3, blue: 0.3) : Color.white)
                             .cornerRadius(8)
                             .overlay(
                                 RoundedRectangle(cornerRadius: 8)
@@ -183,7 +193,7 @@ struct TutorialView: View {
                         Text(emoji)
                             .font(.system(size: 28))
                             .frame(width: 50, height: 50)
-                            .background(Color.white)
+                            .background(colorScheme == .dark ? Color(red: 0.3, green: 0.3, blue: 0.3) : Color.white)
                             .cornerRadius(8)
                             .overlay(
                                 RoundedRectangle(cornerRadius: 8)
@@ -203,7 +213,7 @@ struct TutorialView: View {
             }
         }
         .padding(20)
-        .background(Color.white)
+        .background(colorScheme == .dark ? Color(red: 0.2, green: 0.2, blue: 0.2) : Color.white)
         .cornerRadius(16)
         .shadow(color: .black.opacity(0.05), radius: 8, x: 0, y: 2)
     }
@@ -214,14 +224,16 @@ struct TutorialView: View {
                 Text("Rule 2: Columns")
                     .font(.title2)
                     .fontWeight(.bold)
+                    .foregroundColor(.primary)
                 Text("↓")
                     .font(.title)
-                    .foregroundColor(Color(red: 0.45, green: 0.28, blue: 0.15))
+                    .foregroundColor(colorScheme == .dark ? Color(red: 0.85, green: 0.68, blue: 0.55) : Color(red: 0.45, green: 0.28, blue: 0.15))
             }
             .frame(maxWidth: .infinity, alignment: .leading)
             
             Text("Each **COLUMN** (↓) must have all 4 different emojis")
                 .font(.body)
+                .foregroundColor(.primary)
                 .frame(maxWidth: .infinity, alignment: .leading)
             
             // Example columns
@@ -237,7 +249,7 @@ struct TutorialView: View {
                             Text(emoji)
                                 .font(.system(size: 24))
                                 .frame(width: 40, height: 40)
-                                .background(Color.white)
+                                .background(colorScheme == .dark ? Color(red: 0.3, green: 0.3, blue: 0.3) : Color.white)
                                 .cornerRadius(6)
                                 .overlay(
                                     RoundedRectangle(cornerRadius: 6)
@@ -262,7 +274,7 @@ struct TutorialView: View {
                             Text(emoji)
                                 .font(.system(size: 24))
                                 .frame(width: 40, height: 40)
-                                .background(Color.white)
+                                .background(colorScheme == .dark ? Color(red: 0.3, green: 0.3, blue: 0.3) : Color.white)
                                 .cornerRadius(6)
                                 .overlay(
                                     RoundedRectangle(cornerRadius: 6)
@@ -283,7 +295,7 @@ struct TutorialView: View {
                 .multilineTextAlignment(.center)
         }
         .padding(20)
-        .background(Color.white)
+        .background(colorScheme == .dark ? Color(red: 0.2, green: 0.2, blue: 0.2) : Color.white)
         .cornerRadius(16)
         .shadow(color: .black.opacity(0.05), radius: 8, x: 0, y: 2)
     }
@@ -294,14 +306,16 @@ struct TutorialView: View {
                 Text("Rule 3: 2×2 Boxes")
                     .font(.title2)
                     .fontWeight(.bold)
+                    .foregroundColor(.primary)
                 Text("⬜")
                     .font(.title)
-                    .foregroundColor(Color(red: 0.85, green: 0.75, blue: 0.6))
+                    .foregroundColor(colorScheme == .dark ? Color(red: 0.7, green: 0.65, blue: 0.55) : Color(red: 0.85, green: 0.75, blue: 0.6))
             }
             .frame(maxWidth: .infinity, alignment: .leading)
             
             Text("Each **2×2 BOX** must have all 4 different emojis")
                 .font(.body)
+                .foregroundColor(.primary)
                 .frame(maxWidth: .infinity, alignment: .leading)
             
             // Example 2x2 boxes
@@ -317,24 +331,24 @@ struct TutorialView: View {
                             Text("🐦")
                                 .font(.system(size: 20))
                                 .frame(width: 35, height: 35)
-                                .background(Color.white)
+                                .background(colorScheme == .dark ? Color(red: 0.3, green: 0.3, blue: 0.3) : Color.white)
                                 .cornerRadius(4)
                             Text("🐱")
                                 .font(.system(size: 20))
                                 .frame(width: 35, height: 35)
-                                .background(Color.white)
+                                .background(colorScheme == .dark ? Color(red: 0.3, green: 0.3, blue: 0.3) : Color.white)
                                 .cornerRadius(4)
                         }
                         HStack(spacing: 2) {
                             Text("🐸")
                                 .font(.system(size: 20))
                                 .frame(width: 35, height: 35)
-                                .background(Color.white)
+                                .background(colorScheme == .dark ? Color(red: 0.3, green: 0.3, blue: 0.3) : Color.white)
                                 .cornerRadius(4)
                             Text("🦋")
                                 .font(.system(size: 20))
                                 .frame(width: 35, height: 35)
-                                .background(Color.white)
+                                .background(colorScheme == .dark ? Color(red: 0.3, green: 0.3, blue: 0.3) : Color.white)
                                 .cornerRadius(4)
                         }
                     }
@@ -356,24 +370,24 @@ struct TutorialView: View {
                             Text("🐦")
                                 .font(.system(size: 20))
                                 .frame(width: 35, height: 35)
-                                .background(Color.white)
+                                .background(colorScheme == .dark ? Color(red: 0.3, green: 0.3, blue: 0.3) : Color.white)
                                 .cornerRadius(4)
                             Text("🐱")
                                 .font(.system(size: 20))
                                 .frame(width: 35, height: 35)
-                                .background(Color.white)
+                                .background(colorScheme == .dark ? Color(red: 0.3, green: 0.3, blue: 0.3) : Color.white)
                                 .cornerRadius(4)
                         }
                         HStack(spacing: 2) {
                             Text("🐦")
                                 .font(.system(size: 20))
                                 .frame(width: 35, height: 35)
-                                .background(Color.white)
+                                .background(colorScheme == .dark ? Color(red: 0.3, green: 0.3, blue: 0.3) : Color.white)
                                 .cornerRadius(4)
                             Text("🦋")
                                 .font(.system(size: 20))
                                 .frame(width: 35, height: 35)
-                                .background(Color.white)
+                                .background(colorScheme == .dark ? Color(red: 0.3, green: 0.3, blue: 0.3) : Color.white)
                                 .cornerRadius(4)
                         }
                     }
@@ -393,20 +407,21 @@ struct TutorialView: View {
             VStack(spacing: 12) {
                 Text("🎯 **Ready to Play?**")
                     .font(.headline)
-                    .foregroundColor(Color(red: 0.7, green: 0.35, blue: 0.3))
+                    .foregroundColor(colorScheme == .dark ? Color(red: 0.9, green: 0.5, blue: 0.45) : Color(red: 0.7, green: 0.35, blue: 0.3))
                 
                 Text("Remember: Each emoji appears exactly once in every row, column, and 2×2 box!")
                     .font(.body)
+                    .foregroundColor(.primary)
                     .multilineTextAlignment(.center)
                     .padding(.horizontal, 16)
                     .padding(.vertical, 12)
-                    .background(Color(red: 0.7, green: 0.35, blue: 0.3).opacity(0.15))
+                    .background((colorScheme == .dark ? Color(red: 0.9, green: 0.5, blue: 0.45) : Color(red: 0.7, green: 0.35, blue: 0.3)).opacity(0.15))
                     .cornerRadius(12)
             }
             .padding(.top, 8)
         }
         .padding(20)
-        .background(Color.white)
+        .background(colorScheme == .dark ? Color(red: 0.2, green: 0.2, blue: 0.2) : Color.white)
         .cornerRadius(16)
         .shadow(color: .black.opacity(0.05), radius: 8, x: 0, y: 2)
     }
