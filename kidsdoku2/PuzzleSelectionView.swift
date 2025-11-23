@@ -11,11 +11,34 @@ struct PuzzleSelectionView: View {
     @Binding var path: [KidSudokuRoute]
     @ObservedObject private var completionManager = PuzzleCompletionManager.shared
     
-    private let themes: [PuzzleDifficulty: DifficultyTheme] = [
-        .easy: DifficultyTheme(name: "Sunny Meadow", backgroundColor: Color(red: 0.45, green: 0.55, blue: 0.45), emoji: "🌻"),
-        .normal: DifficultyTheme(name: "Whispering Woods", backgroundColor: Color(red: 0.35, green: 0.45, blue: 0.60), emoji: "🌲"),
-        .hard: DifficultyTheme(name: "Crystal Caves", backgroundColor: Color(red: 0.30, green: 0.35, blue: 0.50), emoji: "💎")
-    ]
+    private var themes: [PuzzleDifficulty: DifficultyTheme] {
+        switch size {
+        case 3:
+            return [
+                .easy: DifficultyTheme(name: "Wakey Wakey", backgroundColor: Color(red: 0.45, green: 0.55, blue: 0.45), emoji: "🌻"),
+                .normal: DifficultyTheme(name: "Breakfast Time", backgroundColor: Color(red: 0.35, green: 0.45, blue: 0.60), emoji: "🌲"),
+                .hard: DifficultyTheme(name: "Garden Path", backgroundColor: Color(red: 0.30, green: 0.35, blue: 0.50), emoji: "💎")
+            ]
+        case 4:
+            return [
+                .easy: DifficultyTheme(name: "Sunny Meadow", backgroundColor: Color(red: 0.45, green: 0.55, blue: 0.45), emoji: "🌻"),
+                .normal: DifficultyTheme(name: "Twisty Trails", backgroundColor: Color(red: 0.35, green: 0.45, blue: 0.60), emoji: "🌲"),
+                .hard: DifficultyTheme(name: "Mushroom Grove", backgroundColor: Color(red: 0.30, green: 0.35, blue: 0.50), emoji: "💎")
+            ]
+        case 6:
+            return [
+                .easy: DifficultyTheme(name: "Echo Cave", backgroundColor: Color(red: 0.45, green: 0.55, blue: 0.45), emoji: "🌻"),
+                .normal: DifficultyTheme(name: "Snowy Slopes", backgroundColor: Color(red: 0.35, green: 0.45, blue: 0.60), emoji: "🌲"),
+                .hard: DifficultyTheme(name: "Starry Summit", backgroundColor: Color(red: 0.30, green: 0.35, blue: 0.50), emoji: "💎")
+            ]
+        default:
+            return [
+                .easy: DifficultyTheme(name: "Sunny Meadow", backgroundColor: Color(red: 0.45, green: 0.55, blue: 0.45), emoji: "🌻"),
+                .normal: DifficultyTheme(name: "Whispering Woods", backgroundColor: Color(red: 0.35, green: 0.45, blue: 0.60), emoji: "🌲"),
+                .hard: DifficultyTheme(name: "Crystal Caves", backgroundColor: Color(red: 0.30, green: 0.35, blue: 0.50), emoji: "💎")
+            ]
+        }
+    }
     
     private var puzzlesByDifficulty: [(PuzzleDifficulty, [PremadePuzzle])] {
         PuzzleDifficulty.allCases.compactMap { difficulty in
