@@ -329,6 +329,9 @@ struct PuzzleSelectionView: View {
                     .ignoresSafeArea()
                 
                 VStack(spacing: 24) {
+                    Spacer()
+                        .frame(height: 20.0)
+                    
                     Text("Choose which difficulty levels to show")
                         .font(.system(size: 16, weight: .medium, design: .rounded))
                         .foregroundStyle(Color(red: 0.4, green: 0.4, blue: 0.45))
@@ -376,7 +379,6 @@ struct PuzzleSelectionView: View {
                 }
                 .padding(.top, 16)
             }
-            .navigationTitle("Difficulty Settings")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
