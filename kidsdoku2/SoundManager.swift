@@ -7,6 +7,7 @@ final class SoundManager: ObservableObject {
     private var audioPlayers: [String: AVAudioPlayer] = [:]
     private let audioQueue = DispatchQueue(label: "com.kidsdoku.audio", qos: .userInteractive)
     @Published var isSoundEnabled: Bool = true
+    @Published var volume: Float = 0.2
     
     enum SoundEffect: String {
         case correctPlacement = "correct_placement"
@@ -74,7 +75,7 @@ final class SoundManager: ObservableObject {
                 return
             }
             
-            player.volume = volume
+            player.volume = volume * self.volume
             player.currentTime = 0
             
             // Stop any currently playing instance of this sound
@@ -98,7 +99,8 @@ final class SoundManager: ObservableObject {
     
     func setVolume(_ volume: Float, for sound: SoundEffect) {
         audioQueue.async { [weak self] in
-            self?.audioPlayers[sound.rawValue]?.volume = volume
+            guard let self = self else { return }
+            self.audioPlayers[sound.rawValue]?.volume = volume * self.volume
         }
     }
 }
