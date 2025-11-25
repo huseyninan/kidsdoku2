@@ -1,11 +1,11 @@
 import AVFoundation
 import Combine
 
-@MainActor
 final class SoundManager: ObservableObject {
     static let shared = SoundManager()
     
     private var audioPlayers: [String: AVAudioPlayer] = [:]
+    private let audioQueue = DispatchQueue(label: "com.kidsdoku.audio", qos: .userInteractive)
     @Published var isSoundEnabled: Bool = true
     
     enum SoundEffect: String {
@@ -65,40 +65,41 @@ final class SoundManager: ObservableObject {
     func play(_ sound: SoundEffect, volume: Float = 1.0) {
         guard isSoundEnabled else { return }
         
-        // Ensure audio session is active
-        do {
-            try AVAudioSession.sharedInstance().setActive(true)
-        } catch {
-            print("⚠️ Failed to activate audio session: \(error.localizedDescription)")
-        }
-        
-        guard let player = audioPlayers[sound.rawValue] else {
-            print("⚠️ Sound player not found for: \(sound.fileName)")
-            return
-        }
-        
-        player.volume = volume
-        player.currentTime = 0
-        
-        // Stop any currently playing instance of this sound
-        if player.isPlaying {
-            player.stop()
+        // Play audio on background queue to avoid blocking UI
+        audioQueue.async { [weak self] in
+            guard let self = self else { return }
+            
+            guard let player = self.audioPlayers[sound.rawValue] else {
+                print("⚠️ Sound player not found for: \(sound.fileName)")
+                return
+            }
+            
+            player.volume = volume
             player.currentTime = 0
-        }
-        
-        player.play()
-        
-        if !player.isPlaying {
-            print("⚠️ Failed to play sound: \(sound.fileName)")
+            
+            // Stop any currently playing instance of this sound
+            if player.isPlaying {
+                player.stop()
+                player.currentTime = 0
+            }
+            
+            player.play()
+            
+            if !player.isPlaying {
+                print("⚠️ Failed to play sound: \(sound.fileName)")
+            }
         }
     }
     
+    @MainActor
     func toggleSound() {
         isSoundEnabled.toggle()
     }
     
     func setVolume(_ volume: Float, for sound: SoundEffect) {
-        audioPlayers[sound.rawValue]?.volume = volume
+        audioQueue.async { [weak self] in
+            self?.audioPlayers[sound.rawValue]?.volume = volume
+        }
     }
 }
 
