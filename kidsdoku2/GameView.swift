@@ -384,6 +384,8 @@ private struct BoardGridView: View {
                         .resizable()
                         .scaledToFit()
                         .frame(width: cellSize * 0.9, height: cellSize * 0.9)
+                        .shadow(color: Color.black.opacity(0.15), radius: 3, x: 0, y: 2)
+                        .shadow(color: Color.black.opacity(0.08), radius: 1, x: 0, y: 1)
                 }
             }
         }
