@@ -880,7 +880,7 @@ private struct CelebrationOverlay: View {
             // Fun Card
             VStack(spacing: 24) {
                 // Title with bounce
-                Text("🎉 YOU DID IT! 🎉")
+                Text("YOU DID IT!")
                     .font(.system(size: 32, weight: .black, design: .rounded))
                     .multilineTextAlignment(.center)
                     .foregroundStyle(
