@@ -15,6 +15,7 @@ struct PuzzleSelectionView: View {
     
     @State private var showSettings = false
     @State private var showPaywall = false
+    @State private var cachedPuzzlesByDifficulty: [(PuzzleDifficulty, [PremadePuzzle])] = []
     @AppStorage("showEasyDifficulty") private var showEasy = true
     @AppStorage("showNormalDifficulty") private var showNormal = true
     @AppStorage("showHardDifficulty") private var showHard = true
@@ -49,8 +50,60 @@ struct PuzzleSelectionView: View {
         }
     }
     
-    private var puzzlesByDifficulty: [(PuzzleDifficulty, [PremadePuzzle])] {
-        PuzzleDifficulty.allCases.compactMap { difficulty in
+
+    
+    var body: some View {
+        ZStack {
+            Color(red: 0.85, green: 0.88, blue: 0.92)
+                .ignoresSafeArea()
+            
+            ScrollView {
+                VStack(spacing: 16) {
+                    headerSection
+                    
+                    VStack(spacing: 12) {
+                        ForEach(cachedPuzzlesByDifficulty, id: \.0) { difficulty, puzzles in
+                            difficultyCard(difficulty: difficulty, puzzles: puzzles)
+                        }
+                        
+//                        randomAdventureButton
+                    }
+                    .padding(.horizontal, 16)
+                    .padding(.bottom, 20)
+                }
+            }
+        }
+        .navigationBarTitleDisplayMode(.inline)
+        .navigationBarBackButtonHidden(false)
+        .onAppear {
+            updateCachedPuzzles()
+        }
+        .onChange(of: showEasy) { _ in
+            updateCachedPuzzles()
+        }
+        .onChange(of: showNormal) { _ in
+            updateCachedPuzzles()
+        }
+        .onChange(of: showHard) { _ in
+            updateCachedPuzzles()
+        }
+        .onChange(of: hideFinishedPuzzles) { _ in
+            updateCachedPuzzles()
+        }
+        .sheet(isPresented: $showSettings) {
+            difficultySettingsView
+        }
+        .sheet(isPresented: $showPaywall) {
+            PaywallView()
+                .onPurchaseCompleted { customerInfo in
+                    print("Purchase completed: \(customerInfo)")
+                    appEnvironment.refreshSubscriptionStatus()
+                }
+        }
+    }
+    
+    private func updateCachedPuzzles() {
+        cachedPuzzlesByDifficulty = PuzzleDifficulty.allCases.compactMap { difficulty in
             // Check if this difficulty should be shown based on settings
             let shouldShow: Bool
             switch difficulty {
@@ -69,41 +122,6 @@ struct PuzzleSelectionView: View {
             }
             
             return filteredPuzzles.isEmpty ? nil : (difficulty, filteredPuzzles)
-        }
-    }
-    
-    var body: some View {
-        ZStack {
-            Color(red: 0.85, green: 0.88, blue: 0.92)
-                .ignoresSafeArea()
-            
-            ScrollView {
-                VStack(spacing: 16) {
-                    headerSection
-                    
-                    VStack(spacing: 12) {
-                        ForEach(puzzlesByDifficulty, id: \.0) { difficulty, puzzles in
-                            difficultyCard(difficulty: difficulty, puzzles: puzzles)
-                        }
-                        
-//                        randomAdventureButton
-                    }
-                    .padding(.horizontal, 16)
-                    .padding(.bottom, 20)
-                }
-            }
-        }
-        .navigationBarTitleDisplayMode(.inline)
-        .navigationBarBackButtonHidden(false)
-        .sheet(isPresented: $showSettings) {
-            difficultySettingsView
-        }
-        .sheet(isPresented: $showPaywall) {
-            PaywallView()
-                .onPurchaseCompleted { customerInfo in
-                    print("Purchase completed: \(customerInfo)")
-                    appEnvironment.refreshSubscriptionStatus()
-                }
         }
     }
     
@@ -141,17 +159,12 @@ struct PuzzleSelectionView: View {
                 .frame(maxWidth: .infinity)
                 .padding(.top, 20)
             
-            LazyVGrid(columns: [
-                GridItem(.flexible(), spacing: 12),
-                GridItem(.flexible(), spacing: 12),
-                GridItem(.flexible(), spacing: 12)
-            ], spacing: 12) {
-                ForEach(0..<puzzles.count, id: \.self) { index in
-                    if index < puzzles.count {
-                        puzzleButton(puzzle: puzzles[index], index: index, theme: theme)
-                    } else {
-                        emptyPuzzleSlot(number: index + 1, theme: theme)
-                    }
+            // Use regular VGrid instead of LazyVGrid for better performance with small datasets
+            let columns = Array(repeating: GridItem(.flexible(), spacing: 12), count: 3)
+            LazyVGrid(columns: columns, spacing: 12) {
+                ForEach(Array(puzzles.enumerated()), id: \.offset) { index, puzzle in
+                    puzzleButton(puzzle: puzzle, index: index, theme: theme)
+                        .id("\(difficulty.rawValue)-\(puzzle.id)") // Add stable ID
                 }
             }
             .padding(.horizontal, 20)
@@ -166,6 +179,8 @@ struct PuzzleSelectionView: View {
     
     private func puzzleButton(puzzle: PremadePuzzle, index: Int, theme: DifficultyTheme) -> some View {
         let isLocked = index > 2 && !appEnvironment.isPremium
+        let isCompleted = completionManager.isCompleted(puzzle: puzzle)
+        let rating = completionManager.rating(for: puzzle)
         
         return Button {
             if isLocked {
@@ -174,58 +189,78 @@ struct PuzzleSelectionView: View {
                 path.append(.premadePuzzle(puzzle: puzzle))
             }
         } label: {
-            ZStack {
-                RoundedRectangle(cornerRadius: 20, style: .continuous)
-                    .fill(Color.white.opacity(isLocked ? 0.5 : 0.9))
-                    .frame(height: 100)
-                
-                VStack(alignment: .leading, spacing: -26) {
-                    HStack(alignment: .top) {
-                        numberBadge(
-                            number: puzzle.number,
-                            backgroundColor: Color(red: 0.93, green: 0.90, blue: 0.78),
-                            textColor: Color(red: 0.38, green: 0.34, blue: 0.28)
-                        )
-                        
-                        Spacer()
-                        
-                        if isLocked {
-                            lockBadge
-                                .padding(.top, 4)
-                        } else if completionManager.isCompleted(puzzle: puzzle) {
-                            completionBadge
-                                .padding(.top, 4)
-                        }
+            puzzleButtonContent(
+                puzzle: puzzle, 
+                isLocked: isLocked, 
+                isCompleted: isCompleted, 
+                rating: rating
+            )
+        }
+        .buttonStyle(.plain)
+        .drawingGroup() // Optimize rendering
+    }
+    
+    @ViewBuilder
+    private func puzzleButtonContent(puzzle: PremadePuzzle, isLocked: Bool, isCompleted: Bool, rating: Double?) -> some View {
+        ZStack {
+            // Background
+            RoundedRectangle(cornerRadius: 20, style: .continuous)
+                .fill(Color.white.opacity(isLocked ? 0.5 : 0.9))
+                .frame(height: 100)
+            
+            // Main content
+            VStack(alignment: .leading, spacing: -26) {
+                HStack(alignment: .top) {
+                    numberBadge(
+                        number: puzzle.number,
+                        backgroundColor: Color(red: 0.93, green: 0.90, blue: 0.78),
+                        textColor: Color(red: 0.38, green: 0.34, blue: 0.28)
+                    )
+                    
+                    Spacer()
+                    
+                    if isLocked {
+                        lockBadge
+                            .padding(.top, 4)
+                    } else if isCompleted {
+                        completionBadge
+                            .padding(.top, 4)
                     }
-                    .padding(.leading, -12)
-                                        
-                    Image(puzzle.displayEmoji)
-                        .resizable()
-                        .frame(width: 80, height: 80)
-                        .opacity(isLocked ? 0.3 : 1.0)
                 }
-                .padding(12)
-                
-                // Lock overlay
-                if isLocked {
-                    ZStack {
-                        Circle()
-                            .fill(Color.black.opacity(0.7))
-                            .frame(width: 50, height: 50)
-                        
-                        Image(systemName: "lock.fill")
-                            .font(.system(size: 24))
-                            .foregroundColor(.white)
-                    }
+                .padding(.leading, -12)
+                                    
+                Image(puzzle.displayEmoji)
+                    .resizable()
+                    .frame(width: 80, height: 80)
+                    .opacity(isLocked ? 0.3 : 1.0)
+            }
+            .padding(12)
+            
+            // Lock overlay
+            if isLocked {
+                lockOverlay
+            }
+            
+            // Rating badge
+            if !isLocked, let rating = rating {
+                VStack {
+                    Spacer()
+                    PuzzleRankBadge(rating: rating)
+                        .padding(.bottom, 12)
                 }
             }
         }
-        .buttonStyle(.plain)
-        .overlay(alignment: .bottom) {
-            if !isLocked, let rating = completionManager.rating(for: puzzle) {
-                PuzzleRankBadge(rating: rating)
-                    .padding(.bottom, 12)
-            }
+    }
+    
+    private var lockOverlay: some View {
+        ZStack {
+            Circle()
+                .fill(Color.black.opacity(0.7))
+                .frame(width: 50, height: 50)
+            
+            Image(systemName: "lock.fill")
+                .font(.system(size: 24))
+                .foregroundColor(.white)
         }
     }
     

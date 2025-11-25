@@ -163,7 +163,6 @@ struct MainMenuView: View {
         .sheet(isPresented: $isShowingSheet) {
             PaywallView()
                 .onPurchaseCompleted { customerInfo in
-                    print("hinan customerInfo: \(customerInfo)")
                     appEnvironment.refreshSubscriptionStatus()
                 }
         }

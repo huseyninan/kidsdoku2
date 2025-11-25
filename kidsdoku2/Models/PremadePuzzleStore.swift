@@ -2073,7 +2073,6 @@ private func assignSymbolGroup(size: Int, difficulty: PuzzleDifficulty, number: 
     // Create a deterministic assignment based on puzzle characteristics
     let seed = size * 1000 + (difficulty == .easy ? 0 : difficulty == .normal ? 100 : 200) + number
     let groupIndex = abs(seed) % SymbolGroup.allCases.count
-    print("hinan groupIndex", groupIndex)
     return SymbolGroup.allCases[groupIndex]
 }
 
