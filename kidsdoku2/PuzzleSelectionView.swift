@@ -330,7 +330,7 @@ struct PuzzleSelectionView: View {
                 
                 VStack(spacing: 24) {
                     Spacer()
-                        .frame(height: 20.0)
+                        .frame(height: 10.0)
                     
                     Text("Choose which difficulty levels to show")
                         .font(.system(size: 16, weight: .medium, design: .rounded))
@@ -389,7 +389,7 @@ struct PuzzleSelectionView: View {
                 }
             }
         }
-        .presentationDetents([.medium])
+        .presentationDetents([.height(500)])
     }
     
     private func difficultyToggle(title: String, emoji: String, isOn: Binding<Bool>, color: Color) -> some View {

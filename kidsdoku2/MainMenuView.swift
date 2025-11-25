@@ -152,7 +152,7 @@ struct MainMenuView: View {
                     .padding(.horizontal, 40)
                     .background(
                         RoundedRectangle(cornerRadius: 0, style: .continuous)
-                            .fill(Color(red: 0.95, green: 0.93, blue: 0.87))
+                            .fill(                                Color(red: 0.85, green: 0.75, blue: 0.6))
                             .shadow(color: .black.opacity(0.15), radius: 12, x: 0, y: 6)
                     )
             }
