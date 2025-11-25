@@ -114,8 +114,8 @@ struct MainMenuView: View {
                 VStack(spacing: 24) {
                     if appEnvironment.show3x3Grid {
                         questButton(
-                            title: "Start Journey: 3x3",
-                            subtitle: "Tiny Tales"
+                            title: String(localized: "Start Journey: 3x3"),
+                            subtitle: String(localized: "Tiny Tales")
                         ) {
                             path.append(.puzzleSelection(size: 3))
                         }
@@ -123,8 +123,8 @@ struct MainMenuView: View {
 
                     if appEnvironment.show4x4Grid {
                         questButton(
-                            title: "Start Journey: 4x4",
-                            subtitle: "Fable Adventures"
+                            title: String(localized: "Start Journey: 4x4"),
+                            subtitle: String(localized: "Fable Adventures")
                         ) {
                             path.append(.puzzleSelection(size: 4))
                         }
@@ -132,8 +132,8 @@ struct MainMenuView: View {
 
                     if appEnvironment.show6x6Grid {
                         questButton(
-                            title: "Start Journey: 6x6",
-                            subtitle: "Kingdom Chronicles"
+                            title: String(localized: "Start Journey: 6x6"),
+                            subtitle: String(localized: "Kingdom Chronicles")
                         ) {
                             path.append(.puzzleSelection(size: 6))
                         }

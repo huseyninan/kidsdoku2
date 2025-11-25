@@ -24,27 +24,27 @@ struct PuzzleSelectionView: View {
         switch size {
         case 3:
             return [
-                .easy: DifficultyTheme(name: "Wakey Wakey", backgroundColor: Color(red: 0.45, green: 0.55, blue: 0.45), emoji: "🌻"),
-                .normal: DifficultyTheme(name: "Breakfast Time", backgroundColor: Color(red: 0.35, green: 0.45, blue: 0.60), emoji: "🌲"),
-                .hard: DifficultyTheme(name: "Garden Path", backgroundColor: Color(red: 0.30, green: 0.35, blue: 0.50), emoji: "💎")
+                .easy: DifficultyTheme(name: String(localized: "Wakey Wakey"), backgroundColor: Color(red: 0.45, green: 0.55, blue: 0.45), emoji: "🌻"),
+                .normal: DifficultyTheme(name: String(localized: "Breakfast Time"), backgroundColor: Color(red: 0.35, green: 0.45, blue: 0.60), emoji: "🌲"),
+                .hard: DifficultyTheme(name: String(localized: "Garden Path"), backgroundColor: Color(red: 0.30, green: 0.35, blue: 0.50), emoji: "💎")
             ]
         case 4:
             return [
-                .easy: DifficultyTheme(name: "Sunny Meadow", backgroundColor: Color(red: 0.45, green: 0.55, blue: 0.45), emoji: "🌻"),
-                .normal: DifficultyTheme(name: "Twisty Trails", backgroundColor: Color(red: 0.35, green: 0.45, blue: 0.60), emoji: "🌲"),
-                .hard: DifficultyTheme(name: "Mushroom Grove", backgroundColor: Color(red: 0.30, green: 0.35, blue: 0.50), emoji: "💎")
+                .easy: DifficultyTheme(name: String(localized: "Sunny Meadow"), backgroundColor: Color(red: 0.45, green: 0.55, blue: 0.45), emoji: "🌻"),
+                .normal: DifficultyTheme(name: String(localized: "Twisty Trails"), backgroundColor: Color(red: 0.35, green: 0.45, blue: 0.60), emoji: "🌲"),
+                .hard: DifficultyTheme(name: String(localized: "Mushroom Grove"), backgroundColor: Color(red: 0.30, green: 0.35, blue: 0.50), emoji: "💎")
             ]
         case 6:
             return [
-                .easy: DifficultyTheme(name: "Echo Cave", backgroundColor: Color(red: 0.45, green: 0.55, blue: 0.45), emoji: "🌻"),
-                .normal: DifficultyTheme(name: "Snowy Slopes", backgroundColor: Color(red: 0.35, green: 0.45, blue: 0.60), emoji: "🌲"),
-                .hard: DifficultyTheme(name: "Starry Summit", backgroundColor: Color(red: 0.30, green: 0.35, blue: 0.50), emoji: "💎")
+                .easy: DifficultyTheme(name: String(localized: "Echo Cave"), backgroundColor: Color(red: 0.45, green: 0.55, blue: 0.45), emoji: "🌻"),
+                .normal: DifficultyTheme(name: String(localized: "Snowy Slopes"), backgroundColor: Color(red: 0.35, green: 0.45, blue: 0.60), emoji: "🌲"),
+                .hard: DifficultyTheme(name: String(localized: "Starry Summit"), backgroundColor: Color(red: 0.30, green: 0.35, blue: 0.50), emoji: "💎")
             ]
         default:
             return [
-                .easy: DifficultyTheme(name: "Sunny Meadow", backgroundColor: Color(red: 0.45, green: 0.55, blue: 0.45), emoji: "🌻"),
-                .normal: DifficultyTheme(name: "Whispering Woods", backgroundColor: Color(red: 0.35, green: 0.45, blue: 0.60), emoji: "🌲"),
-                .hard: DifficultyTheme(name: "Crystal Caves", backgroundColor: Color(red: 0.30, green: 0.35, blue: 0.50), emoji: "💎")
+                .easy: DifficultyTheme(name: String(localized: "Sunny Meadow"), backgroundColor: Color(red: 0.45, green: 0.55, blue: 0.45), emoji: "🌻"),
+                .normal: DifficultyTheme(name: String(localized: "Whispering Woods"), backgroundColor: Color(red: 0.35, green: 0.45, blue: 0.60), emoji: "🌲"),
+                .hard: DifficultyTheme(name: String(localized: "Crystal Caves"), backgroundColor: Color(red: 0.30, green: 0.35, blue: 0.50), emoji: "💎")
             ]
         }
     }
@@ -340,21 +340,21 @@ struct PuzzleSelectionView: View {
                     
                     VStack(spacing: 16) {
                         difficultyToggle(
-                            title: "Easy",
+                            title: String(localized: "Easy"),
                             emoji: "🌻",
                             isOn: $showEasy,
                             color: Color(red: 0.45, green: 0.55, blue: 0.45)
                         )
                         
                         difficultyToggle(
-                            title: "Normal",
+                            title: String(localized: "Normal"),
                             emoji: "🌲",
                             isOn: $showNormal,
                             color: Color(red: 0.35, green: 0.45, blue: 0.60)
                         )
                         
                         difficultyToggle(
-                            title: "Hard",
+                            title: String(localized: "Hard"),
                             emoji: "💎",
                             isOn: $showHard,
                             color: Color(red: 0.30, green: 0.35, blue: 0.50)
@@ -367,7 +367,7 @@ struct PuzzleSelectionView: View {
                     
                     VStack(spacing: 16) {
                         difficultyToggle(
-                            title: "Hide Finished",
+                            title: String(localized: "Hide Finished"),
                             emoji: "✅",
                             isOn: $hideFinishedPuzzles,
                             color: Color(red: 0.24, green: 0.65, blue: 0.33)
@@ -382,7 +382,7 @@ struct PuzzleSelectionView: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("Done") {
+                    Button(String(localized: "Done")) {
                         showSettings = false
                     }
                     .font(.system(size: 17, weight: .semibold, design: .rounded))
@@ -468,13 +468,13 @@ private struct PuzzleRankBadge: View {
         
         var title: String {
             switch self {
-            case .legend: return "Legend Rank"
-            case .hero: return "Hero Rank"
-            case .pro: return "Pro Rank"
-            case .apprentice: return "Apprentice"
-            case .explorer: return "Explorer"
-            case .dreamer: return "Dreamer"
-            case .rookie: return "Rookie"
+            case .legend: return String(localized: "Legend Rank")
+            case .hero: return String(localized: "Hero Rank")
+            case .pro: return String(localized: "Pro Rank")
+            case .apprentice: return String(localized: "Apprentice")
+            case .explorer: return String(localized: "Explorer")
+            case .dreamer: return String(localized: "Dreamer")
+            case .rookie: return String(localized: "Rookie")
             }
         }
         

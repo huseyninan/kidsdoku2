@@ -205,7 +205,7 @@ struct GameView: View {
     private var actionButtons: some View {
         HStack(spacing: 12) {
             StorybookActionButton(
-                title: "Undo",
+                title: String(localized: "Undo"),
                 icon: "arrow.uturn.backward",
                 isEnabled: viewModel.canUndo,
                 gradient: [
@@ -221,7 +221,7 @@ struct GameView: View {
             )
             
             StorybookActionButton(
-                title: "Erase",
+                title: String(localized: "Erase"),
                 icon: "xmark.circle",
                 isEnabled: true,
                 gradient: [
@@ -237,7 +237,7 @@ struct GameView: View {
             )
             
             StorybookActionButton(
-                title: "Hint",
+                title: String(localized: "Hint"),
                 icon: "lightbulb",
                 isEnabled: true,
                 gradient: [
@@ -286,7 +286,7 @@ struct GameView: View {
     }
 
     private var titleText: String {
-        return "Veggie Match!"
+        return String(localized: "Veggie Match!")
     }
 
     private var progressRatio: Double {
@@ -297,7 +297,7 @@ struct GameView: View {
 
     private var progressText: String {
         let filled = viewModel.puzzle.cells.filter { $0.value != nil }.count
-        return "\(filled) of \(config.size * config.size) squares filled"
+        return String(localized: "\(filled) of \(config.size * config.size) squares filled")
     }
 
     private var formattedTime: String {

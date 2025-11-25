@@ -51,19 +51,19 @@ struct SettingsView: View {
                         // Audio & Feedback Section
                         SettingsSection(
                             icon: "speaker.wave.3.fill",
-                            title: "Audio & Feedback"
+                            title: String(localized: "Audio & Feedback")
                         ) {
                             SettingsToggle(
                                 icon: "speaker.2.fill",
-                                title: "Sound Effects",
-                                subtitle: "Play sounds during gameplay",
+                                title: String(localized: "Sound Effects"),
+                                subtitle: String(localized: "Play sounds during gameplay"),
                                 isOn: $soundManager.isSoundEnabled
                             )
                             
                             SettingsToggle(
                                 icon: "hand.tap.fill",
-                                title: "Haptic Feedback",
-                                subtitle: "Vibration feedback for interactions",
+                                title: String(localized: "Haptic Feedback"),
+                                subtitle: String(localized: "Vibration feedback for interactions"),
                                 isOn: $hapticManager.isHapticsEnabled
                             )
                         }
@@ -71,26 +71,26 @@ struct SettingsView: View {
                         // Grid Visibility Section
                         SettingsSection(
                             icon: "square.grid.3x3.fill",
-                            title: "Grid Sizes"
+                            title: String(localized: "Grid Sizes")
                         ) {
                             SettingsToggle(
                                 icon: "square.grid.3x3",
-                                title: "Show 3x3 Grid",
-                                subtitle: "Tiny Tales",
+                                title: String(localized: "Show 3x3 Grid"),
+                                subtitle: String(localized: "Tiny Tales"),
                                 isOn: $appEnvironment.show3x3Grid
                             )
                             
                             SettingsToggle(
                                 icon: "square.grid.4x3.fill",
-                                title: "Show 4x4 Grid",
-                                subtitle: "Fable Adventures",
+                                title: String(localized: "Show 4x4 Grid"),
+                                subtitle: String(localized: "Fable Adventures"),
                                 isOn: $appEnvironment.show4x4Grid
                             )
                             
                             SettingsToggle(
                                 icon: "square.grid.3x3.fill",
-                                title: "Show 6x6 Grid",
-                                subtitle: "Kingdom Chronicles",
+                                title: String(localized: "Show 6x6 Grid"),
+                                subtitle: String(localized: "Kingdom Chronicles"),
                                 isOn: $appEnvironment.show6x6Grid
                             )
                         }
@@ -98,13 +98,13 @@ struct SettingsView: View {
                         // Progress Management Section
                         SettingsSection(
                             icon: "chart.bar.fill",
-                            title: "Progress Management"
+                            title: String(localized: "Progress Management")
                         ) {
                             if appEnvironment.show3x3Grid {
                                 SettingsButton(
                                     icon: "arrow.counterclockwise",
-                                    title: "Reset 3x3 Progress",
-                                    subtitle: "Clear all completed 3x3 puzzles",
+                                    title: String(localized: "Reset 3x3 Progress"),
+                                    subtitle: String(localized: "Clear all completed 3x3 puzzles"),
                                     color: .orange
                                 ) {
                                     resetType = .size3x3
@@ -115,8 +115,8 @@ struct SettingsView: View {
                             if appEnvironment.show4x4Grid {
                                 SettingsButton(
                                     icon: "arrow.counterclockwise",
-                                    title: "Reset 4x4 Progress",
-                                    subtitle: "Clear all completed 4x4 puzzles",
+                                    title: String(localized: "Reset 4x4 Progress"),
+                                    subtitle: String(localized: "Clear all completed 4x4 puzzles"),
                                     color: .orange
                                 ) {
                                     resetType = .size4x4
@@ -127,8 +127,8 @@ struct SettingsView: View {
                             if appEnvironment.show6x6Grid {
                                 SettingsButton(
                                     icon: "arrow.counterclockwise",
-                                    title: "Reset 6x6 Progress",
-                                    subtitle: "Clear all completed 6x6 puzzles",
+                                    title: String(localized: "Reset 6x6 Progress"),
+                                    subtitle: String(localized: "Clear all completed 6x6 puzzles"),
                                     color: .orange
                                 ) {
                                     resetType = .size6x6
@@ -138,8 +138,8 @@ struct SettingsView: View {
                             
                             SettingsButton(
                                 icon: "trash.fill",
-                                title: "Reset All Progress",
-                                subtitle: "Clear all game progress",
+                                title: String(localized: "Reset All Progress"),
+                                subtitle: String(localized: "Clear all game progress"),
                                 color: .red
                             ) {
                                 resetType = .all
@@ -150,12 +150,12 @@ struct SettingsView: View {
                         // About & Info Section
                         SettingsSection(
                             icon: "info.circle.fill",
-                            title: "Information"
+                            title: String(localized: "Information")
                         ) {
                             SettingsButton(
                                 icon: "heart.fill",
-                                title: "About",
-                                subtitle: "App info and credits",
+                                title: String(localized: "About"),
+                                subtitle: String(localized: "App info and credits"),
                                 color: Color(red: 0.7, green: 0.35, blue: 0.3)
                             ) {
                                 showAbout = true
@@ -163,8 +163,8 @@ struct SettingsView: View {
                             
                             SettingsButton(
                                 icon: "hand.raised.fill",
-                                title: "Privacy Policy",
-                                subtitle: "How we protect your data",
+                                title: String(localized: "Privacy Policy"),
+                                subtitle: String(localized: "How we protect your data"),
                                 color: Color(red: 0.45, green: 0.55, blue: 0.65)
                             ) {
                                 showPrivacyPolicy = true
@@ -182,9 +182,9 @@ struct SettingsView: View {
                 }
             }
         }
-        .alert("Reset Progress?", isPresented: $showResetAlert) {
-            Button("Cancel", role: .cancel) { }
-            Button("Reset", role: .destructive) {
+        .alert(String(localized: "Reset Progress?"), isPresented: $showResetAlert) {
+            Button(String(localized: "Cancel"), role: .cancel) { }
+            Button(String(localized: "Reset"), role: .destructive) {
                 performReset()
             }
         } message: {
@@ -201,13 +201,13 @@ struct SettingsView: View {
     private var resetAlertMessage: String {
         switch resetType {
         case .all:
-            return "This will clear all your puzzle progress. This action cannot be undone."
+            return String(localized: "This will clear all your puzzle progress. This action cannot be undone.")
         case .size3x3:
-            return "This will clear all your 3x3 puzzle progress. This action cannot be undone."
+            return String(localized: "This will clear all your 3x3 puzzle progress. This action cannot be undone.")
         case .size4x4:
-            return "This will clear all your 4x4 puzzle progress. This action cannot be undone."
+            return String(localized: "This will clear all your 4x4 puzzle progress. This action cannot be undone.")
         case .size6x6:
-            return "This will clear all your 6x6 puzzle progress. This action cannot be undone."
+            return String(localized: "This will clear all your 6x6 puzzle progress. This action cannot be undone.")
         case .none:
             return ""
         }
@@ -393,26 +393,26 @@ struct AboutView: View {
                         VStack(alignment: .leading, spacing: 16) {
                             AboutSection(
                                 icon: "paintbrush.fill",
-                                title: "Design & Development",
-                                content: "Created with love for young puzzle enthusiasts"
+                                title: String(localized: "Design & Development"),
+                                content: String(localized: "Created with love for young puzzle enthusiasts")
                             )
                             
                             AboutSection(
                                 icon: "photo.fill",
-                                title: "Illustrations",
-                                content: "Featuring adorable animals, birds, and sea creatures"
+                                title: String(localized: "Illustrations"),
+                                content: String(localized: "Featuring adorable animals, birds, and sea creatures")
                             )
                             
                             AboutSection(
                                 icon: "music.note",
-                                title: "Sound Design",
-                                content: "Engaging audio feedback to enhance the learning experience"
+                                title: String(localized: "Sound Design"),
+                                content: String(localized: "Engaging audio feedback to enhance the learning experience")
                             )
                             
                             AboutSection(
                                 icon: "sparkles",
-                                title: "Mission",
-                                content: "To make learning logical thinking fun and engaging for children through interactive puzzles"
+                                title: String(localized: "Mission"),
+                                content: String(localized: "To make learning logical thinking fun and engaging for children through interactive puzzles")
                             )
                         }
                         .padding(.horizontal, 24)
@@ -428,7 +428,7 @@ struct AboutView: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("Done") {
+                    Button(String(localized: "Done")) {
                         dismiss()
                     }
                     .font(.system(size: 17, weight: .semibold, design: .rounded))
@@ -504,28 +504,28 @@ struct PrivacyPolicyView: View {
                             .frame(maxWidth: .infinity)
                         
                         PrivacySection(
-                            title: "Your Privacy Matters",
-                            content: "KidsDoku is designed with children's privacy and safety as our top priority."
+                            title: String(localized: "Your Privacy Matters"),
+                            content: String(localized: "KidsDoku is designed with children's privacy and safety as our top priority.")
                         )
                         
                         PrivacySection(
-                            title: "Data Collection",
-                            content: "We do NOT collect, store, or share any personal information. All game progress is stored locally on your device."
+                            title: String(localized: "Data Collection"),
+                            content: String(localized: "We do NOT collect, store, or share any personal information. All game progress is stored locally on your device.")
                         )
                         
                         PrivacySection(
-                            title: "No Third-Party Services",
-                            content: "This app does not use any analytics, advertising, or third-party tracking services."
+                            title: String(localized: "No Third-Party Services"),
+                            content: String(localized: "This app does not use any analytics, advertising, or third-party tracking services.")
                         )
                         
                         PrivacySection(
-                            title: "Offline First",
-                            content: "KidsDoku works completely offline. No internet connection is required or used during gameplay."
+                            title: String(localized: "Offline First"),
+                            content: String(localized: "KidsDoku works completely offline. No internet connection is required or used during gameplay.")
                         )
                         
                         PrivacySection(
-                            title: "Parental Control",
-                            content: "Parents maintain full control over app data through device settings and can reset all progress at any time through the Settings menu."
+                            title: String(localized: "Parental Control"),
+                            content: String(localized: "Parents maintain full control over app data through device settings and can reset all progress at any time through the Settings menu.")
                         )
                         
                         Text("Last Updated: November 2025")
@@ -541,7 +541,7 @@ struct PrivacyPolicyView: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("Done") {
+                    Button(String(localized: "Done")) {
                         dismiss()
                     }
                     .font(.system(size: 17, weight: .semibold, design: .rounded))

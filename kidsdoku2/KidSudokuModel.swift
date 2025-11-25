@@ -46,11 +46,11 @@ enum SymbolGroup: Int, CaseIterable, Hashable {
     var paletteTitle: String {
         switch self {
         case .animals, .animals2, .animals3, .animals4:
-            return "Safari Camp"
+            return String(localized: "Safari Camp")
         case .sea, .weather:
-            return "Coral Reef"
+            return String(localized: "Coral Reef")
         case .birds, .birds2, .birds3, .birds4:
-            return "Bird's Nest"
+            return String(localized: "Bird's Nest")
         }
     }
 }
@@ -210,7 +210,7 @@ struct PremadePuzzle: Hashable, Identifiable {
     let emoji: String?
     
     var displayName: String {
-        return "Puzzle \(number)"
+        return String(localized: "Puzzle \(number)")
     }
     
     var displayEmoji: String {

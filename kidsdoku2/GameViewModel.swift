@@ -42,7 +42,7 @@ final class GameViewModel: ObservableObject {
             puzzle = KidSudokuGenerator.generatePuzzle(config: config)
         }
         selectedPosition = nil
-        message = KidSudokuMessage(text: "New puzzle ready!", type: .info)
+        message = KidSudokuMessage(text: String(localized: "New puzzle ready!"), type: .info)
         showCelebration = false
         highlightedValue = nil
         selectedPaletteSymbol = nil
@@ -78,7 +78,7 @@ final class GameViewModel: ObservableObject {
             } else {
                 mistakeCount += 1
                 let symbol = config.symbols[paletteSymbol]
-                message = KidSudokuMessage(text: "That \(symbol) is already there!", type: .warning)
+                message = KidSudokuMessage(text: String(localized: "That \(symbol) is already there!"), type: .warning)
                 soundManager.play(.incorrectPlacement, volume: 0.5)
             }
             return
@@ -95,7 +95,7 @@ final class GameViewModel: ObservableObject {
 
     func removeValue() {
         guard let position = selectedPosition else {
-            message = KidSudokuMessage(text: "Tap a square first.", type: .info)
+            message = KidSudokuMessage(text: String(localized: "Tap a square first."), type: .info)
             return
         }
 
@@ -121,7 +121,7 @@ final class GameViewModel: ObservableObject {
 
     func placeSymbol(at symbolIndex: Int) {
         guard let position = selectedPosition else {
-            message = KidSudokuMessage(text: "Tap a square first.", type: .info)
+            message = KidSudokuMessage(text: String(localized: "Tap a square first."), type: .info)
             return
         }
 
@@ -146,7 +146,7 @@ final class GameViewModel: ObservableObject {
         } else {
             mistakeCount += 1
             let symbol = config.symbols[symbolIndex]
-            message = KidSudokuMessage(text: "That \(symbol) is already there!", type: .warning)
+            message = KidSudokuMessage(text: String(localized: "That \(symbol) is already there!"), type: .warning)
             soundManager.play(.incorrectPlacement, volume: 0.5)
         }
     }
@@ -165,7 +165,7 @@ final class GameViewModel: ObservableObject {
             }
         }
         showCelebration = true
-        message = KidSudokuMessage(text: "Amazing! Puzzle complete!", type: .success)
+        message = KidSudokuMessage(text: String(localized: "Amazing! Puzzle complete!"), type: .success)
         soundManager.play(.victory, volume: 0.7)
         
         // Mark premade puzzle as completed
@@ -218,7 +218,7 @@ final class GameViewModel: ObservableObject {
         if let premadePuzzle = originalPremadePuzzle {
             return "\(premadePuzzle.displayName)"
         } else {
-            return "\(config.size) x \(config.size) Puzzle"
+            return String(localized: "\(config.size) x \(config.size) Puzzle")
         }
     }
     
@@ -227,7 +227,7 @@ final class GameViewModel: ObservableObject {
         let emptyCells = puzzleCells.filter { !$0.isFixed && $0.value == nil }
         
         guard !emptyCells.isEmpty else {
-            message = KidSudokuMessage(text: "No hints available!", type: .info)
+            message = KidSudokuMessage(text: String(localized: "No hints available!"), type: .info)
             return
         }
         
@@ -239,7 +239,7 @@ final class GameViewModel: ObservableObject {
             puzzle.updateCell(at: randomCell.position, with: randomCell.solution)
             highlightedValue = randomCell.solution
             selectedPosition = randomCell.position
-            message = KidSudokuMessage(text: "Here's a hint! ✨", type: .info)
+            message = KidSudokuMessage(text: String(localized: "Here's a hint! ✨"), type: .info)
             soundManager.play(.hint, volume: 0.6)
             
             // Check if this completes the puzzle
@@ -249,7 +249,7 @@ final class GameViewModel: ObservableObject {
     
     func undo() {
         guard let lastMove = moveHistory.popLast() else {
-            message = KidSudokuMessage(text: "Nothing to undo!", type: .info)
+            message = KidSudokuMessage(text: String(localized: "Nothing to undo!"), type: .info)
             return
         }
         
