@@ -378,10 +378,13 @@ private struct BoardGridView: View {
                     GlowingHighlight(size: cellSize)
                 }
 
-                Image(symbol(for: cell))
-                    .resizable()
-                    .scaledToFit()
-                    .frame(width: cellSize * 0.9, height: cellSize * 0.9)
+                let symbolName = symbol(for: cell)
+                if !symbolName.isEmpty {
+                    Image(symbolName)
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: cellSize * 0.9, height: cellSize * 0.9)
+                }
             }
         }
         .buttonStyle(.plain)
