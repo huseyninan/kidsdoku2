@@ -60,9 +60,10 @@ final class GameViewModel: ObservableObject {
     func didTapCell(_ cell: KidSudokuCell) {
         message = nil
         
-        // If cell is fixed, just highlight it
+        // If cell is fixed, just highlight it and select it in the palette
         if cell.isFixed {
             highlightedValue = cell.value
+            selectedPaletteSymbol = cell.value
             return
         }
         
@@ -87,6 +88,7 @@ final class GameViewModel: ObservableObject {
         // Otherwise, select the cell and highlight its value
         selectedPosition = cell.position
         highlightedValue = cell.value
+        selectedPaletteSymbol = cell.value
     }
 
     func clearSelection() {
