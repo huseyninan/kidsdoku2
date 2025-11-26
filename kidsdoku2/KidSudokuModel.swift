@@ -13,6 +13,7 @@ enum SymbolGroup: Int, CaseIterable, Hashable {
     case birds3
     case birds4
     case animals4
+    case numbers
 
     var symbols: [String] {
             switch self {
@@ -36,6 +37,8 @@ enum SymbolGroup: Int, CaseIterable, Hashable {
                 return ["bird1", "bird1", "bird4", "bird6", "bird7", "bird9", "bird13"]
             case .birds4:
                 return ["bird2", "bird2", "bird3", "bird5", "bird14", "bird15", "bird11"]
+            case .numbers:
+                return ["number1", "number1", "number2", "number3", "number4", "number5", "number6"]
             }
         }
     
@@ -51,6 +54,8 @@ enum SymbolGroup: Int, CaseIterable, Hashable {
             return String(localized: "Coral Reef")
         case .birds, .birds2, .birds3, .birds4:
             return String(localized: "Bird's Nest")
+        case .numbers:
+            return String(localized: "Numbers")
         }
     }
 }

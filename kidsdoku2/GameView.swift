@@ -10,6 +10,21 @@ struct GameView: View {
     
     @State private var elapsedTime: TimeInterval = 0
     @State private var timer: Timer?
+    @State private var showNumbers: Bool = false
+    
+    // Computed property to get the current effective config
+    private var currentConfig: KidSudokuConfig {
+        if showNumbers {
+            return KidSudokuConfig(
+                size: config.size,
+                subgridRows: config.subgridRows,
+                subgridCols: config.subgridCols,
+                symbolGroup: .numbers
+            )
+        } else {
+            return config
+        }
+    }
 
     init(config: KidSudokuConfig) {
         self.config = config
@@ -97,6 +112,23 @@ struct GameView: View {
                 .frame(height: 8, alignment: .center)
                 .frame(maxWidth: 100)
             
+            // Symbol/Number Toggle Button
+            Button(action: {
+                withAnimation(.easeInOut(duration: 0.3)) {
+                    showNumbers.toggle()
+                }
+                hapticManager.trigger(.selection)
+                soundManager.play(.correctPlacement, volume: 0.4)
+            }) {
+                StorybookIconCircle(
+                    systemName: showNumbers ? "123.rectangle" : "photo",
+                    gradient: showNumbers
+                        ? [Color(red: 0.2, green: 0.6, blue: 0.9), Color(red: 0.1, green: 0.4, blue: 0.8)]
+                        : [Color(red: 0.8, green: 0.4, blue: 0.7), Color(red: 0.6, green: 0.3, blue: 0.6)]
+                )
+            }
+            .buttonStyle(.plain)
+            
             StorybookInfoChip(icon: "clock", text: formattedTime)
             
             Button(action: {
@@ -122,10 +154,11 @@ struct GameView: View {
             StorybookBoardMat(size: size)
             
             BoardGridView(
-                config: config,
+                config: currentConfig,
                 cells: viewModel.puzzle.cells,
                 selected: viewModel.selectedPosition,
                 highlightedValue: viewModel.highlightedValue,
+                showNumbers: showNumbers,
                 onTap: { cell in
                     withAnimation(.easeInOut(duration: 0.15)) {
                         viewModel.didTapCell(cell)
@@ -141,17 +174,17 @@ struct GameView: View {
     private var paletteSection: some View {
         VStack(spacing: 8) {
             HStack {
-                Text(config.symbolGroup.paletteTitle)
+                Text(currentConfig.symbolGroup.paletteTitle)
                     .font(.system(size: 16, weight: .heavy, design: .rounded))
                     .foregroundStyle(Color(red: 0.44, green: 0.3, blue: 0.23))
                 Spacer()
-                Text("Tap a friend below")
+                Text(showNumbers ? "Tap a number below" : "Tap a friend below")
                     .font(.system(size: 12, weight: .semibold, design: .rounded))
                     .foregroundStyle(Color(red: 0.62, green: 0.47, blue: 0.34))
             }
             
             HStack(spacing: 8) {
-                ForEach(Array(config.symbols.enumerated()).filter { entry in
+                ForEach(Array(currentConfig.symbols.enumerated()).filter { entry in
                     guard let firstRow = viewModel.puzzle.solution.first else { return true }
                     let symbolIndicesInFirstRow = Set(firstRow.map { $0 })
                     return symbolIndicesInFirstRow.contains(entry.offset)
@@ -327,6 +360,7 @@ private struct BoardGridView: View {
     let cells: [KidSudokuCell]
     let selected: KidSudokuPosition?
     let highlightedValue: Int?
+    let showNumbers: Bool
     let onTap: (KidSudokuCell) -> Void
     
     var body: some View {
@@ -540,6 +574,7 @@ private struct StorybookBadge: View {
         Text(text)
             .font(.system(size: 15, weight: .heavy, design: .rounded))
             .foregroundStyle(Color(red: 0.33, green: 0.22, blue: 0.12))
+            .multilineTextAlignment(.center)
             .padding(.horizontal, 10)
             .padding(.vertical, 5)
             .background(
