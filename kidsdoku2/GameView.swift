@@ -24,6 +24,11 @@ struct GameView: View {
     var body: some View {
         GeometryReader { proxy in
             ZStack {
+                // Background image
+                Image("gridbg")
+                    .resizable(resizingMode: .stretch)
+                    .ignoresSafeArea()
+                
                 // Animated running fox at the bottom of the screen
                 VStack {
                     Spacer()
