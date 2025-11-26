@@ -20,7 +20,7 @@ struct GameSettingsSheet: View {
     init(selectedSymbolGroup: Binding<SymbolGroup>, showNumbers: Binding<Bool>) {
         self._selectedSymbolGroup = selectedSymbolGroup
         self._showNumbers = showNumbers
-        self.availableSymbolGroups = SymbolGroup.allCases
+        self.availableSymbolGroups = SymbolGroup.puzzleCases
     }
     
     var body: some View {
