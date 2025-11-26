@@ -10,9 +10,9 @@ struct GameView: View {
     
     @State private var elapsedTime: TimeInterval = 0
     @State private var timer: Timer?
-    @AppStorage("showNumbers") private var showNumbers: Bool = false
+    @State private var showNumbers: Bool = false
     @State private var showSettings: Bool = false
-    @AppStorage("selectedSymbolGroup") private var selectedSymbolGroupRawValue: Int = SymbolGroup.animals.rawValue
+    @State private var selectedSymbolGroupRawValue: Int
     
     private var selectedSymbolGroup: SymbolGroup {
         SymbolGroup(rawValue: selectedSymbolGroupRawValue) ?? config.symbolGroup
@@ -40,11 +40,13 @@ struct GameView: View {
     init(config: KidSudokuConfig) {
         self.config = config
         _viewModel = StateObject(wrappedValue: GameViewModel(config: config))
+        _selectedSymbolGroupRawValue = State(initialValue: config.symbolGroup.rawValue)
     }
     
     init(config: KidSudokuConfig, premadePuzzle: PremadePuzzle) {
         self.config = config
         _viewModel = StateObject(wrappedValue: GameViewModel(config: config, premadePuzzle: premadePuzzle))
+        _selectedSymbolGroupRawValue = State(initialValue: config.symbolGroup.rawValue)
     }
 
     var body: some View {
