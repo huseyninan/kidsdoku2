@@ -10,7 +10,13 @@ struct GameView: View {
     
     @State private var elapsedTime: TimeInterval = 0
     @State private var timer: Timer?
-    @State private var showNumbers: Bool = false
+    @AppStorage("showNumbers") private var showNumbers: Bool = false
+    @State private var showSettings: Bool = false
+    @AppStorage("selectedSymbolGroup") private var selectedSymbolGroupRawValue: Int = SymbolGroup.animals.rawValue
+    
+    private var selectedSymbolGroup: SymbolGroup {
+        SymbolGroup(rawValue: selectedSymbolGroupRawValue) ?? config.symbolGroup
+    }
     
     // Computed property to get the current effective config
     private var currentConfig: KidSudokuConfig {
@@ -22,7 +28,12 @@ struct GameView: View {
                 symbolGroup: .numbers
             )
         } else {
-            return config
+            return KidSudokuConfig(
+                size: config.size,
+                subgridRows: config.subgridRows,
+                subgridCols: config.subgridCols,
+                symbolGroup: selectedSymbolGroup
+            )
         }
     }
 
@@ -94,6 +105,18 @@ struct GameView: View {
         .navigationBarBackButtonHidden(false)
         .navigationTitle("")
         .navigationBarTitleDisplayMode(.inline)
+        .sheet(isPresented: $showSettings) {
+            GameSettingsSheet(
+                selectedSymbolGroup: Binding(
+                    get: { selectedSymbolGroup },
+                    set: { selectedSymbolGroupRawValue = $0.rawValue }
+                ),
+                showNumbers: $showNumbers
+            )
+        }
+        .onChange(of: selectedSymbolGroupRawValue) { _ in
+            // The currentConfig computed property will automatically use the updated symbol group
+        }
         .onAppear {
             startTimer()
         }
@@ -112,34 +135,18 @@ struct GameView: View {
                 .frame(height: 8, alignment: .center)
                 .frame(maxWidth: 100)
             
-            // Symbol/Number Toggle Button
-            Button(action: {
-                withAnimation(.easeInOut(duration: 0.3)) {
-                    showNumbers.toggle()
-                }
-                hapticManager.trigger(.selection)
-                soundManager.play(.correctPlacement, volume: 0.4)
-            }) {
-                StorybookIconCircle(
-                    systemName: showNumbers ? "123.rectangle" : "photo",
-                    gradient: showNumbers
-                        ? [Color(red: 0.2, green: 0.6, blue: 0.9), Color(red: 0.1, green: 0.4, blue: 0.8)]
-                        : [Color(red: 0.8, green: 0.4, blue: 0.7), Color(red: 0.6, green: 0.3, blue: 0.6)]
-                )
-            }
-            .buttonStyle(.plain)
-            
             StorybookInfoChip(icon: "clock", text: formattedTime)
             
             Button(action: {
-                soundManager.toggleSound()
+                showSettings = true
                 hapticManager.trigger(.selection)
             }) {
                 StorybookIconCircle(
-                    systemName: soundManager.isSoundEnabled ? "music.note" : "speaker.slash.fill",
-                    gradient: soundManager.isSoundEnabled
-                        ? [Color(red: 0.37, green: 0.67, blue: 0.39), Color(red: 0.23, green: 0.52, blue: 0.32)]
-                        : [Color(red: 0.74, green: 0.74, blue: 0.75), Color(red: 0.6, green: 0.6, blue: 0.62)]
+                    systemName: "slider.horizontal.3",
+                    gradient: [
+                        Color(red: 0.7, green: 0.5, blue: 0.9),
+                        Color(red: 0.6, green: 0.4, blue: 0.8)
+                    ]
                 )
             }
             .buttonStyle(.plain)

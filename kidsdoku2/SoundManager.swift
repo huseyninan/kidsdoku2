@@ -1,12 +1,13 @@
 import AVFoundation
 import Combine
+import SwiftUI
 
 final class SoundManager: ObservableObject {
     static let shared = SoundManager()
     
     private var audioPlayers: [String: AVAudioPlayer] = [:]
     private let audioQueue = DispatchQueue(label: "com.kidsdoku.audio", qos: .userInteractive)
-    @Published var isSoundEnabled: Bool = true
+    @AppStorage("soundEnabled") var isSoundEnabled: Bool = true
     @Published var volume: Float = 0.05
     
     enum SoundEffect: String {
