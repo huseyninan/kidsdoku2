@@ -7,7 +7,7 @@ final class SoundManager: ObservableObject {
     private var audioPlayers: [String: AVAudioPlayer] = [:]
     private let audioQueue = DispatchQueue(label: "com.kidsdoku.audio", qos: .userInteractive)
     @Published var isSoundEnabled: Bool = true
-    @Published var volume: Float = 0.2
+    @Published var volume: Float = 0.05
     
     enum SoundEffect: String {
         case correctPlacement = "correct_placement"
