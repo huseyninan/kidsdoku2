@@ -24,9 +24,6 @@ struct GameView: View {
     var body: some View {
         GeometryReader { proxy in
             ZStack {
-                StorybookBackground()
-                    .ignoresSafeArea()
-                
                 // Animated running fox at the bottom of the screen
                 VStack {
                     Spacer()
@@ -683,66 +680,6 @@ private struct StorybookMiniBoardPreview: View {
             .padding(8)
         }
         .frame(width: 104, height: 104)
-    }
-}
-
-private struct StorybookBackground: View {
-    var body: some View {
-        GeometryReader { proxy in
-            let width = proxy.size.width
-            let height = proxy.size.height
-            
-            ZStack(alignment: .bottom) {
-                LinearGradient(
-                    colors: [
-                        Color(red: 0.9, green: 0.95, blue: 1.0),
-                        Color(red: 0.98, green: 0.93, blue: 0.85)
-                    ],
-                    startPoint: .top,
-                    endPoint: .bottom
-                )
-                
-                StorybookCloud()
-                    .scaleEffect(1.1)
-                    .offset(x: -width * 0.25, y: -height * 0.35)
-                StorybookCloud()
-                    .scaleEffect(0.8)
-                    .offset(x: width * 0.35, y: -height * 0.3)
-                StorybookCloud()
-                    .scaleEffect(0.6)
-                    .offset(x: width * 0.05, y: -height * 0.42)
-                
-                StorybookHill(width: width * 1.4, height: height * 0.35, color: Color(red: 0.68, green: 0.86, blue: 0.57))
-                    .offset(x: -width * 0.2, y: height * 0.02)
-                StorybookHill(width: width * 1.2, height: height * 0.28, color: Color(red: 0.5, green: 0.74, blue: 0.47))
-                    .offset(x: width * 0.25, y: height * 0.05)
-            }
-            .frame(width: width, height: height)
-        }
-    }
-}
-
-private struct StorybookCloud: View {
-    var body: some View {
-        ZStack {
-            Circle().fill(Color.white.opacity(0.85)).frame(width: 110, height: 80).offset(x: -40, y: 10)
-            Circle().fill(Color.white.opacity(0.8)).frame(width: 100, height: 70).offset(x: 10, y: 0)
-            Circle().fill(Color.white.opacity(0.9)).frame(width: 120, height: 90).offset(x: 40, y: 12)
-        }
-        .blur(radius: 0.3)
-    }
-}
-
-private struct StorybookHill: View {
-    let width: CGFloat
-    let height: CGFloat
-    let color: Color
-    
-    var body: some View {
-        Ellipse()
-            .fill(color)
-            .frame(width: width, height: height)
-            .shadow(color: color.opacity(0.4), radius: 10, x: 0, y: -6)
     }
 }
 
