@@ -58,6 +58,10 @@ enum SymbolGroup: Int, CaseIterable, Hashable {
             return String(localized: "Numbers")
         }
     }
+    
+    static var puzzleCases: [SymbolGroup] {
+        return [.animals, .animals2, .animals3, .animals4, .birds, .birds2, .birds3, .birds4, .sea, .weather]
+    }
 }
 
 struct KidSudokuConfig: Hashable {

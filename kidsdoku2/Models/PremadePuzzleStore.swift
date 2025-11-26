@@ -2072,8 +2072,8 @@ private func puzzle(
 private func assignSymbolGroup(size: Int, difficulty: PuzzleDifficulty, number: Int) -> SymbolGroup {
     // Create a deterministic assignment based on puzzle characteristics
     let seed = size * 1000 + (difficulty == .easy ? 0 : difficulty == .normal ? 100 : 200) + number
-    let groupIndex = abs(seed) % SymbolGroup.allCases.count
-    return SymbolGroup.allCases[groupIndex]
+    let groupIndex = abs(seed) % SymbolGroup.puzzleCases.count
+    return SymbolGroup.puzzleCases[groupIndex]
 }
 
 private func autoAssignEmoji(size: Int, difficulty: PuzzleDifficulty, number: Int) -> String {
