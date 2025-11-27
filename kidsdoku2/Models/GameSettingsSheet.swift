@@ -49,12 +49,12 @@ struct GameSettingsSheet: View {
                             // Display Mode Section
                             GameSettingsSection(
                                 icon: "eye.fill",
-                                title: "Display Mode"
+                                title: String(localized: "Display Mode")
                             ) {
                                 GameSettingsToggle(
                                     icon: showNumbers ? "textformat.123" : "photo.fill",
-                                    title: showNumbers ? "Numbers Mode" : "Picture Mode",
-                                    subtitle: showNumbers ? "Show numbers instead of pictures" : "Show pictures instead of numbers",
+                                    title: showNumbers ? String(localized: "Numbers Mode") : String(localized: "Picture Mode"),
+                                    subtitle: showNumbers ? String(localized: "Show numbers instead of pictures") : String(localized: "Show pictures instead of numbers"),
                                     isOn: $showNumbers
                                 ) {
                                     hapticManager.trigger(.selection)
@@ -66,7 +66,7 @@ struct GameSettingsSheet: View {
                             if !showNumbers {
                                 GameSettingsSection(
                                     icon: "photo.on.rectangle.angled",
-                                    title: "Picture Theme"
+                                    title: String(localized: "Picture Theme")
                                 ) {
                                     LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 2), spacing: 12) {
                                         ForEach(availableSymbolGroups, id: \.id) { group in
@@ -89,12 +89,12 @@ struct GameSettingsSheet: View {
                             // Audio & Feedback Section
                             GameSettingsSection(
                                 icon: "speaker.wave.3.fill",
-                                title: "Audio & Feedback"
+                                title: String(localized: "Audio & Feedback")
                             ) {
                                 GameSettingsToggle(
                                     icon: soundManager.isSoundEnabled ? "speaker.2.fill" : "speaker.slash.fill",
-                                    title: "Sound Effects",
-                                    subtitle: "Play sounds during gameplay",
+                                    title: String(localized: "Sound Effects"),
+                                    subtitle: String(localized: "Play sounds during gameplay"),
                                     isOn: $soundManager.isSoundEnabled
                                 ) {
                                     hapticManager.trigger(.selection)
@@ -105,8 +105,8 @@ struct GameSettingsSheet: View {
                                 
                                 GameSettingsToggle(
                                     icon: hapticManager.isHapticsEnabled ? "hand.tap.fill" : "hand.tap",
-                                    title: "Haptic Feedback",
-                                    subtitle: "Vibration feedback for interactions",
+                                    title: String(localized: "Haptic Feedback"),
+                                    subtitle: String(localized: "Vibration feedback for interactions"),
                                     isOn: $hapticManager.isHapticsEnabled
                                 ) {
                                     if hapticManager.isHapticsEnabled {
