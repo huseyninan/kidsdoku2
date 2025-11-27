@@ -52,13 +52,17 @@ class PuzzleCompletionManager: ObservableObject {
     /// Reset all completion data
     func resetAll() {
         completedPuzzles.removeAll()
+        puzzleRatings.removeAll()
         saveCompletedPuzzles()
+        savePuzzleRatings()
     }
     
     /// Reset completion data for a specific size
     func resetSize(_ size: Int) {
         completedPuzzles = completedPuzzles.filter { !$0.hasPrefix("\(size)-") }
+        puzzleRatings = puzzleRatings.filter { !$0.key.hasPrefix("\(size)-") }
         saveCompletedPuzzles()
+        savePuzzleRatings()
     }
     
     // MARK: - Private Helpers
