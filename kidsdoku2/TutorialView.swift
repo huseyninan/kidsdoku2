@@ -435,7 +435,6 @@ struct TutorialView: View {
             }) {
                 HStack {
                     Image(systemName: "chevron.left")
-                    Text("")
                 }
                 .font(.headline)
                 .foregroundColor(.white)
