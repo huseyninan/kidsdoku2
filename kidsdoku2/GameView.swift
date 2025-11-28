@@ -72,7 +72,10 @@ struct GameView: View {
                         let rawSide = min(innerProxy.size.width, innerProxy.size.height)
                         let inset: CGFloat = 35
                         let candidate = max(200, rawSide - inset)
-                        let side = min(candidate, rawSide)
+                        
+                        // Constrain grid size for iPad to make it more reasonable
+                        let maxGridSize: CGFloat = UIDevice.current.userInterfaceIdiom == .pad ? 550 : .infinity
+                        let side = min(candidate, rawSide, maxGridSize)
                          
                         boardSection(size: side)
                             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
@@ -128,16 +131,25 @@ struct GameView: View {
     }
 
     private var header: some View {
-        HStack(spacing: 10) {
+        let isIPad = UIDevice.current.userInterfaceIdiom == .pad
+        let spacing: CGFloat = isIPad ? 15 : 10
+        let progressBarHeight: CGFloat = isIPad ? 12 : 8
+        let progressBarMaxWidth: CGFloat = isIPad ? 140 : 100
+        let verticalPadding: CGFloat = isIPad ? 12 : 8
+        let horizontalPadding: CGFloat = isIPad ? 18 : 12
+        
+        return HStack(spacing: spacing) {
             StorybookBadge(text: viewModel.navigationTitle)
+                .scaleEffect(isIPad ? 1.2 : 1.0)
             
             Spacer(minLength: 0)
             
             StorybookProgressBar(progress: progressRatio)
-                .frame(height: 8, alignment: .center)
-                .frame(maxWidth: 100)
+                .frame(height: progressBarHeight, alignment: .center)
+                .frame(maxWidth: progressBarMaxWidth)
             
             StorybookInfoChip(icon: "clock", text: formattedTime)
+                .scaleEffect(isIPad ? 1.2 : 1.0)
             
             Button(action: {
                 showSettings = true
@@ -150,11 +162,12 @@ struct GameView: View {
                         Color(red: 0.6, green: 0.4, blue: 0.8)
                     ]
                 )
+                .scaleEffect(isIPad ? 1.3 : 1.0)
             }
             .buttonStyle(.plain)
         }
-        .padding(.vertical, 8)
-        .padding(.horizontal, 12)
+        .padding(.vertical, verticalPadding)
+        .padding(.horizontal, horizontalPadding)
         .background(StorybookHeaderCard())
     }
 
@@ -210,6 +223,10 @@ struct GameView: View {
 
     private func paletteButton(symbolIndex: Int, symbol: String) -> some View {
         let isSelected = viewModel.selectedPaletteSymbol == symbolIndex
+        let isIPad = UIDevice.current.userInterfaceIdiom == .pad
+        let buttonSize: CGFloat = isIPad ? 72 : 52
+        let imageSize: CGFloat = isIPad ? 50 : 36
+        let lineWidth: CGFloat = isIPad ? 3.5 : 2.5
 
         return Button {
             withAnimation(.spring(response: 0.35, dampingFraction: 0.6)) {
@@ -231,16 +248,16 @@ struct GameView: View {
                     .shadow(color: Color.black.opacity(0.08), radius: 3, x: 0, y: 2)
                     .overlay(
                         Circle()
-                            .stroke(isSelected ? Color(red: 0.92, green: 0.58, blue: 0.26) : Color(red: 0.87, green: 0.87, blue: 0.85), lineWidth: 2.5)
+                            .stroke(isSelected ? Color(red: 0.92, green: 0.58, blue: 0.26) : Color(red: 0.87, green: 0.87, blue: 0.85), lineWidth: lineWidth)
                     )
                 
                 Image(symbol)
                     .resizable()
                     .scaledToFit()
-                    .frame(width: 36, height: 36)
+                    .frame(width: imageSize, height: imageSize)
                     .padding(3)
             }
-            .frame(width: 52, height: 52)
+            .frame(width: buttonSize, height: buttonSize)
             .scaleEffect(isSelected ? 1.08 : 1.0)
         }
         .buttonStyle(.plain)
