@@ -424,7 +424,7 @@ struct PuzzleSelectionView: View {
                 }
             }
         }
-        .presentationDetents([.height(500)])
+        .presentationDetents([.height(UIDevice.current.userInterfaceIdiom == .pad ? 550 : 500)])
     }
     
     private func difficultyToggle(title: String, emoji: String, isOn: Binding<Bool>, color: Color) -> some View {
