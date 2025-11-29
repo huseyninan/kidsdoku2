@@ -225,8 +225,6 @@ struct GameView: View {
         let isSelected = viewModel.selectedPaletteSymbol == symbolIndex
         let isIPad = UIDevice.current.userInterfaceIdiom == .pad
         let buttonSize: CGFloat = isIPad ? 72 : 52
-        let selectionColor = SymbolColorPalette.badgeColor(for: symbolIndex)
-        let deselectedStroke = Color.white.opacity(0.4)
         
         return Button {
             withAnimation(.spring(response: 0.35, dampingFraction: 0.6)) {
@@ -239,11 +237,8 @@ struct GameView: View {
                 symbolName: symbol,
                 showNumbers: showNumbers,
                 size: buttonSize,
-                context: .palette
-            )
-            .overlay(
-                RoundedRectangle(cornerRadius: buttonSize * 0.42, style: .continuous)
-                    .stroke(isSelected ? selectionColor : deselectedStroke, lineWidth: isSelected ? 4 : 2)
+                context: .palette,
+                isSelected: isSelected
             )
             .shadow(color: Color.black.opacity(0.08), radius: 4, x: 0, y: 3)
             .scaleEffect(isSelected ? 1.08 : 1.0)
@@ -435,7 +430,8 @@ private struct BoardGridView: View {
                         symbolName: symbolName,
                         showNumbers: showNumbers,
                         size: cellSize * 0.82,
-                        context: .grid
+                        context: .grid,
+                        isSelected: isSelected || isMatchingHighlighted
                     )
                     .transition(.scale)
                 }
@@ -891,15 +887,42 @@ private struct SymbolTokenView: View {
     let showNumbers: Bool
     let size: CGFloat
     let context: DisplayContext
+    var isSelected: Bool = false
+    
+    @State private var glowPhase: CGFloat = 0
+    
+    private var glowAnimation: Animation {
+        .easeInOut(duration: 1.6).repeatForever(autoreverses: true)
+    }
     
     private var numberText: String {
         "\(symbolIndex + 1)"
+    }
+    
+    private var selectionBorderColor: Color {
+        isSelected ? SymbolColorPalette.badgeColor(for: symbolIndex) : Color.white.opacity(0.25)
     }
     
     var body: some View {
         let gradient = SymbolColorPalette.gradient(for: symbolIndex)
         let cornerRadius = size * context.cornerRadiusScale
         let padding = size * context.contentPaddingScale
+        let highlightStrength = max(0, min(1, isSelected ? glowPhase : 0))
+        let pulseOverlay = RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+            .fill(
+                LinearGradient(
+                    colors: [
+                        Color.white.opacity(0.35 + 0.25 * highlightStrength),
+                        selectionBorderColor.opacity(0.2 + 0.35 * highlightStrength)
+                    ],
+                    startPoint: .topLeading,
+                    endPoint: .bottomTrailing
+                )
+            )
+            .blendMode(.plusLighter)
+            .opacity(highlightStrength > 0 ? 0.5 + 0.3 * highlightStrength : 0)
+            .scaleEffect(1 + 0.05 * highlightStrength)
+            .animation(.easeInOut(duration: 0.2), value: isSelected)
         
         return ZStack {
             RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
@@ -910,9 +933,19 @@ private struct SymbolTokenView: View {
                         endPoint: .bottomTrailing
                     )
                 )
+                .overlay(pulseOverlay)
                 .overlay(
                     RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
-                        .stroke(Color.white.opacity(0.25), lineWidth: size * 0.04)
+                        .stroke(
+                            selectionBorderColor.opacity(0.5 + 0.4 * highlightStrength),
+                            lineWidth: size * (0.04 + 0.05 * highlightStrength)
+                        )
+                        .shadow(
+                            color: selectionBorderColor.opacity(0.2 + 0.35 * highlightStrength),
+                            radius: size * (0.03 + 0.08 * highlightStrength),
+                            x: 0,
+                            y: size * 0.04
+                        )
                 )
                 .shadow(color: Color.black.opacity(0.12), radius: size * 0.12, x: 0, y: size * 0.08)
             
@@ -941,6 +974,12 @@ private struct SymbolTokenView: View {
         }
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(Text("Symbol \(numberText)"))
+        .onAppear {
+            updateGlowAnimation(isSelected)
+        }
+        .onChange(of: isSelected) { newValue in
+            updateGlowAnimation(newValue)
+        }
     }
     
     private var numberBadge: some View {
@@ -954,6 +993,21 @@ private struct SymbolTokenView: View {
                     .fill(SymbolColorPalette.badgeColor(for: symbolIndex))
             )
             .shadow(color: Color.black.opacity(0.28), radius: size * 0.1, x: 0, y: 1)
+    }
+    
+    private func updateGlowAnimation(_ active: Bool) {
+        if active {
+            glowPhase = 0
+            DispatchQueue.main.async {
+                withAnimation(glowAnimation) {
+                    glowPhase = 1
+                }
+            }
+        } else {
+            withAnimation(.easeOut(duration: 0.25)) {
+                glowPhase = 0
+            }
+        }
     }
 }
 
