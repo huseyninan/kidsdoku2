@@ -896,7 +896,7 @@ private struct SymbolTokenView: View {
     }
     
     private var numberText: String {
-        "\(symbolIndex + 1)"
+        "\(symbolIndex)"
     }
     
     private var selectionBorderColor: Color {
@@ -1017,6 +1017,8 @@ private enum SymbolColorPalette {
         [Color(red: 0.38, green: 0.8, blue: 0.81), Color(red: 0.12, green: 0.6, blue: 0.73)],
         [Color(red: 0.76, green: 0.62, blue: 0.98), Color(red: 0.53, green: 0.4, blue: 0.89)],
         [Color(red: 0.57, green: 0.86, blue: 0.58), Color(red: 0.27, green: 0.64, blue: 0.39)],
+        [Color(red: 1.0, green: 0.74, blue: 0.47), Color(red: 0.98, green: 0.51, blue: 0.27)],
+        [Color(red: 0.37, green: 0.66, blue: 0.98), Color(red: 0.18, green: 0.43, blue: 0.88)],
         [Color(red: 1.0, green: 0.6, blue: 0.77), Color(red: 0.91, green: 0.33, blue: 0.58)],
         [Color(red: 0.99, green: 0.86, blue: 0.47), Color(red: 0.99, green: 0.69, blue: 0.3)],
         [Color(red: 0.37, green: 0.66, blue: 0.98), Color(red: 0.18, green: 0.43, blue: 0.88)],
@@ -1404,6 +1406,6 @@ private struct StarRatingView: View {
 }
 
 #Preview {
-    GameView(config: .threeByThree)
+    GameView(config: .sixBySix)
 }
 
