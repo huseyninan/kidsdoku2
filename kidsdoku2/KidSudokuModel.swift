@@ -14,6 +14,7 @@ enum SymbolGroup: Int, CaseIterable, Hashable {
     case birds4
     case animals4
     case numbers
+    case animalItems
 
     var symbols: [String] {
             switch self {
@@ -39,6 +40,8 @@ enum SymbolGroup: Int, CaseIterable, Hashable {
                 return ["bird2", "bird2", "bird3", "bird5", "bird14", "bird15", "bird11"]
             case .numbers:
                 return ["number1", "number1", "number2", "number3", "number4", "number5", "number6"]
+            case .animalItems:
+                return ["animal_with_item_1", "animal_with_item_1", "animal_with_item_2", "animal_with_item_3", "animal_with_item_4", "animal_with_item_5", "animal_with_item_6"]
             }
         }
     
@@ -48,7 +51,7 @@ enum SymbolGroup: Int, CaseIterable, Hashable {
     
     var paletteTitle: String {
         switch self {
-        case .animals, .animals2, .animals3, .animals4:
+        case .animals, .animals2, .animals3, .animals4, .animalItems:
             return String(localized: "Safari Camp")
         case .sea, .weather:
             return String(localized: "Coral Reef")
@@ -60,7 +63,7 @@ enum SymbolGroup: Int, CaseIterable, Hashable {
     }
     
     static var puzzleCases: [SymbolGroup] {
-        return [.animals, .animals2, .animals3, .animals4, .birds, .birds2, .birds3, .birds4, .sea, .weather]
+        return [.animalItems, .animals, .animals2, .animals3, .animals4, .birds, .birds2, .birds3, .birds4, .sea, .weather]
     }
 }
 
