@@ -1,5 +1,6 @@
 import SwiftUI
 import RevenueCatUI
+import FirebaseAnalytics
 
 struct MainMenuView: View {
     @Binding var path: [KidSudokuRoute]
@@ -147,6 +148,9 @@ struct MainMenuView: View {
                         title: option.title,
                         subtitle: option.subtitle
                     ) {
+                        Analytics.logEvent(AnalyticsEventScreenView, parameters: [
+                            AnalyticsParameterScreenName: "test_screen \(option.size)"
+                        ])
                         path.append(.puzzleSelection(size: option.size))
                     }
                 }
