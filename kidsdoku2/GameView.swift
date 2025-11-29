@@ -225,39 +225,27 @@ struct GameView: View {
         let isSelected = viewModel.selectedPaletteSymbol == symbolIndex
         let isIPad = UIDevice.current.userInterfaceIdiom == .pad
         let buttonSize: CGFloat = isIPad ? 72 : 52
-        let imageSize: CGFloat = isIPad ? 50 : 36
-        let lineWidth: CGFloat = isIPad ? 3.5 : 2.5
-
+        let selectionColor = SymbolColorPalette.badgeColor(for: symbolIndex)
+        let deselectedStroke = Color.white.opacity(0.4)
+        
         return Button {
             withAnimation(.spring(response: 0.35, dampingFraction: 0.6)) {
                 viewModel.selectPaletteSymbol(symbolIndex)
             }
             hapticManager.trigger(.selection)
         } label: {
-            ZStack {
-                Circle()
-                    .fill(
-                        LinearGradient(
-                            colors: isSelected
-                                ? [Color(red: 1.0, green: 0.89, blue: 0.74), Color(red: 0.96, green: 0.72, blue: 0.46)]
-                                : [Color.white, Color(red: 0.95, green: 0.95, blue: 0.93)],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        )
-                    )
-                    .shadow(color: Color.black.opacity(0.08), radius: 3, x: 0, y: 2)
-                    .overlay(
-                        Circle()
-                            .stroke(isSelected ? Color(red: 0.92, green: 0.58, blue: 0.26) : Color(red: 0.87, green: 0.87, blue: 0.85), lineWidth: lineWidth)
-                    )
-                
-                Image(symbol)
-                    .resizable()
-                    .scaledToFit()
-                    .frame(width: imageSize, height: imageSize)
-                    .padding(3)
-            }
-            .frame(width: buttonSize, height: buttonSize)
+            SymbolTokenView(
+                symbolIndex: symbolIndex,
+                symbolName: symbol,
+                showNumbers: showNumbers,
+                size: buttonSize,
+                context: .palette
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: buttonSize * 0.42, style: .continuous)
+                    .stroke(isSelected ? selectionColor : deselectedStroke, lineWidth: isSelected ? 4 : 2)
+            )
+            .shadow(color: Color.black.opacity(0.08), radius: 4, x: 0, y: 3)
             .scaleEffect(isSelected ? 1.08 : 1.0)
         }
         .buttonStyle(.plain)
@@ -441,13 +429,15 @@ private struct BoardGridView: View {
                 }
 
                 let symbolName = symbol(for: cell)
-                if !symbolName.isEmpty {
-                    Image(symbolName)
-                        .resizable()
-                        .scaledToFit()
-                        .frame(width: cellSize * 0.9, height: cellSize * 0.9)
-                        .shadow(color: Color.black.opacity(0.15), radius: 3, x: 0, y: 2)
-                        .shadow(color: Color.black.opacity(0.08), radius: 1, x: 0, y: 1)
+                if let value = cell.value {
+                    SymbolTokenView(
+                        symbolIndex: value,
+                        symbolName: symbolName,
+                        showNumbers: showNumbers,
+                        size: cellSize * 0.82,
+                        context: .grid
+                    )
+                    .transition(.scale)
                 }
             }
         }
@@ -872,6 +862,125 @@ private struct StorybookActionButton: View {
     }
 }
 
+private struct SymbolTokenView: View {
+    enum DisplayContext {
+        case grid
+        case palette
+        
+        var cornerRadiusScale: CGFloat {
+            switch self {
+            case .grid:
+                return 0.28
+            case .palette:
+                return 0.35
+            }
+        }
+        
+        var contentPaddingScale: CGFloat {
+            switch self {
+            case .grid:
+                return 0.01
+            case .palette:
+                return 0.01
+            }
+        }
+    }
+    
+    let symbolIndex: Int
+    let symbolName: String
+    let showNumbers: Bool
+    let size: CGFloat
+    let context: DisplayContext
+    
+    private var numberText: String {
+        "\(symbolIndex + 1)"
+    }
+    
+    var body: some View {
+        let gradient = SymbolColorPalette.gradient(for: symbolIndex)
+        let cornerRadius = size * context.cornerRadiusScale
+        let padding = size * context.contentPaddingScale
+        
+        return ZStack {
+            RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+                .fill(
+                    LinearGradient(
+                        colors: gradient,
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    )
+                )
+                .overlay(
+                    RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+                        .stroke(Color.white.opacity(0.25), lineWidth: size * 0.04)
+                )
+                .shadow(color: Color.black.opacity(0.12), radius: size * 0.12, x: 0, y: size * 0.08)
+            
+            Group {
+                if showNumbers || symbolName.isEmpty {
+                    Text(numberText)
+                        .font(.system(size: size * 0.55, weight: .black, design: .rounded))
+                        .foregroundColor(.white)
+                        .shadow(color: Color.black.opacity(0.2), radius: 1, x: 0, y: 1)
+                } else {
+                    Image(symbolName)
+                        .resizable()
+                        .scaledToFit()
+                        .padding(padding)
+                        .shadow(color: Color.black.opacity(0.18), radius: size * 0.08, x: 0, y: size * 0.04)
+                }
+            }
+            .frame(width: size * 0.88, height: size * 0.88)
+        }
+        .frame(width: size, height: size)
+        .overlay(alignment: .bottomTrailing) {
+            if !showNumbers {
+                numberBadge
+                    .offset(x: -size * 0.01, y: -size * 0.01)
+            }
+        }
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(Text("Symbol \(numberText)"))
+    }
+    
+    private var numberBadge: some View {
+        Text(numberText)
+            .font(.system(size: size * 0.2, weight: .heavy, design: .rounded))
+            .foregroundColor(.white)
+            .padding(.horizontal, size * 0.08)
+            .padding(.vertical, size * 0.02)
+            .background(
+                Capsule()
+                    .fill(SymbolColorPalette.badgeColor(for: symbolIndex))
+            )
+            .shadow(color: Color.black.opacity(0.28), radius: size * 0.1, x: 0, y: 1)
+    }
+}
+
+private enum SymbolColorPalette {
+    private static let gradients: [[Color]] = [
+        [Color(red: 1.0, green: 0.74, blue: 0.47), Color(red: 0.98, green: 0.51, blue: 0.27)],
+        [Color(red: 0.38, green: 0.8, blue: 0.81), Color(red: 0.12, green: 0.6, blue: 0.73)],
+        [Color(red: 0.76, green: 0.62, blue: 0.98), Color(red: 0.53, green: 0.4, blue: 0.89)],
+        [Color(red: 0.57, green: 0.86, blue: 0.58), Color(red: 0.27, green: 0.64, blue: 0.39)],
+        [Color(red: 1.0, green: 0.6, blue: 0.77), Color(red: 0.91, green: 0.33, blue: 0.58)],
+        [Color(red: 0.99, green: 0.86, blue: 0.47), Color(red: 0.99, green: 0.69, blue: 0.3)],
+        [Color(red: 0.37, green: 0.66, blue: 0.98), Color(red: 0.18, green: 0.43, blue: 0.88)],
+        [Color(red: 0.96, green: 0.8, blue: 0.45), Color(red: 0.85, green: 0.53, blue: 0.25)],
+        [Color(red: 0.52, green: 0.84, blue: 0.94), Color(red: 0.29, green: 0.63, blue: 0.86)],
+        [Color(red: 0.99, green: 0.7, blue: 0.54), Color(red: 0.97, green: 0.48, blue: 0.43)]
+    ]
+    
+    static func gradient(for index: Int) -> [Color] {
+        let safeIndex = index % gradients.count
+        return gradients[safeIndex]
+    }
+    
+    static func badgeColor(for index: Int) -> Color {
+        gradient(for: index).last ?? .orange
+    }
+}
+
 private struct CelebrationOverlay: View {
     let rating: Double
     let mistakeCount: Int
@@ -1241,6 +1350,6 @@ private struct StarRatingView: View {
 }
 
 #Preview {
-    GameView(config: .sixBySix)
+    GameView(config: .threeByThree)
 }
 
