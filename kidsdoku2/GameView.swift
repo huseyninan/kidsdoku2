@@ -908,6 +908,16 @@ private struct SymbolTokenView: View {
         let cornerRadius = size * context.cornerRadiusScale
         let padding = size * context.contentPaddingScale
         let highlightStrength = max(0, min(1, isSelected ? glowPhase : 0))
+        let washOverlay = RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+            .fill(Color.white.opacity(0.45 * (1 - highlightStrength)))
+        let vividOverlay = RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+            .fill(
+                LinearGradient(
+                    colors: gradient.map { $0.opacity(0.2 * highlightStrength) },
+                    startPoint: .topLeading,
+                    endPoint: .bottomTrailing
+                )
+            )
         let pulseOverlay = RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
             .fill(
                 LinearGradient(
@@ -933,6 +943,8 @@ private struct SymbolTokenView: View {
                         endPoint: .bottomTrailing
                     )
                 )
+                .overlay(washOverlay)
+                .overlay(vividOverlay)
                 .overlay(pulseOverlay)
                 .overlay(
                     RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
