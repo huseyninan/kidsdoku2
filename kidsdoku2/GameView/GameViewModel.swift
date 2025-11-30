@@ -7,17 +7,59 @@ final class GameViewModel: ObservableObject {
     @Published private(set) var puzzle: KidSudokuPuzzle
     @Published var selectedPosition: KidSudokuPosition?
     @Published var message: KidSudokuMessage?
-    @Published var showCelebration = false
+    @Published private(set) var showCelebration = false
     @Published var highlightedValue: Int?
     @Published var selectedPaletteSymbol: Int?
     @Published private(set) var mistakeCount = 0
     @Published private(set) var hintCount = 0
+    @Published private(set) var elapsedTime: TimeInterval = 0
+    @Published var showNumbers: Bool = false
+    @Published var selectedSymbolGroupRawValue: Int
 
     let config: KidSudokuConfig
     private let isPremadePuzzle: Bool
     private let originalPremadePuzzle: PremadePuzzle?
     private let soundManager = SoundManager.shared
     private var moveHistory: [(position: KidSudokuPosition, oldValue: Int?)] = []
+    private var timerCancellable: AnyCancellable?
+    private var isTimerRunning = false
+    
+    var selectedSymbolGroup: SymbolGroup {
+        SymbolGroup(rawValue: selectedSymbolGroupRawValue) ?? config.symbolGroup
+    }
+    
+    var currentConfig: KidSudokuConfig {
+        if showNumbers {
+            return KidSudokuConfig(
+                size: config.size,
+                subgridRows: config.subgridRows,
+                subgridCols: config.subgridCols,
+                symbolGroup: .numbers
+            )
+        } else {
+            return KidSudokuConfig(
+                size: config.size,
+                subgridRows: config.subgridRows,
+                subgridCols: config.subgridCols,
+                symbolGroup: selectedSymbolGroup
+            )
+        }
+    }
+    
+    /// Cached valid symbol indices based on the puzzle solution's first row
+    var validSymbolIndices: [Int] {
+        guard let firstRow = puzzle.solution.first else {
+            return Array(0..<config.size)
+        }
+        return Array(Set(firstRow)).sorted()
+    }
+    
+    /// Returns the valid palette symbols with their indices
+    var paletteSymbols: [(index: Int, symbol: String)] {
+        validSymbolIndices.map { index in
+            (index: index, symbol: currentConfig.symbols[index])
+        }
+    }
 
     init(config: KidSudokuConfig) {
         self.config = config
@@ -25,6 +67,7 @@ final class GameViewModel: ObservableObject {
         self.originalPremadePuzzle = nil
         self.puzzle = KidSudokuGenerator.generatePuzzle(config: config)
         self.highlightedValue = nil
+        self.selectedSymbolGroupRawValue = config.symbolGroup.rawValue
     }
     
     init(config: KidSudokuConfig, premadePuzzle: PremadePuzzle) {
@@ -33,6 +76,7 @@ final class GameViewModel: ObservableObject {
         self.originalPremadePuzzle = premadePuzzle
         self.puzzle = KidSudokuPuzzle(from: premadePuzzle)
         self.highlightedValue = nil
+        self.selectedSymbolGroupRawValue = config.symbolGroup.rawValue
     }
 
     func startNewPuzzle() {
@@ -49,6 +93,8 @@ final class GameViewModel: ObservableObject {
         moveHistory.removeAll()
         mistakeCount = 0
         hintCount = 0
+        resetTimer()
+        startTimer()
     }
 
     func select(position: KidSudokuPosition) {
@@ -167,6 +213,7 @@ final class GameViewModel: ObservableObject {
             }
         }
         showCelebration = true
+        stopTimer()
         message = KidSudokuMessage(text: String(localized: "Amazing! Puzzle complete!"), type: .success)
         soundManager.play(.victory, volume: 0.7)
         
@@ -286,6 +333,36 @@ final class GameViewModel: ObservableObject {
         default:
             return 0.0  // 11+ penalties
         }
+    }
+    
+    // MARK: - Timer Management
+    
+    func startTimer() {
+        guard !isTimerRunning else { return }
+        isTimerRunning = true
+        timerCancellable = Timer.publish(every: 1.0, on: .main, in: .common)
+            .autoconnect()
+            .sink { [weak self] _ in
+                guard let self = self, !self.showCelebration else { return }
+                self.elapsedTime += 1
+            }
+    }
+    
+    func stopTimer() {
+        isTimerRunning = false
+        timerCancellable?.cancel()
+        timerCancellable = nil
+    }
+    
+    func resetTimer() {
+        stopTimer()
+        elapsedTime = 0
+    }
+    
+    var formattedTime: String {
+        let minutes = Int(elapsedTime) / 60
+        let seconds = Int(elapsedTime) % 60
+        return String(format: "%02d:%02d", minutes, seconds)
     }
 }
 
