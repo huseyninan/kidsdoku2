@@ -87,8 +87,8 @@ struct BoardGridView: View {
             return Color(red: 0.96, green: 0.94, blue: 0.89)
         }
         if isSelected {
-            // Soft peach glow for selected cells - friendly and inviting
-            return Color(red: 1.0, green: 0.89, blue: 0.74).opacity(0.6)
+            // Red highlight for selected cells
+            return Color.red.opacity(0.6)
         }
         // Pure white for empty cells - clean storybook pages
         return Color.white

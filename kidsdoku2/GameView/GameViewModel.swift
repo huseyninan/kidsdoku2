@@ -110,6 +110,7 @@ final class GameViewModel: ObservableObject {
         if cell.isFixed {
             highlightedValue = cell.value
             selectedPaletteSymbol = cell.value
+            selectedPosition = nil
             return
         }
         
@@ -164,6 +165,7 @@ final class GameViewModel: ObservableObject {
     func selectPaletteSymbol(_ symbolIndex: Int) {
         selectedPaletteSymbol = symbolIndex
         highlightedValue = symbolIndex
+        selectedPosition = nil
         message = nil
     }
 
