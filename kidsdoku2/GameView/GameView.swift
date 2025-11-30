@@ -4,8 +4,7 @@ import Combine
 struct GameView: View {
     let config: KidSudokuConfig
     @StateObject private var viewModel: GameViewModel
-    @StateObject private var soundManager = SoundManager.shared
-    @StateObject private var hapticManager = HapticManager.shared
+    private let hapticManager = HapticManager.shared
     @Environment(\.dismiss) private var dismiss
     
     @State private var showSettings: Bool = false
@@ -243,8 +242,8 @@ struct GameView: View {
             )
         }
         .disabled(viewModel.showCelebration)
-        .onChange(of: viewModel.showCelebration) { isShowing in
-            if isShowing {
+        .onChange(of: viewModel.showCelebration) { _, newValue in
+            if newValue {
                 hapticManager.trigger(.success)
             }
         }
@@ -279,14 +278,13 @@ struct GameView: View {
     }
 
     private var progressRatio: Double {
-        let total = Double(config.size * config.size)
-        let filled = Double(viewModel.puzzle.cells.filter { $0.value != nil }.count)
+        let total = Double(viewModel.totalCellCount)
+        let filled = Double(viewModel.filledCellCount)
         return min(1.0, max(0.0, filled / total))
     }
 
     private var progressText: String {
-        let filled = viewModel.puzzle.cells.filter { $0.value != nil }.count
-        return String(localized: "\(filled) of \(config.size * config.size) squares filled")
+        return String(localized: "\(viewModel.filledCellCount) of \(viewModel.totalCellCount) squares filled")
     }
 
     private func computeBoardSize(from proxy: GeometryProxy) -> CGFloat {

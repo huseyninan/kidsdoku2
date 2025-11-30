@@ -271,6 +271,15 @@ final class GameViewModel: ObservableObject {
         }
     }
     
+    /// Cached count of filled cells for progress calculation
+    var filledCellCount: Int {
+        puzzleCells.filter { $0.value != nil }.count
+    }
+    
+    var totalCellCount: Int {
+        config.size * config.size
+    }
+    
     func provideHint() {
         // Find an empty cell that can be filled
         let emptyCells = puzzleCells.filter { !$0.isFixed && $0.value == nil }
