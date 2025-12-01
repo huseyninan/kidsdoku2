@@ -181,7 +181,7 @@ struct PuzzleSelectionView: View {
     }
     
     private func puzzleButton(puzzle: PremadePuzzle, index: Int, theme: DifficultyTheme) -> some View {
-        let isLocked = index > 2 && !appEnvironment.isPremium
+        let isLocked = puzzle.number > 3 && !appEnvironment.isPremium
         let isCompleted = completionManager.isCompleted(puzzle: puzzle)
         let rating = completionManager.rating(for: puzzle)
         
