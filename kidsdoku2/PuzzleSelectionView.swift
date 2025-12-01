@@ -33,6 +33,18 @@ struct PuzzleSelectionView: View {
     @AppStorage("showHardDifficulty") private var showHard = true
     @AppStorage("hideFinishedPuzzles") private var hideFinishedPuzzles = false
     
+    // Combined filter state to avoid race conditions from multiple onChange handlers
+    private var filterState: FilterState {
+        FilterState(showEasy: showEasy, showNormal: showNormal, showHard: showHard, hideFinished: hideFinishedPuzzles)
+    }
+    
+    private struct FilterState: Equatable {
+        let showEasy: Bool
+        let showNormal: Bool
+        let showHard: Bool
+        let hideFinished: Bool
+    }
+    
     // Cached themes - localized once on initialization to avoid repeated allocations
     private static let allThemes: [Int: [PuzzleDifficulty: DifficultyTheme]] = {
         [
@@ -104,16 +116,8 @@ struct PuzzleSelectionView: View {
         .task {
             await loadPuzzlesAsync()
         }
-        .onChange(of: showEasy) {
-            updateCachedPuzzles()
-        }
-        .onChange(of: showNormal) {
-            updateCachedPuzzles()
-        }
-        .onChange(of: showHard) {
-            updateCachedPuzzles()
-        }
-        .onChange(of: hideFinishedPuzzles) {
+        // Single onChange handler to avoid race conditions from multiple simultaneous filter updates
+        .onChange(of: filterState) { _, _ in
             updateCachedPuzzles()
         }
         // Update cache when completion data changes for this board size only
