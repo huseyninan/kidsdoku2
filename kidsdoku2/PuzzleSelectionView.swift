@@ -22,8 +22,8 @@ struct PuzzleSelectionView: View {
     @AppStorage("showHardDifficulty") private var showHard = true
     @AppStorage("hideFinishedPuzzles") private var hideFinishedPuzzles = false
     
-    // Computed themes dictionary - localized dynamically to support language changes
-    private var allThemes: [Int: [PuzzleDifficulty: DifficultyTheme]] {
+    // Cached themes - localized once on initialization to avoid repeated allocations
+    private static let allThemes: [Int: [PuzzleDifficulty: DifficultyTheme]] = {
         [
             3: [
                 .easy: DifficultyTheme(name: String(localized: "Wakey Wakey"), backgroundColor: Color(red: 0.45, green: 0.55, blue: 0.45)),
@@ -41,18 +41,18 @@ struct PuzzleSelectionView: View {
                 .hard: DifficultyTheme(name: String(localized: "Starry Summit"), backgroundColor: Color(red: 0.30, green: 0.35, blue: 0.50))
             ]
         ]
-    }
+    }()
     
-    private var defaultTheme: [PuzzleDifficulty: DifficultyTheme] {
+    private static let defaultTheme: [PuzzleDifficulty: DifficultyTheme] = {
         [
             .easy: DifficultyTheme(name: String(localized: "Sunny Meadow"), backgroundColor: Color(red: 0.45, green: 0.55, blue: 0.45)),
             .normal: DifficultyTheme(name: String(localized: "Whispering Woods"), backgroundColor: Color(red: 0.35, green: 0.45, blue: 0.60)),
             .hard: DifficultyTheme(name: String(localized: "Crystal Caves"), backgroundColor: Color(red: 0.30, green: 0.35, blue: 0.50))
         ]
-    }
+    }()
     
     private var themes: [PuzzleDifficulty: DifficultyTheme] {
-        allThemes[size] ?? defaultTheme
+        Self.allThemes[size] ?? Self.defaultTheme
     }
     
 
@@ -228,7 +228,7 @@ struct PuzzleSelectionView: View {
             // LazyVGrid with adaptive columns for responsive layout
             // Minimum 100pt ensures buttons remain usable on small screens
             // Adapts to 2-4 columns depending on device width
-            let columns = [GridItem(.adaptive(minimum: 100, maximum: 150), spacing: 12)]
+            let columns = [GridItem(.adaptive(minimum: 80, maximum: 150), spacing: 12)]
             LazyVGrid(columns: columns, spacing: 12) {
                 ForEach(puzzles, id: \.id) { puzzle in
                     PuzzleButtonView(
