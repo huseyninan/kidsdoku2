@@ -81,8 +81,6 @@ struct PuzzleSelectionView: View {
                             ForEach(cachedPuzzlesByDifficulty, id: \.0) { difficulty, puzzles in
                                 difficultyCard(difficulty: difficulty, puzzles: puzzles)
                             }
-                            
-//                            randomAdventureButton
                         }
                         .padding(.horizontal, 16)
                         .padding(.bottom, 20)
@@ -250,80 +248,6 @@ struct PuzzleSelectionView: View {
                 .fill(theme.backgroundColor)
                 .shadow(color: Color.black.opacity(0.15), radius: 8, x: 0, y: 4)
         )
-    }
-    
-    private func numberBadge(number: Int, backgroundColor: Color, textColor: Color) -> some View {
-        ZStack(alignment: .topLeading) {
-            UnevenRoundedRectangle(
-                cornerRadii: .init(topLeading: 18, bottomLeading: 0, bottomTrailing: 142, topTrailing: 0),
-                style: .continuous
-            )
-            .fill(backgroundColor)
-            .frame(width: 46, height: 46)
-            
-            Text("\(number)")
-                .font(.system(size: 18, weight: .bold, design: .rounded))
-                .foregroundStyle(textColor)
-                .padding(.top, 8)
-                .padding(.leading, 12)
-        }
-    }
-    
-    private var completionBadge: some View {
-        ZStack {
-            Circle()
-                .fill(Color.white)
-            
-            Circle()
-                .stroke(Color(red: 0.24, green: 0.65, blue: 0.33), lineWidth: 3)
-            
-            Image(systemName: "checkmark")
-                .font(.system(size: 16, weight: .bold, design: .rounded))
-                .foregroundStyle(Color(red: 0.24, green: 0.65, blue: 0.33))
-        }
-        .frame(width: 34, height: 34)
-    }
-    
-    private var lockBadge: some View {
-        ZStack {
-            Circle()
-                .fill(Color.white)
-            
-            Circle()
-                .stroke(Color(red: 0.95, green: 0.77, blue: 0.06), lineWidth: 3)
-            
-            Image(systemName: "crown.fill")
-                .font(.system(size: 16, weight: .bold, design: .rounded))
-                .foregroundStyle(Color(red: 0.95, green: 0.77, blue: 0.06))
-        }
-        .frame(width: 34, height: 34)
-    }
-    
-    private var randomAdventureButton: some View {
-        Button {
-            path.append(.game(size: size))
-        } label: {
-            HStack(spacing: 12) {
-                Text("🍃")
-                    .font(.system(size: 32))
-                
-                Text("Random\nAdventure")
-                    .font(.system(size: 26, weight: .bold, design: .rounded))
-                    .foregroundStyle(.white)
-                    .multilineTextAlignment(.leading)
-                
-                Spacer()
-            }
-            .padding(.horizontal, 24)
-            .padding(.vertical, 32)
-            .frame(maxWidth: .infinity)
-            .background(
-                RoundedRectangle(cornerRadius: 24, style: .continuous)
-                    .fill(Color(red: 0.65, green: 0.35, blue: 0.35))
-                    .shadow(color: Color.black.opacity(0.15), radius: 8, x: 0, y: 4)
-            )
-        }
-        .buttonStyle(.plain)
     }
     
     private var difficultySettingsView: some View {
