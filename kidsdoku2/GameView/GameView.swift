@@ -1,5 +1,4 @@
 import SwiftUI
-import Combine
 
 struct GameView: View {
     let config: KidSudokuConfig
@@ -65,6 +64,17 @@ struct GameView: View {
                         }
                     )
                 }
+                
+                // Message banner overlay
+                if let message = viewModel.message {
+                    VStack {
+                        messageBanner(message)
+                            .padding(.top, 60)
+                        Spacer()
+                    }
+                    .animation(.spring(response: 0.3, dampingFraction: 0.7), value: viewModel.message?.text)
+                    .allowsHitTesting(false)
+                }
             }
         }
         .navigationBarBackButtonHidden(viewModel.showCelebration)
@@ -98,8 +108,7 @@ struct GameView: View {
                 .frame(height: DeviceSizing.progressBarHeight, alignment: .center)
                 .frame(maxWidth: DeviceSizing.progressBarMaxWidth)
             
-            StorybookInfoChip(icon: "clock", text: viewModel.formattedTime)
-                .scaleEffect(DeviceSizing.badgeScale)
+            GameTimerView(viewModel: viewModel)
             
             Button(action: {
                 showSettings = true
@@ -272,18 +281,10 @@ struct GameView: View {
         }
     }
 
-    private var titleText: String {
-        return String(localized: "Veggie Match!")
-    }
-
     private var progressRatio: Double {
         let total = Double(viewModel.totalCellCount)
         let filled = Double(viewModel.filledCellCount)
         return min(1.0, max(0.0, filled / total))
-    }
-
-    private var progressText: String {
-        return String(localized: "\(viewModel.filledCellCount) of \(viewModel.totalCellCount) squares filled")
     }
 
     private func computeBoardSize(from proxy: GeometryProxy) -> CGFloat {
@@ -292,6 +293,18 @@ struct GameView: View {
             availableHeight: proxy.size.height,
             bottomSafeArea: proxy.safeAreaInsets.bottom
         )
+    }
+}
+
+// MARK: - GameTimerView
+/// Isolated timer view that only re-renders when time changes,
+/// preventing the entire GameView from re-rendering every second.
+private struct GameTimerView: View {
+    @ObservedObject var viewModel: GameViewModel
+    
+    var body: some View {
+        StorybookInfoChip(icon: "clock", text: viewModel.formattedTime)
+            .scaleEffect(DeviceSizing.badgeScale)
     }
 }
 

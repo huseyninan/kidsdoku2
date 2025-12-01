@@ -21,6 +21,7 @@ final class GameViewModel: ObservableObject {
     }
     @Published private(set) var currentConfig: KidSudokuConfig
     @Published private(set) var filledCellCount: Int = 0
+    @Published private(set) var isGeneratingPuzzle = false
     private(set) var validSymbolIndices: [Int] = []
     @Published private(set) var paletteSymbols: [(index: Int, symbol: String)] = []
 
@@ -31,6 +32,7 @@ final class GameViewModel: ObservableObject {
     private var moveHistory: [(position: KidSudokuPosition, oldValue: Int?)] = []
     private var timerCancellable: AnyCancellable?
     private var isTimerRunning = false
+    private var generationTask: Task<Void, Never>?
     
     var selectedSymbolGroup: SymbolGroup {
         SymbolGroup(rawValue: selectedSymbolGroupRawValue) ?? config.symbolGroup
@@ -66,12 +68,51 @@ final class GameViewModel: ObservableObject {
         self.config = config
         self.isPremadePuzzle = false
         self.originalPremadePuzzle = nil
-        self.puzzle = KidSudokuGenerator.generatePuzzle(config: config)
+        // Start with a placeholder puzzle while generating in background
+        self.puzzle = Self.createPlaceholderPuzzle(config: config)
         self.highlightedValue = nil
         self.selectedSymbolGroupRawValue = config.symbolGroup.rawValue
         self.currentConfig = config
-        self.filledCellCount = puzzle.cells.filter { $0.value != nil }.count
+        self.filledCellCount = 0
+        self.isGeneratingPuzzle = true
         cacheSymbolData()
+        
+        // Generate puzzle off the main thread
+        generatePuzzleAsync(config: config)
+    }
+    
+    /// Creates a placeholder puzzle with empty cells for initial display
+    private static func createPlaceholderPuzzle(config: KidSudokuConfig) -> KidSudokuPuzzle {
+        let size = config.size
+        var cells: [KidSudokuCell] = []
+        let emptySolution = Array(repeating: Array(repeating: 0, count: size), count: size)
+        
+        for row in 0..<size {
+            for col in 0..<size {
+                cells.append(KidSudokuCell(
+                    row: row,
+                    col: col,
+                    value: nil,
+                    solution: 0,
+                    isFixed: false,
+                    boardSize: size
+                ))
+            }
+        }
+        return KidSudokuPuzzle(config: config, cells: cells, solution: emptySolution)
+    }
+    
+    /// Generates puzzle on a background thread and updates the view model when complete
+    private func generatePuzzleAsync(config: KidSudokuConfig) {
+        generationTask = Task.detached(priority: .userInitiated) {
+            let generatedPuzzle = KidSudokuGenerator.generatePuzzle(config: config)
+            await MainActor.run {
+                self.puzzle = generatedPuzzle
+                self.filledCellCount = generatedPuzzle.cells.filter { $0.value != nil }.count
+                self.isGeneratingPuzzle = false
+                self.cacheSymbolData()
+            }
+        }
     }
     
     init(config: KidSudokuConfig, premadePuzzle: PremadePuzzle) {
@@ -87,23 +128,43 @@ final class GameViewModel: ObservableObject {
     }
 
     func startNewPuzzle() {
-        if let premadePuzzle = originalPremadePuzzle {
-            puzzle = KidSudokuPuzzle(from: premadePuzzle)
-        } else {
-            puzzle = KidSudokuGenerator.generatePuzzle(config: config)
-        }
+        // Cancel any ongoing generation
+        generationTask?.cancel()
+        
         selectedPosition = nil
-        message = KidSudokuMessage(text: String(localized: "New puzzle ready!"), type: .info)
         showCelebration = false
         highlightedValue = nil
         selectedPaletteSymbol = nil
         moveHistory.removeAll()
         mistakeCount = 0
         hintCount = 0
-        updateFilledCount()
-        cacheSymbolData()
         resetTimer()
-        startTimer()
+        
+        if let premadePuzzle = originalPremadePuzzle {
+            puzzle = KidSudokuPuzzle(from: premadePuzzle)
+            updateFilledCount()
+            cacheSymbolData()
+            message = KidSudokuMessage(text: String(localized: "New puzzle ready!"), type: .info)
+            startTimer()
+        } else {
+            // Generate new puzzle in background
+            puzzle = Self.createPlaceholderPuzzle(config: config)
+            filledCellCount = 0
+            isGeneratingPuzzle = true
+            cacheSymbolData()
+            
+            generationTask = Task.detached(priority: .userInitiated) {
+                let generatedPuzzle = KidSudokuGenerator.generatePuzzle(config: self.config)
+                await MainActor.run {
+                    self.puzzle = generatedPuzzle
+                    self.filledCellCount = generatedPuzzle.cells.filter { $0.value != nil }.count
+                    self.isGeneratingPuzzle = false
+                    self.cacheSymbolData()
+                    self.message = KidSudokuMessage(text: String(localized: "New puzzle ready!"), type: .info)
+                    self.startTimer()
+                }
+            }
+        }
     }
 
     func select(position: KidSudokuPosition) {
