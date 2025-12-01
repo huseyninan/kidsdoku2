@@ -114,8 +114,8 @@ struct GameView: View {
                 StorybookIconCircle(
                     systemName: "slider.horizontal.3",
                     gradient: [
-                        Color(red: 0.7, green: 0.5, blue: 0.9),
-                        Color(red: 0.6, green: 0.4, blue: 0.8)
+                        Theme.Colors.gameSettingsGradientStart,
+                        Theme.Colors.gameSettingsGradientEnd
                     ]
                 )
                 .scaleEffect(DeviceSizing.settingsButtonScale)
@@ -154,11 +154,11 @@ struct GameView: View {
             HStack {
                 Text(viewModel.currentConfig.symbolGroup.paletteTitle)
                     .font(.system(size: 16, weight: .heavy, design: .rounded))
-                    .foregroundStyle(Color(red: 0.44, green: 0.3, blue: 0.23))
+                    .foregroundStyle(Theme.Colors.gamePaletteTitle)
                 Spacer()
                 Text(viewModel.showNumbers ? "Tap a number below" : "Tap a friend below")
                     .font(.system(size: 12, weight: .semibold, design: .rounded))
-                    .foregroundStyle(Color(red: 0.62, green: 0.47, blue: 0.34))
+                    .foregroundStyle(Theme.Colors.gamePaletteSubtitle)
             }
             
             HStack(spacing: 8) {
@@ -203,8 +203,8 @@ struct GameView: View {
                 icon: "arrow.uturn.backward",
                 isEnabled: viewModel.canUndo,
                 gradient: [
-                    Color(red: 0.98, green: 0.89, blue: 0.75),
-                    Color(red: 0.97, green: 0.78, blue: 0.58)
+                    Theme.Colors.undoGradientStart,
+                    Theme.Colors.undoGradientEnd
                 ],
                 action: {
                     withAnimation(.easeInOut(duration: 0.2)) {
@@ -219,8 +219,8 @@ struct GameView: View {
                 icon: "xmark.circle",
                 isEnabled: true,
                 gradient: [
-                    Color(red: 0.95, green: 0.85, blue: 0.95),
-                    Color(red: 0.88, green: 0.7, blue: 0.92)
+                    Theme.Colors.eraseGradientStart,
+                    Theme.Colors.eraseGradientEnd
                 ],
                 action: {
                     withAnimation(.easeInOut(duration: 0.2)) {
@@ -235,8 +235,8 @@ struct GameView: View {
                 icon: "lightbulb",
                 isEnabled: true,
                 gradient: [
-                    Color(red: 1.0, green: 0.93, blue: 0.76),
-                    Color(red: 0.99, green: 0.82, blue: 0.64)
+                    Theme.Colors.hintGradientStart,
+                    Theme.Colors.hintGradientEnd
                 ],
                 action: {
                     withAnimation(.easeInOut(duration: 0.2)) {

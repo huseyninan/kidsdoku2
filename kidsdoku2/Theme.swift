@@ -57,6 +57,22 @@ enum Theme {
         static let puzzleCompletedBorder = Color(red: 0.24, green: 0.65, blue: 0.33)
         static let puzzleCompletedIcon = Color(red: 0.24, green: 0.65, blue: 0.33)
         static let puzzleLockOverlay = Color.black.opacity(0.7)
+        
+        // Game View
+        static let gamePaletteTitle = Color(red: 0.44, green: 0.3, blue: 0.23)
+        static let gamePaletteSubtitle = Color(red: 0.62, green: 0.47, blue: 0.34)
+        
+        // Game Settings Button Gradient
+        static let gameSettingsGradientStart = Color(red: 0.7, green: 0.5, blue: 0.9)
+        static let gameSettingsGradientEnd = Color(red: 0.6, green: 0.4, blue: 0.8)
+        
+        // Game Action Button Gradients
+        static let undoGradientStart = Color(red: 0.98, green: 0.89, blue: 0.75)
+        static let undoGradientEnd = Color(red: 0.97, green: 0.78, blue: 0.58)
+        static let eraseGradientStart = Color(red: 0.95, green: 0.85, blue: 0.95)
+        static let eraseGradientEnd = Color(red: 0.88, green: 0.7, blue: 0.92)
+        static let hintGradientStart = Color(red: 1.0, green: 0.93, blue: 0.76)
+        static let hintGradientEnd = Color(red: 0.99, green: 0.82, blue: 0.64)
     }
     
     // MARK: - Layout
