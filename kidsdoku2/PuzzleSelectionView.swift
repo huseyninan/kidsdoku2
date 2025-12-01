@@ -212,7 +212,18 @@ struct PuzzleSelectionView: View {
             let columns = Array(repeating: GridItem(.flexible(), spacing: 12), count: 3)
             LazyVGrid(columns: columns, spacing: 12) {
                 ForEach(Array(puzzles.enumerated()), id: \.element.id) { index, puzzle in
-                    puzzleButton(puzzle: puzzle, index: index, theme: theme)
+                    PuzzleButtonView(
+                        puzzle: puzzle,
+                        isPremium: appEnvironment.isPremium,
+                        isCompleted: completionManager.isCompleted(puzzle: puzzle),
+                        rating: completionManager.rating(for: puzzle),
+                        onTap: {
+                            path.append(.premadePuzzle(puzzle: puzzle))
+                        },
+                        onLockedTap: {
+                            showPaywall = true
+                        }
+                    )
                 }
             }
             .padding(.horizontal, 20)
@@ -223,92 +234,6 @@ struct PuzzleSelectionView: View {
                 .fill(theme.backgroundColor)
                 .shadow(color: Color.black.opacity(0.15), radius: 8, x: 0, y: 4)
         )
-    }
-    
-    private func puzzleButton(puzzle: PremadePuzzle, index: Int, theme: DifficultyTheme) -> some View {
-        let isLocked = puzzle.number > 3 && !appEnvironment.isPremium
-        let isCompleted = completionManager.isCompleted(puzzle: puzzle)
-        let rating = completionManager.rating(for: puzzle)
-        
-        return Button {
-            if isLocked {
-                showPaywall = true
-            } else {
-                path.append(.premadePuzzle(puzzle: puzzle))
-            }
-        } label: {
-            puzzleButtonContent(
-                puzzle: puzzle, 
-                isLocked: isLocked, 
-                isCompleted: isCompleted, 
-                rating: rating
-            )
-        }
-        .buttonStyle(.plain)
-    }
-    
-    @ViewBuilder
-    private func puzzleButtonContent(puzzle: PremadePuzzle, isLocked: Bool, isCompleted: Bool, rating: Double?) -> some View {
-        ZStack {
-            // Background
-            RoundedRectangle(cornerRadius: 20, style: .continuous)
-                .fill(Color.white.opacity(isLocked ? 0.5 : 0.9))
-                .frame(height: 100)
-            
-            // Main content
-            VStack(alignment: .leading, spacing: -26) {
-                HStack(alignment: .top) {
-                    numberBadge(
-                        number: puzzle.number,
-                        backgroundColor: Color(red: 0.93, green: 0.90, blue: 0.78),
-                        textColor: Color(red: 0.38, green: 0.34, blue: 0.28)
-                    )
-                    
-                    Spacer()
-                    
-                    if isLocked {
-                        lockBadge
-                            .padding(.top, 4)
-                    } else if isCompleted {
-                        completionBadge
-                            .padding(.top, 4)
-                    }
-                }
-                .padding(.leading, -12)
-                                    
-                Image(puzzle.displayEmoji)
-                    .resizable()
-                    .frame(width: 80, height: 80)
-                    .opacity(isLocked ? 0.3 : 1.0)
-            }
-            .padding(12)
-            
-            // Lock overlay
-            if isLocked {
-                lockOverlay
-            }
-            
-            // Rating badge
-            if !isLocked, let rating = rating {
-                VStack {
-                    Spacer()
-                    PuzzleRankBadge(rating: rating)
-                        .padding(.bottom, 12)
-                }
-            }
-        }
-    }
-    
-    private var lockOverlay: some View {
-        ZStack {
-            Circle()
-                .fill(Color.black.opacity(0.7))
-                .frame(width: 50, height: 50)
-            
-            Image(systemName: "lock.fill")
-                .font(.system(size: 24))
-                .foregroundColor(.white)
-        }
     }
     
     private func emptyPuzzleSlot(number: Int, theme: DifficultyTheme) -> some View {
@@ -496,6 +421,135 @@ struct PuzzleSelectionView: View {
                 .fill(Color.white)
                 .shadow(color: Color.black.opacity(0.1), radius: 4, x: 0, y: 2)
         )
+    }
+}
+
+// MARK: - Isolated Puzzle Button View
+/// Separate view struct to isolate isPremium dependency from parent view.
+/// This prevents unnecessary re-renders of the entire grid when unrelated
+/// AppEnvironment properties change.
+private struct PuzzleButtonView: View, Equatable {
+    let puzzle: PremadePuzzle
+    let isPremium: Bool
+    let isCompleted: Bool
+    let rating: Double?
+    let onTap: () -> Void
+    let onLockedTap: () -> Void
+    
+    private var isLocked: Bool {
+        puzzle.number > 3 && !isPremium
+    }
+    
+    static func == (lhs: PuzzleButtonView, rhs: PuzzleButtonView) -> Bool {
+        lhs.puzzle.id == rhs.puzzle.id &&
+        lhs.isPremium == rhs.isPremium &&
+        lhs.isCompleted == rhs.isCompleted &&
+        lhs.rating == rhs.rating
+    }
+    
+    var body: some View {
+        Button {
+            if isLocked {
+                onLockedTap()
+            } else {
+                onTap()
+            }
+        } label: {
+            content
+        }
+        .buttonStyle(.plain)
+    }
+    
+    private var content: some View {
+        ZStack {
+            // Background
+            RoundedRectangle(cornerRadius: 20, style: .continuous)
+                .fill(Color.white.opacity(isLocked ? 0.5 : 0.9))
+                .frame(height: 100)
+            
+            // Main content
+            VStack(alignment: .leading, spacing: -26) {
+                HStack(alignment: .top) {
+                    numberBadge
+                    Spacer()
+                    statusBadge
+                }
+                .padding(.leading, -12)
+                
+                Image(puzzle.displayEmoji)
+                    .resizable()
+                    .frame(width: 80, height: 80)
+                    .opacity(isLocked ? 0.3 : 1.0)
+            }
+            .padding(12)
+            
+            // Lock overlay
+            if isLocked {
+                lockOverlay
+            }
+            
+            // Rating badge
+            if !isLocked, let rating = rating {
+                VStack {
+                    Spacer()
+                    PuzzleRankBadge(rating: rating)
+                        .padding(.bottom, 12)
+                }
+            }
+        }
+    }
+    
+    private var numberBadge: some View {
+        ZStack(alignment: .topLeading) {
+            UnevenRoundedRectangle(
+                cornerRadii: .init(topLeading: 18, bottomLeading: 0, bottomTrailing: 142, topTrailing: 0),
+                style: .continuous
+            )
+            .fill(Color(red: 0.93, green: 0.90, blue: 0.78))
+            .frame(width: 46, height: 46)
+            
+            Text("\(puzzle.number)")
+                .font(.system(size: 18, weight: .bold, design: .rounded))
+                .foregroundStyle(Color(red: 0.38, green: 0.34, blue: 0.28))
+                .padding(.top, 8)
+                .padding(.leading, 12)
+        }
+    }
+    
+    @ViewBuilder
+    private var statusBadge: some View {
+        if isLocked {
+            ZStack {
+                Circle().fill(Color.white)
+                Circle().stroke(Color(red: 0.95, green: 0.77, blue: 0.06), lineWidth: 3)
+                Image(systemName: "crown.fill")
+                    .font(.system(size: 16, weight: .bold, design: .rounded))
+                    .foregroundStyle(Color(red: 0.95, green: 0.77, blue: 0.06))
+            }
+            .frame(width: 34, height: 34)
+            .padding(.top, 4)
+        } else if isCompleted {
+            ZStack {
+                Circle().fill(Color.white)
+                Circle().stroke(Color(red: 0.24, green: 0.65, blue: 0.33), lineWidth: 3)
+                Image(systemName: "checkmark")
+                    .font(.system(size: 16, weight: .bold, design: .rounded))
+                    .foregroundStyle(Color(red: 0.24, green: 0.65, blue: 0.33))
+            }
+            .frame(width: 34, height: 34)
+            .padding(.top, 4)
+        }
+    }
+    
+    private var lockOverlay: some View {
+        ZStack {
+            Circle()
+                .fill(Color.black.opacity(0.7))
+                .frame(width: 50, height: 50)
+            Image(systemName: "lock.fill")
+                .font(.system(size: 24))
+                .foregroundColor(.white)
+        }
     }
 }
 
