@@ -13,9 +13,8 @@
 // - Use digits (0-5) for filled cells
 // - Rows should have consistent spacing for readability
 //
-// Emoji can be auto-assigned or provided manually:
-//   puzzle(1, 4, .easy, initial: "...", solution: "...")      // Auto emoji
-//   puzzle(1, 4, .easy, "🎨", initial: "...", solution: "...")  // Custom emoji
+// Usage:
+//   puzzle(1, 4, .easy, initial: "...", solution: "...")
 //
 // Example for 4x4:
 //   initial:  "0..3"
@@ -30,11 +29,6 @@
 // Then use the helper: puzzle(number: 1, size: 4, difficulty: .easy, initial: "...", solution: "...")
 
 import Foundation
-private let emojiPalette: [PuzzleDifficulty: [String]] = [
-    .easy: ["☀️", "🌼", "🌻", "🌈", "🐣", "🦋", "🍓", "🍉", "🎈", "🎉"],
-    .normal: ["🌿", "🌵", "🍄", "🍁", "🚲", "🚀", "🎯", "🎳", "🎨", "🎪"],
-    .hard: ["💎", "🔮", "🌋", "🪄", "🧠", "🛰", "🪐", "🏆", "⚡️", "🧬"]
-]
 
 struct PremadePuzzleStore {
     static let shared = PremadePuzzleStore()
@@ -2014,7 +2008,6 @@ struct PremadePuzzleStore {
 ///   - number: Puzzle number within its difficulty level
 ///   - size: Board size (4 or 6)
 ///   - difficulty: Easy, Normal, or Hard
-///   - emoji: Emoji to display for this puzzle
 ///   - initial: String representation of initial board (use '.' for empty cells)
 ///   - solution: String representation of solution board
 /// - Returns: A validated PremadePuzzle
@@ -2022,7 +2015,6 @@ private func puzzle(
     _ number: Int,
     _ size: Int,
     _ difficulty: PuzzleDifficulty,
-    _ emoji: String? = nil,
     initial: String,
     solution: String
 ) -> PremadePuzzle {
@@ -2056,16 +2048,13 @@ private func puzzle(
     assert(initialBoard.allSatisfy { $0.count == size }, "All initial board rows must have \(size) columns")
     assert(solutionBoard.allSatisfy { $0.count == size }, "All solution board rows must have \(size) columns")
     
-    let assignedEmoji = emoji ?? autoAssignEmoji(size: size, difficulty: difficulty, number: number)
-    
     return PremadePuzzle(
         number: number,
         size: size,
         difficulty: difficulty,
         config: config,
         initialBoard: initialBoard,
-        solutionBoard: solutionBoard,
-        emoji: assignedEmoji
+        solutionBoard: solutionBoard
     )
 }
 
@@ -2074,18 +2063,6 @@ private func assignSymbolGroup(size: Int, difficulty: PuzzleDifficulty, number: 
     let seed = size * 1000 + (difficulty == .easy ? 0 : difficulty == .normal ? 100 : 200) + number
     let groupIndex = abs(seed) % SymbolGroup.puzzleCases.count
     return SymbolGroup.puzzleCases[groupIndex]
-}
-
-private func autoAssignEmoji(size: Int, difficulty: PuzzleDifficulty, number: Int) -> String {
-    let palette = emojiPalette[difficulty] ?? []
-    let fallback = "🎯"
-    guard !palette.isEmpty else { return fallback }
-    guard let difficultyIndex = PuzzleDifficulty.allCases.firstIndex(of: difficulty) else {
-        return palette.first ?? fallback
-    }
-    let seed = size * 100 + difficultyIndex * 10 + number
-    let index = abs(seed) % palette.count
-    return palette[index]
 }
 
 /// Parse a string representation into a board with optional cells

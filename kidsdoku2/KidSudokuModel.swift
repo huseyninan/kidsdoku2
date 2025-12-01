@@ -219,7 +219,6 @@ struct PremadePuzzle: Hashable, Identifiable {
     let config: KidSudokuConfig
     let initialBoard: [[Int?]]
     let solutionBoard: [[Int]]
-    let emoji: String?
     
     var displayName: String {
         return String(localized: "Puzzle \(number)")
