@@ -261,13 +261,14 @@ struct PuzzleSelectionView: View {
                     }
                 }
             }
+            .drawingGroup() // Optimize rendering by rasterizing the grid
             .padding(.horizontal, 20)
             .padding(.bottom, 24)
         }
         .background(
             RoundedRectangle(cornerRadius: 24, style: .continuous)
                 .fill(theme.backgroundColor)
-                .shadow(color: Color.black.opacity(0.15), radius: 8, x: 0, y: 4)
+                .shadow(color: Color.black.opacity(0.1), radius: 4, x: 0, y: 2)
         )
     }
     
@@ -359,7 +360,7 @@ struct PuzzleSelectionView: View {
         .background(
             RoundedRectangle(cornerRadius: 16, style: .continuous)
                 .fill(Color.white)
-                .shadow(color: Color.black.opacity(0.1), radius: 4, x: 0, y: 2)
+                .shadow(color: Color.black.opacity(0.08), radius: 3, x: 0, y: 1)
         )
     }
 }
@@ -506,7 +507,7 @@ private struct PuzzleRankBadge: View {
                 .stroke(Color.white.opacity(0.45), lineWidth: 1)
             )
         )
-        .shadow(color: rankTier.shadowColor, radius: 8, x: 0, y: 4)
+        .shadow(color: rankTier.shadowColor, radius: 4, x: 0, y: 2)
     }
     
     private var rankTier: RankTier {
