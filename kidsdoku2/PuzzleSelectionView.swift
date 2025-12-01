@@ -103,9 +103,14 @@ struct PuzzleSelectionView: View {
         .onChange(of: hideFinishedPuzzles) {
             updateCachedPuzzles()
         }
-        // Update cache when completion data changes (e.g., returning from a completed puzzle)
-        .onChange(of: completionManager.completedPuzzles) {
-            updateCachedPuzzles()
+        // Update cache when completion data changes for this board size only
+        .onChange(of: completionManager.completedPuzzles) { oldValue, newValue in
+            // Only update if a puzzle for the current size was completed
+            let oldForSize = oldValue.filter { $0.hasPrefix("\(size)-") }
+            let newForSize = newValue.filter { $0.hasPrefix("\(size)-") }
+            if oldForSize != newForSize {
+                updateCachedPuzzles()
+            }
         }
         .sheet(isPresented: $showSettings) {
             difficultySettingsView
