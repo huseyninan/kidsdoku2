@@ -85,8 +85,6 @@ struct GameView: View {
                 ),
                 showNumbers: $viewModel.showNumbers
             )
-            .environmentObject(SoundManager.shared)
-            .environmentObject(HapticManager.shared)
         }
         .onAppear {
             viewModel.startTimer()

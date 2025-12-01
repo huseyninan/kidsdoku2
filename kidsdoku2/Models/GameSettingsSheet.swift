@@ -9,8 +9,6 @@ import SwiftUI
 
 struct GameSettingsSheet: View {
     @Environment(\.dismiss) private var dismiss
-    @EnvironmentObject var soundManager: SoundManager
-    @EnvironmentObject var hapticManager: HapticManager
     
     @Binding var selectedSymbolGroup: SymbolGroup
     @Binding var showNumbers: Bool
@@ -51,15 +49,12 @@ struct GameSettingsSheet: View {
                                 icon: "eye.fill",
                                 title: String(localized: "Display Mode")
                             ) {
-                                GameSettingsToggle(
-                                    icon: showNumbers ? "textformat.123" : "photo.fill",
-                                    title: showNumbers ? String(localized: "Numbers Mode") : String(localized: "Picture Mode"),
-                                    subtitle: showNumbers ? String(localized: "Show numbers instead of pictures") : String(localized: "Show pictures instead of numbers"),
-                                    isOn: $showNumbers
-                                ) {
-                                    hapticManager.trigger(.selection)
-                                    soundManager.play(.correctPlacement, volume: 0.4)
-                                }
+                            GameSettingsToggle(
+                                icon: showNumbers ? "textformat.123" : "photo.fill",
+                                title: showNumbers ? String(localized: "Numbers Mode") : String(localized: "Picture Mode"),
+                                subtitle: showNumbers ? String(localized: "Show numbers instead of pictures") : String(localized: "Show pictures instead of numbers"),
+                                isOn: $showNumbers
+                            )
                             }
                             
                             // Symbol Group Section (only shown when not in numbers mode)
@@ -70,17 +65,15 @@ struct GameSettingsSheet: View {
                                 ) {
                                     LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 2), spacing: 12) {
                                         ForEach(availableSymbolGroups, id: \.id) { group in
-                                            SymbolGroupCard(
-                                                symbolGroup: group,
-                                                isSelected: selectedSymbolGroup == group,
-                                                onSelect: {
-                                                    withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
-                                                        selectedSymbolGroup = group
-                                                    }
-                                                    hapticManager.trigger(.selection)
-                                                    soundManager.play(.correctPlacement, volume: 0.3)
-                                                }
-                                            )
+                                SymbolGroupCard(
+                                    symbolGroup: group,
+                                    isSelected: selectedSymbolGroup == group,
+                                    onSelect: {
+                                        withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
+                                            selectedSymbolGroup = group
+                                        }
+                                    }
+                                )
                                         }
                                     }
                                 }
@@ -91,28 +84,25 @@ struct GameSettingsSheet: View {
                                 icon: "speaker.wave.3.fill",
                                 title: String(localized: "Audio & Feedback")
                             ) {
-                                GameSettingsToggle(
-                                    icon: soundManager.isSoundEnabled ? "speaker.2.fill" : "speaker.slash.fill",
-                                    title: String(localized: "Sound Effects"),
-                                    subtitle: String(localized: "Play sounds during gameplay"),
-                                    isOn: $soundManager.isSoundEnabled
-                                ) {
-                                    hapticManager.trigger(.selection)
-                                    if soundManager.isSoundEnabled {
-                                        soundManager.play(.correctPlacement, volume: 0.4)
-                                    }
-                                }
+                            GameSettingsToggle(
+                                icon: SoundManager.shared.isSoundEnabled ? "speaker.2.fill" : "speaker.slash.fill",
+                                title: String(localized: "Sound Effects"),
+                                subtitle: String(localized: "Play sounds during gameplay"),
+                                isOn: Binding(
+                                    get: { SoundManager.shared.isSoundEnabled },
+                                    set: { SoundManager.shared.isSoundEnabled = $0 }
+                                )
+                            )
                                 
-                                GameSettingsToggle(
-                                    icon: hapticManager.isHapticsEnabled ? "hand.tap.fill" : "hand.tap",
-                                    title: String(localized: "Haptic Feedback"),
-                                    subtitle: String(localized: "Vibration feedback for interactions"),
-                                    isOn: $hapticManager.isHapticsEnabled
-                                ) {
-                                    if hapticManager.isHapticsEnabled {
-                                        hapticManager.trigger(.selection)
-                                    }
-                                }
+                            GameSettingsToggle(
+                                icon: HapticManager.shared.isHapticsEnabled ? "hand.tap.fill" : "hand.tap",
+                                title: String(localized: "Haptic Feedback"),
+                                subtitle: String(localized: "Vibration feedback for interactions"),
+                                isOn: Binding(
+                                    get: { HapticManager.shared.isHapticsEnabled },
+                                    set: { HapticManager.shared.isHapticsEnabled = $0 }
+                                )
+                            )
                             }
                         }
                     }
@@ -327,6 +317,4 @@ private struct StorybookToggleStyle: ToggleStyle {
         selectedSymbolGroup: .constant(.animals),
         showNumbers: .constant(false)
     )
-    .environmentObject(SoundManager.shared)
-    .environmentObject(HapticManager.shared)
 }
