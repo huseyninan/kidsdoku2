@@ -6,6 +6,16 @@ struct DifficultyTheme {
     let backgroundColor: Color
 }
 
+/// Wrapper struct to cache puzzle completion status and rating
+/// Avoids redundant lookups during filtering and rendering
+struct PuzzleWithStatus: Identifiable {
+    let puzzle: PremadePuzzle
+    let isCompleted: Bool
+    let rating: Double?
+    
+    var id: UUID { puzzle.id }
+}
+
 struct PuzzleSelectionView: View {
     let size: Int
     @Binding var path: [KidSudokuRoute]
@@ -14,7 +24,7 @@ struct PuzzleSelectionView: View {
     
     @State private var showSettings = false
     @State private var showPaywall = false
-    @State private var cachedPuzzlesByDifficulty: [(PuzzleDifficulty, [PremadePuzzle])] = []
+    @State private var cachedPuzzlesByDifficulty: [(PuzzleDifficulty, [PuzzleWithStatus])] = []
     @State private var basePuzzlesByDifficulty: [PuzzleDifficulty: [PremadePuzzle]] = [:]
     @State private var isLoading = true
     @State private var isPad = UIDevice.current.userInterfaceIdiom == .pad
@@ -149,6 +159,7 @@ struct PuzzleSelectionView: View {
     }
     
     /// Applies visibility and completion filters to the cached base puzzles
+    /// Pre-computes completion status and rating to avoid redundant lookups during rendering
     private func applyFilters() {
         cachedPuzzlesByDifficulty = PuzzleDifficulty.allCases.compactMap { difficulty in
             // Check difficulty visibility
@@ -161,16 +172,25 @@ struct PuzzleSelectionView: View {
             guard shouldShow else { return nil }
             
             // Get from cache (already loaded)
-            guard var puzzles = basePuzzlesByDifficulty[difficulty], !puzzles.isEmpty else {
+            guard let puzzles = basePuzzlesByDifficulty[difficulty], !puzzles.isEmpty else {
                 return nil
             }
             
-            // Apply hide-finished filter
-            if hideFinishedPuzzles {
-                puzzles = puzzles.filter { !completionManager.isCompleted(puzzle: $0) }
+            // Pre-compute completion status and rating for each puzzle (single lookup)
+            var puzzlesWithStatus = puzzles.map { puzzle in
+                PuzzleWithStatus(
+                    puzzle: puzzle,
+                    isCompleted: completionManager.isCompleted(puzzle: puzzle),
+                    rating: completionManager.rating(for: puzzle)
+                )
             }
             
-            return puzzles.isEmpty ? nil : (difficulty, puzzles)
+            // Apply hide-finished filter using cached status
+            if hideFinishedPuzzles {
+                puzzlesWithStatus = puzzlesWithStatus.filter { !$0.isCompleted }
+            }
+            
+            return puzzlesWithStatus.isEmpty ? nil : (difficulty, puzzlesWithStatus)
         }
     }
     
@@ -214,7 +234,7 @@ struct PuzzleSelectionView: View {
         .padding(.bottom, 12)
     }
     
-    private func difficultyCard(difficulty: PuzzleDifficulty, puzzles: [PremadePuzzle]) -> some View {
+    private func difficultyCard(difficulty: PuzzleDifficulty, puzzles: [PuzzleWithStatus]) -> some View {
         let theme = themes[difficulty] ?? DifficultyTheme(name: difficulty.rawValue, backgroundColor: .gray)
         
         return VStack(spacing: 16) {
@@ -229,15 +249,15 @@ struct PuzzleSelectionView: View {
             // Adapts to 2-4 columns depending on device width
             let columns = [GridItem(.adaptive(minimum: 80, maximum: 150), spacing: 12)]
             LazyVGrid(columns: columns, spacing: 12) {
-                ForEach(puzzles, id: \.id) { puzzle in
+                ForEach(puzzles) { puzzleWithStatus in
                     PuzzleButtonView(
-                        puzzle: puzzle,
+                        puzzle: puzzleWithStatus.puzzle,
                         isPremium: appEnvironment.isPremium,
-                        isCompleted: completionManager.isCompleted(puzzle: puzzle),
-                        rating: completionManager.rating(for: puzzle)
+                        isCompleted: puzzleWithStatus.isCompleted,
+                        rating: puzzleWithStatus.rating
                     )
                     .onTapGesture {
-                        handlePuzzleTap(puzzle)
+                        handlePuzzleTap(puzzleWithStatus.puzzle)
                     }
                 }
             }
