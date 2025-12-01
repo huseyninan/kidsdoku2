@@ -591,18 +591,6 @@ private struct PuzzleRankBadge: View {
     private enum RankTier {
         case legend, hero, pro, apprentice, explorer, dreamer, rookie
         
-        var title: String {
-            switch self {
-            case .legend: return String(localized: "Legend Rank")
-            case .hero: return String(localized: "Hero Rank")
-            case .pro: return String(localized: "Pro Rank")
-            case .apprentice: return String(localized: "Apprentice")
-            case .explorer: return String(localized: "Explorer")
-            case .dreamer: return String(localized: "Dreamer")
-            case .rookie: return String(localized: "Rookie")
-            }
-        }
-        
         var gradient: LinearGradient {
             switch self {
             case .legend:
