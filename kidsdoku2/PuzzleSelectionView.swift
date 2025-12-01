@@ -74,11 +74,14 @@ struct PuzzleSelectionView: View {
         ]
     }()
     
-    private var themes: [PuzzleDifficulty: DifficultyTheme] {
-        Self.allThemes[size] ?? Self.defaultTheme
-    }
+    // Cached themes for this specific size - computed once, not on every render
+    private let themes: [PuzzleDifficulty: DifficultyTheme]
     
-
+    init(size: Int, path: Binding<[KidSudokuRoute]>) {
+        self.size = size
+        self._path = path
+        self.themes = Self.allThemes[size] ?? Self.defaultTheme
+    }
     
     var body: some View {
         ZStack {
