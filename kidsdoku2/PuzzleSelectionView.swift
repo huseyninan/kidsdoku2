@@ -21,33 +21,33 @@ struct PuzzleSelectionView: View {
     @AppStorage("showHardDifficulty") private var showHard = true
     @AppStorage("hideFinishedPuzzles") private var hideFinishedPuzzles = false
     
+    // Static themes dictionary - computed once per size, not on every render
+    private static let allThemes: [Int: [PuzzleDifficulty: DifficultyTheme]] = [
+        3: [
+            .easy: DifficultyTheme(name: String(localized: "Wakey Wakey"), backgroundColor: Color(red: 0.45, green: 0.55, blue: 0.45), emoji: "🌻"),
+            .normal: DifficultyTheme(name: String(localized: "Breakfast Time"), backgroundColor: Color(red: 0.35, green: 0.45, blue: 0.60), emoji: "🌲"),
+            .hard: DifficultyTheme(name: String(localized: "Garden Path"), backgroundColor: Color(red: 0.30, green: 0.35, blue: 0.50), emoji: "💎")
+        ],
+        4: [
+            .easy: DifficultyTheme(name: String(localized: "Sunny Meadow"), backgroundColor: Color(red: 0.45, green: 0.55, blue: 0.45), emoji: "🌻"),
+            .normal: DifficultyTheme(name: String(localized: "Twisty Trails"), backgroundColor: Color(red: 0.35, green: 0.45, blue: 0.60), emoji: "🌲"),
+            .hard: DifficultyTheme(name: String(localized: "Mushroom Grove"), backgroundColor: Color(red: 0.30, green: 0.35, blue: 0.50), emoji: "💎")
+        ],
+        6: [
+            .easy: DifficultyTheme(name: String(localized: "Echo Cave"), backgroundColor: Color(red: 0.45, green: 0.55, blue: 0.45), emoji: "🌻"),
+            .normal: DifficultyTheme(name: String(localized: "Snowy Slopes"), backgroundColor: Color(red: 0.35, green: 0.45, blue: 0.60), emoji: "🌲"),
+            .hard: DifficultyTheme(name: String(localized: "Starry Summit"), backgroundColor: Color(red: 0.30, green: 0.35, blue: 0.50), emoji: "💎")
+        ]
+    ]
+    
+    private static let defaultTheme: [PuzzleDifficulty: DifficultyTheme] = [
+        .easy: DifficultyTheme(name: String(localized: "Sunny Meadow"), backgroundColor: Color(red: 0.45, green: 0.55, blue: 0.45), emoji: "🌻"),
+        .normal: DifficultyTheme(name: String(localized: "Whispering Woods"), backgroundColor: Color(red: 0.35, green: 0.45, blue: 0.60), emoji: "🌲"),
+        .hard: DifficultyTheme(name: String(localized: "Crystal Caves"), backgroundColor: Color(red: 0.30, green: 0.35, blue: 0.50), emoji: "💎")
+    ]
+    
     private var themes: [PuzzleDifficulty: DifficultyTheme] {
-        switch size {
-        case 3:
-            return [
-                .easy: DifficultyTheme(name: String(localized: "Wakey Wakey"), backgroundColor: Color(red: 0.45, green: 0.55, blue: 0.45), emoji: "🌻"),
-                .normal: DifficultyTheme(name: String(localized: "Breakfast Time"), backgroundColor: Color(red: 0.35, green: 0.45, blue: 0.60), emoji: "🌲"),
-                .hard: DifficultyTheme(name: String(localized: "Garden Path"), backgroundColor: Color(red: 0.30, green: 0.35, blue: 0.50), emoji: "💎")
-            ]
-        case 4:
-            return [
-                .easy: DifficultyTheme(name: String(localized: "Sunny Meadow"), backgroundColor: Color(red: 0.45, green: 0.55, blue: 0.45), emoji: "🌻"),
-                .normal: DifficultyTheme(name: String(localized: "Twisty Trails"), backgroundColor: Color(red: 0.35, green: 0.45, blue: 0.60), emoji: "🌲"),
-                .hard: DifficultyTheme(name: String(localized: "Mushroom Grove"), backgroundColor: Color(red: 0.30, green: 0.35, blue: 0.50), emoji: "💎")
-            ]
-        case 6:
-            return [
-                .easy: DifficultyTheme(name: String(localized: "Echo Cave"), backgroundColor: Color(red: 0.45, green: 0.55, blue: 0.45), emoji: "🌻"),
-                .normal: DifficultyTheme(name: String(localized: "Snowy Slopes"), backgroundColor: Color(red: 0.35, green: 0.45, blue: 0.60), emoji: "🌲"),
-                .hard: DifficultyTheme(name: String(localized: "Starry Summit"), backgroundColor: Color(red: 0.30, green: 0.35, blue: 0.50), emoji: "💎")
-            ]
-        default:
-            return [
-                .easy: DifficultyTheme(name: String(localized: "Sunny Meadow"), backgroundColor: Color(red: 0.45, green: 0.55, blue: 0.45), emoji: "🌻"),
-                .normal: DifficultyTheme(name: String(localized: "Whispering Woods"), backgroundColor: Color(red: 0.35, green: 0.45, blue: 0.60), emoji: "🌲"),
-                .hard: DifficultyTheme(name: String(localized: "Crystal Caves"), backgroundColor: Color(red: 0.30, green: 0.35, blue: 0.50), emoji: "💎")
-            ]
-        }
+        Self.allThemes[size] ?? Self.defaultTheme
     }
     
 
@@ -78,16 +78,20 @@ struct PuzzleSelectionView: View {
         .onAppear {
             updateCachedPuzzles()
         }
-        .onChange(of: showEasy) { _ in
+        .onChange(of: showEasy) {
             updateCachedPuzzles()
         }
-        .onChange(of: showNormal) { _ in
+        .onChange(of: showNormal) {
             updateCachedPuzzles()
         }
-        .onChange(of: showHard) { _ in
+        .onChange(of: showHard) {
             updateCachedPuzzles()
         }
-        .onChange(of: hideFinishedPuzzles) { _ in
+        .onChange(of: hideFinishedPuzzles) {
+            updateCachedPuzzles()
+        }
+        // Update cache when completion data changes (e.g., returning from a completed puzzle)
+        .onChange(of: completionManager.completedPuzzles) {
             updateCachedPuzzles()
         }
         .sheet(isPresented: $showSettings) {
@@ -159,12 +163,11 @@ struct PuzzleSelectionView: View {
                 .frame(maxWidth: .infinity)
                 .padding(.top, 20)
             
-            // Use regular VGrid instead of LazyVGrid for better performance with small datasets
+            // LazyVGrid for efficient rendering of puzzle grid
             let columns = Array(repeating: GridItem(.flexible(), spacing: 12), count: 3)
             LazyVGrid(columns: columns, spacing: 12) {
-                ForEach(Array(puzzles.enumerated()), id: \.offset) { index, puzzle in
+                ForEach(Array(puzzles.enumerated()), id: \.element.id) { index, puzzle in
                     puzzleButton(puzzle: puzzle, index: index, theme: theme)
-                        .id("\(difficulty.rawValue)-\(puzzle.id)") // Add stable ID
                 }
             }
             .padding(.horizontal, 20)
@@ -197,7 +200,6 @@ struct PuzzleSelectionView: View {
             )
         }
         .buttonStyle(.plain)
-        .drawingGroup() // Optimize rendering
     }
     
     @ViewBuilder
