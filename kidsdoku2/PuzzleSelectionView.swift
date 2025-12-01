@@ -16,6 +16,7 @@ struct PuzzleSelectionView: View {
     @State private var showSettings = false
     @State private var showPaywall = false
     @State private var cachedPuzzlesByDifficulty: [(PuzzleDifficulty, [PremadePuzzle])] = []
+    @State private var isLoading = true
     @AppStorage("showEasyDifficulty") private var showEasy = true
     @AppStorage("showNormalDifficulty") private var showNormal = true
     @AppStorage("showHardDifficulty") private var showHard = true
@@ -61,22 +62,34 @@ struct PuzzleSelectionView: View {
                 VStack(spacing: 16) {
                     headerSection
                     
-                    VStack(spacing: 12) {
-                        ForEach(cachedPuzzlesByDifficulty, id: \.0) { difficulty, puzzles in
-                            difficultyCard(difficulty: difficulty, puzzles: puzzles)
+                    if isLoading {
+                        VStack(spacing: 20) {
+                            ProgressView()
+                                .scaleEffect(1.5)
+                            Text("Loading puzzles...")
+                                .font(.system(size: 16, weight: .medium, design: .rounded))
+                                .foregroundStyle(Color(red: 0.4, green: 0.4, blue: 0.45))
                         }
-                        
-//                        randomAdventureButton
+                        .frame(maxWidth: .infinity)
+                        .padding(.top, 60)
+                    } else {
+                        VStack(spacing: 12) {
+                            ForEach(cachedPuzzlesByDifficulty, id: \.0) { difficulty, puzzles in
+                                difficultyCard(difficulty: difficulty, puzzles: puzzles)
+                            }
+                            
+//                            randomAdventureButton
+                        }
+                        .padding(.horizontal, 16)
+                        .padding(.bottom, 20)
                     }
-                    .padding(.horizontal, 16)
-                    .padding(.bottom, 20)
                 }
             }
         }
         .navigationBarTitleDisplayMode(.inline)
         .navigationBarBackButtonHidden(false)
-        .onAppear {
-            updateCachedPuzzles()
+        .task {
+            await loadPuzzlesAsync()
         }
         .onChange(of: showEasy) {
             updateCachedPuzzles()
@@ -106,9 +119,49 @@ struct PuzzleSelectionView: View {
         }
     }
     
+    /// Loads puzzles asynchronously on a background thread to avoid main thread hitches
+    private func loadPuzzlesAsync() async {
+        // Capture current filter settings
+        let currentShowEasy = showEasy
+        let currentShowNormal = showNormal
+        let currentShowHard = showHard
+        let currentHideFinished = hideFinishedPuzzles
+        let currentSize = size
+        let completedSet = completionManager.completedPuzzles
+        
+        // Perform filtering on background thread
+        let result = await Task.detached(priority: .userInitiated) {
+            PuzzleDifficulty.allCases.compactMap { difficulty -> (PuzzleDifficulty, [PremadePuzzle])? in
+                let shouldShow: Bool
+                switch difficulty {
+                case .easy: shouldShow = currentShowEasy
+                case .normal: shouldShow = currentShowNormal
+                case .hard: shouldShow = currentShowHard
+                }
+                
+                guard shouldShow else { return nil }
+                
+                var filteredPuzzles = PremadePuzzleStore.shared.puzzles(for: currentSize, difficulty: difficulty)
+                
+                if currentHideFinished {
+                    filteredPuzzles = filteredPuzzles.filter { puzzle in
+                        let key = "\(puzzle.size)-\(puzzle.difficulty.rawValue)-\(puzzle.number)"
+                        return !completedSet.contains(key)
+                    }
+                }
+                
+                return filteredPuzzles.isEmpty ? nil : (difficulty, filteredPuzzles)
+            }
+        }.value
+        
+        // Update UI on main thread
+        cachedPuzzlesByDifficulty = result
+        isLoading = false
+    }
+    
+    /// Synchronous update for filter changes (puzzles already loaded)
     private func updateCachedPuzzles() {
         cachedPuzzlesByDifficulty = PuzzleDifficulty.allCases.compactMap { difficulty in
-            // Check if this difficulty should be shown based on settings
             let shouldShow: Bool
             switch difficulty {
             case .easy: shouldShow = showEasy
@@ -120,7 +173,6 @@ struct PuzzleSelectionView: View {
             
             var filteredPuzzles = PremadePuzzleStore.shared.puzzles(for: size, difficulty: difficulty)
             
-            // Filter out completed puzzles if the setting is enabled
             if hideFinishedPuzzles {
                 filteredPuzzles = filteredPuzzles.filter { !completionManager.isCompleted(puzzle: $0) }
             }
