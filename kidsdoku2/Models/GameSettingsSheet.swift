@@ -338,4 +338,5 @@ private struct StorybookToggleStyle: ToggleStyle {
         selectedSymbolGroup: .constant(.animals),
         showNumbers: .constant(false)
     )
+    .environmentObject(AppEnvironment())
 }
