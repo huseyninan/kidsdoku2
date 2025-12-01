@@ -42,7 +42,9 @@ enum DeviceSizing {
         let rawSide = min(adjustedWidth, adjustedHeight)
         let candidate = max(minimumBoardSize, rawSide - boardInset)
         
-        return min(candidate, rawSide, maxGridSize)
+        // Ensure we never return a negative or invalid dimension
+        let result = min(candidate, max(rawSide, minimumBoardSize), maxGridSize)
+        return max(minimumBoardSize, result)
     }
 }
 
