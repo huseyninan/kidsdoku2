@@ -221,7 +221,7 @@ struct PuzzleSelectionView: View {
             // Adapts to 2-4 columns depending on device width
             let columns = [GridItem(.adaptive(minimum: 100, maximum: 150), spacing: 12)]
             LazyVGrid(columns: columns, spacing: 12) {
-                ForEach(Array(puzzles.enumerated()), id: \.element.id) { index, puzzle in
+                ForEach(puzzles, id: \.id) { puzzle in
                     PuzzleButtonView(
                         puzzle: puzzle,
                         isPremium: appEnvironment.isPremium,
