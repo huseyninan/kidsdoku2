@@ -171,6 +171,10 @@ struct PuzzleSelectionView: View {
     /// Applies visibility and completion filters to the cached base puzzles
     /// Pre-computes completion status and rating to avoid redundant lookups during rendering
     private func applyFilters() {
+        // Capture completion data once to avoid repeated property access
+        let completedSet = completionManager.completedPuzzles
+        let ratingsDict = completionManager.puzzleRatings
+        
         cachedPuzzlesByDifficulty = PuzzleDifficulty.allCases.compactMap { difficulty in
             // Check difficulty visibility
             let shouldShow: Bool
@@ -186,12 +190,14 @@ struct PuzzleSelectionView: View {
                 return nil
             }
             
-            // Pre-compute completion status and rating for each puzzle (single lookup)
+            // Pre-compute completion status and rating for each puzzle
+            // Direct access to Set/Dictionary avoids method call overhead and redundant key generation
             var puzzlesWithStatus = puzzles.map { puzzle in
-                PuzzleWithStatus(
+                let key = "\(puzzle.size)-\(puzzle.difficulty.rawValue)-\(puzzle.number)"
+                return PuzzleWithStatus(
                     puzzle: puzzle,
-                    isCompleted: completionManager.isCompleted(puzzle: puzzle),
-                    rating: completionManager.rating(for: puzzle)
+                    isCompleted: completedSet.contains(key),
+                    rating: ratingsDict[key]
                 )
             }
             
