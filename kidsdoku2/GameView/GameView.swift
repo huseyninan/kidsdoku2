@@ -42,7 +42,6 @@ struct GameView: View {
                     
                     boardSection(size: boardSize)
                             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
-                            .animation(.easeInOut(duration: 0.2), value: viewModel.puzzle.cells)
                     
                     paletteSection
                     

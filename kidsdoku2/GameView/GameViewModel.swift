@@ -13,8 +13,16 @@ final class GameViewModel: ObservableObject {
     @Published private(set) var mistakeCount = 0
     @Published private(set) var hintCount = 0
     @Published private(set) var elapsedTime: TimeInterval = 0
-    @Published var showNumbers: Bool = false
-    @Published var selectedSymbolGroupRawValue: Int
+    @Published var showNumbers: Bool = false {
+        didSet { updateCurrentConfig() }
+    }
+    @Published var selectedSymbolGroupRawValue: Int {
+        didSet { updateCurrentConfig() }
+    }
+    @Published private(set) var currentConfig: KidSudokuConfig
+    @Published private(set) var filledCellCount: Int = 0
+    private(set) var validSymbolIndices: [Int] = []
+    @Published private(set) var paletteSymbols: [(index: Int, symbol: String)] = []
 
     let config: KidSudokuConfig
     private let isPremadePuzzle: Bool
@@ -28,35 +36,28 @@ final class GameViewModel: ObservableObject {
         SymbolGroup(rawValue: selectedSymbolGroupRawValue) ?? config.symbolGroup
     }
     
-    var currentConfig: KidSudokuConfig {
-        if showNumbers {
-            return KidSudokuConfig(
-                size: config.size,
-                subgridRows: config.subgridRows,
-                subgridCols: config.subgridCols,
-                symbolGroup: .numbers
-            )
-        } else {
-            return KidSudokuConfig(
-                size: config.size,
-                subgridRows: config.subgridRows,
-                subgridCols: config.subgridCols,
-                symbolGroup: selectedSymbolGroup
-            )
-        }
+    private func updateCurrentConfig() {
+        currentConfig = KidSudokuConfig(
+            size: config.size,
+            subgridRows: config.subgridRows,
+            subgridCols: config.subgridCols,
+            symbolGroup: showNumbers ? .numbers : selectedSymbolGroup
+        )
+        updatePaletteSymbols()
     }
     
-    /// Cached valid symbol indices based on the puzzle solution's first row
-    var validSymbolIndices: [Int] {
+    private func cacheSymbolData() {
         guard let firstRow = puzzle.solution.first else {
-            return Array(0..<config.size)
+            validSymbolIndices = Array(0..<config.size)
+            updatePaletteSymbols()
+            return
         }
-        return Array(Set(firstRow)).sorted()
+        validSymbolIndices = Array(Set(firstRow)).sorted()
+        updatePaletteSymbols()
     }
     
-    /// Returns the valid palette symbols with their indices
-    var paletteSymbols: [(index: Int, symbol: String)] {
-        validSymbolIndices.map { index in
+    private func updatePaletteSymbols() {
+        paletteSymbols = validSymbolIndices.map { index in
             (index: index, symbol: currentConfig.symbols[index])
         }
     }
@@ -68,6 +69,9 @@ final class GameViewModel: ObservableObject {
         self.puzzle = KidSudokuGenerator.generatePuzzle(config: config)
         self.highlightedValue = nil
         self.selectedSymbolGroupRawValue = config.symbolGroup.rawValue
+        self.currentConfig = config
+        self.filledCellCount = puzzle.cells.filter { $0.value != nil }.count
+        cacheSymbolData()
     }
     
     init(config: KidSudokuConfig, premadePuzzle: PremadePuzzle) {
@@ -77,6 +81,9 @@ final class GameViewModel: ObservableObject {
         self.puzzle = KidSudokuPuzzle(from: premadePuzzle)
         self.highlightedValue = nil
         self.selectedSymbolGroupRawValue = config.symbolGroup.rawValue
+        self.currentConfig = config
+        self.filledCellCount = puzzle.cells.filter { $0.value != nil }.count
+        cacheSymbolData()
     }
 
     func startNewPuzzle() {
@@ -93,6 +100,8 @@ final class GameViewModel: ObservableObject {
         moveHistory.removeAll()
         mistakeCount = 0
         hintCount = 0
+        updateFilledCount()
+        cacheSymbolData()
         resetTimer()
         startTimer()
     }
@@ -118,8 +127,8 @@ final class GameViewModel: ObservableObject {
         if let paletteSymbol = selectedPaletteSymbol, cell.value == nil {
             if isValid(paletteSymbol, at: cell.position) {
                 moveHistory.append((position: cell.position, oldValue: cell.value))
-                objectWillChange.send()
                 puzzle.updateCell(at: cell.position, with: paletteSymbol)
+                updateFilledCount()
                 highlightedValue = paletteSymbol
                 soundManager.play(.correctPlacement, volume: 0.6)
                 checkForCompletion()
@@ -148,13 +157,13 @@ final class GameViewModel: ObservableObject {
             return
         }
 
-        var cell = puzzle.cell(at: position)
+        let cell = puzzle.cell(at: position)
         guard cell.isFixed == false else { return }
 
         if cell.value != nil {
             moveHistory.append((position: position, oldValue: cell.value))
-            objectWillChange.send()
             puzzle.updateCell(at: position, with: nil)
+            updateFilledCount()
         }
     }
     
@@ -175,20 +184,20 @@ final class GameViewModel: ObservableObject {
             return
         }
 
-        var cell = puzzle.cell(at: position)
+        let cell = puzzle.cell(at: position)
         guard cell.isFixed == false else { return }
 
         if cell.value == symbolIndex {
             moveHistory.append((position: position, oldValue: cell.value))
-            objectWillChange.send()
             puzzle.updateCell(at: position, with: nil)
+            updateFilledCount()
             return
         }
 
         if isValid(symbolIndex, at: position) {
             moveHistory.append((position: position, oldValue: cell.value))
-            objectWillChange.send()
             puzzle.updateCell(at: position, with: symbolIndex)
+            updateFilledCount()
             highlightedValue = symbolIndex
             message = nil
             soundManager.play(.correctPlacement, volume: 0.6)
@@ -273,9 +282,8 @@ final class GameViewModel: ObservableObject {
         }
     }
     
-    /// Cached count of filled cells for progress calculation
-    var filledCellCount: Int {
-        puzzleCells.filter { $0.value != nil }.count
+    private func updateFilledCount() {
+        filledCellCount = puzzleCells.filter { $0.value != nil }.count
     }
     
     var totalCellCount: Int {
@@ -295,8 +303,8 @@ final class GameViewModel: ObservableObject {
         if let randomCell = emptyCells.randomElement() {
             hintCount += 1
             moveHistory.append((position: randomCell.position, oldValue: randomCell.value))
-            objectWillChange.send()
             puzzle.updateCell(at: randomCell.position, with: randomCell.solution)
+            updateFilledCount()
             highlightedValue = randomCell.solution
             selectedPosition = randomCell.position
             message = KidSudokuMessage(text: String(localized: "Here's a hint! ✨"), type: .info)
@@ -313,8 +321,8 @@ final class GameViewModel: ObservableObject {
             return
         }
         
-        objectWillChange.send()
         puzzle.updateCell(at: lastMove.position, with: lastMove.oldValue)
+        updateFilledCount()
         selectedPosition = lastMove.position
         highlightedValue = lastMove.oldValue
         message = nil

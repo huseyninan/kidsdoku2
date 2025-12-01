@@ -50,31 +50,7 @@ struct SymbolTokenView: View {
         let cornerRadius = size * context.cornerRadiusScale
         let padding = size * context.contentPaddingScale
         let highlightStrength = max(0, min(1, isSelected ? glowPhase : 0))
-        let washOverlay = RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
-            .fill(Color.white.opacity(0.45 * (1 - highlightStrength)))
-        let vividOverlay = RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
-            .fill(
-                LinearGradient(
-                    colors: gradient.map { $0.opacity(0.2 * highlightStrength) },
-                    startPoint: .topLeading,
-                    endPoint: .bottomTrailing
-                )
-            )
-        let pulseOverlay = RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
-            .fill(
-                LinearGradient(
-                    colors: [
-                        Color.white.opacity(0.35 + 0.25 * highlightStrength),
-                        selectionBorderColor.opacity(0.2 + 0.35 * highlightStrength)
-                    ],
-                    startPoint: .topLeading,
-                    endPoint: .bottomTrailing
-                )
-            )
-            .blendMode(.plusLighter)
-            .opacity(highlightStrength > 0 ? 0.5 + 0.3 * highlightStrength : 0)
-            .scaleEffect(1 + 0.05 * highlightStrength)
-            .animation(.easeInOut(duration: 0.2), value: isSelected)
+        let hasHighlight = highlightStrength > 0
         
         return ZStack {
             RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
@@ -85,9 +61,17 @@ struct SymbolTokenView: View {
                         endPoint: .bottomTrailing
                     )
                 )
-                .overlay(washOverlay)
-                .overlay(vividOverlay)
-                .overlay(pulseOverlay)
+                .overlay(
+                    // Wash overlay - always shown but varies with highlight
+                    RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+                        .fill(Color.white.opacity(0.45 * (1 - highlightStrength)))
+                )
+                .overlay {
+                    // Selection overlays - only rendered when highlighted
+                    if hasHighlight {
+                        selectionOverlays(cornerRadius: cornerRadius, gradient: gradient, highlightStrength: highlightStrength)
+                    }
+                }
                 .overlay(
                     RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
                         .stroke(
@@ -131,9 +115,39 @@ struct SymbolTokenView: View {
         .onAppear {
             updateGlowAnimation(isSelected)
         }
-        .onChange(of: isSelected) { newValue in
+        .onChange(of: isSelected) { _, newValue in
             updateGlowAnimation(newValue)
         }
+    }
+    
+    @ViewBuilder
+    private func selectionOverlays(cornerRadius: CGFloat, gradient: [Color], highlightStrength: CGFloat) -> some View {
+        // Vivid overlay - adds color intensity when selected
+        RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+            .fill(
+                LinearGradient(
+                    colors: gradient.map { $0.opacity(0.2 * highlightStrength) },
+                    startPoint: .topLeading,
+                    endPoint: .bottomTrailing
+                )
+            )
+        
+        // Pulse overlay - glowing effect when selected
+        RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+            .fill(
+                LinearGradient(
+                    colors: [
+                        Color.white.opacity(0.35 + 0.25 * highlightStrength),
+                        selectionBorderColor.opacity(0.2 + 0.35 * highlightStrength)
+                    ],
+                    startPoint: .topLeading,
+                    endPoint: .bottomTrailing
+                )
+            )
+            .blendMode(.plusLighter)
+            .opacity(0.5 + 0.3 * highlightStrength)
+            .scaleEffect(1 + 0.05 * highlightStrength)
+            .animation(.easeInOut(duration: 0.2), value: isSelected)
     }
     
     private var numberBadge: some View {

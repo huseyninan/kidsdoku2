@@ -53,7 +53,7 @@ struct ConfettiParticle: View {
             .opacity(opacity)
             .offset(x: xOffset, y: yOffset)
             .shadow(color: starColor.opacity(0.6), radius: 4)
-            .onChange(of: animate) { newValue in
+            .onChange(of: animate) { _, newValue in
                 if newValue {
                     // First phase: shoot up
                     withAnimation(
