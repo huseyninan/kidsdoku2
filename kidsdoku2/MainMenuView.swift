@@ -19,25 +19,25 @@ struct MainMenuView: View {
                     .ignoresSafeArea()
                     .frame(width: geo.size.width, height: geo.size.height, alignment: .bottom)
             }
-            .edgesIgnoringSafeArea(.all)
+            .ignoresSafeArea()
 
             VStack(spacing: 0) {
                 // Top spacing for regular width devices
                 if isRegularWidth {
                     Spacer()
-                        .frame(height: 70)
+                        .frame(height: Theme.Layout.regularTopSpacing)
                 }
                 
                 headerSection
-                    .frame(maxWidth: isRegularWidth ? 680 : .infinity)
-                    .padding(.horizontal, 10.0)
+                    .frame(maxWidth: isRegularWidth ? Theme.Layout.maxContentWidth : .infinity)
+                    .padding(.horizontal, Theme.Layout.headerHorizontalPadding)
                 
                 Spacer()
-                    .frame(height: isRegularWidth ? 50 : 24)
+                    .frame(height: isRegularWidth ? Theme.Layout.regularButtonSpacing : Theme.Layout.compactButtonSpacing)
 
                 questButtonsSection
-                    .padding(.horizontal, isRegularWidth ? 80 : 32)
-                    .frame(maxWidth: isRegularWidth ? 680 : .infinity)
+                    .padding(.horizontal, isRegularWidth ? Theme.Layout.regularHorizontalPadding : Theme.Layout.compactHorizontalPadding)
+                    .frame(maxWidth: isRegularWidth ? Theme.Layout.maxContentWidth : .infinity)
 
                 Spacer()
                 
@@ -65,21 +65,11 @@ struct MainMenuView: View {
                 HStack(spacing: 4) {
                     Image(systemName: "questionmark.circle.fill")
                         .font(.system(size: 24))
-                    Text("How to Play")
+                    Text(String(localized: "How to Play"))
                         .font(.system(size: 16, weight: .semibold, design: .rounded))
                 }
-                .foregroundColor(.white)
-                .padding(.horizontal, 16)
-                .padding(.vertical, 10)
-                .background(
-                    RoundedRectangle(cornerRadius: 20)
-                        .fill(Color.black.opacity(0.3))
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 20)
-                                .strokeBorder(Color.white.opacity(0.5), lineWidth: 1)
-                        )
-                )
             }
+            .buttonStyle(OverlayButtonStyle())
             
             Spacer()
             
@@ -90,41 +80,11 @@ struct MainMenuView: View {
                     HStack(spacing: 6) {
                         Image(systemName: "crown.fill")
                             .font(.system(size: 16))
-                        Text("Go Premium")
+                        Text(String(localized: "Go Premium"))
                             .font(.system(size: 15, weight: .bold, design: .rounded))
                     }
-                    .foregroundColor(.white)
-                    .padding(.horizontal, 18)
-                    .padding(.vertical, 10)
-                    .background(
-                        RoundedRectangle(cornerRadius: 20)
-                            .fill(
-                                LinearGradient(
-                                    colors: [
-                                        Color(red: 0.95, green: 0.77, blue: 0.06),
-                                        Color(red: 0.85, green: 0.55, blue: 0.0)
-                                    ],
-                                    startPoint: .topLeading,
-                                    endPoint: .bottomTrailing
-                                )
-                            )
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 20)
-                                    .strokeBorder(
-                                        LinearGradient(
-                                            colors: [
-                                                Color(red: 1.0, green: 0.95, blue: 0.7),
-                                                Color(red: 0.95, green: 0.85, blue: 0.5)
-                                            ],
-                                            startPoint: .top,
-                                            endPoint: .bottom
-                                        ),
-                                        lineWidth: 2
-                                    )
-                            )
-                            .shadow(color: Color(red: 0.85, green: 0.55, blue: 0.0).opacity(0.4), radius: 8, x: 0, y: 4)
-                    )
                 }
+                .buttonStyle(PremiumButtonStyle())
                 .padding(.trailing, 8)
             }
             
@@ -136,6 +96,7 @@ struct MainMenuView: View {
                     .foregroundColor(.white)
                     .padding()
             }
+            .accessibilityLabel(String(localized: "Settings"))
         }
     }
 
@@ -144,7 +105,7 @@ struct MainMenuView: View {
         if questOptions.isEmpty {
             EmptyView()
         } else {
-            VStack(spacing: 24) {
+            VStack(spacing: Theme.Layout.questButtonSpacing) {
                 ForEach(questOptions) { option in
                     questButton(
                         title: option.title,
@@ -161,15 +122,15 @@ struct MainMenuView: View {
     }
     
     private var footerSection: some View {
-        Text("Let's Play!")
+        Text(String(localized: "Let's Play!"))
             .font(.system(size: 30, weight: .heavy, design: .rounded))
-            .foregroundStyle(Color(red: 0.4, green: 0.25, blue: 0.15))
+            .foregroundStyle(Theme.Colors.footerText)
             .frame(maxWidth: .infinity)
-            .padding(.vertical, 12)
-            .padding(.horizontal, 40)
+            .padding(.vertical, Theme.Layout.footerVerticalPadding)
+            .padding(.horizontal, Theme.Layout.footerHorizontalPadding)
             .background(
-                RoundedRectangle(cornerRadius: 0, style: .continuous)
-                    .fill(Color(red: 0.85, green: 0.75, blue: 0.6))
+                Rectangle()
+                    .fill(Theme.Colors.footerBackground)
                     .shadow(color: .black.opacity(0.15), radius: 12, x: 0, y: 6)
             )
     }
@@ -231,34 +192,10 @@ struct MainMenuView: View {
                 
                 Text(subtitle)
                     .font(.system(size: 18, weight: .medium, design: .rounded))
-                    .foregroundStyle(Color(red: 0.9, green: 0.85, blue: 0.75))
+                    .foregroundStyle(Theme.Colors.questSubtitle)
             }
-            .frame(maxWidth: .infinity)
-            .padding(.vertical, 24)
-            .padding(.horizontal, 20)
-            .background(
-                RoundedRectangle(cornerRadius: 30, style: .continuous)
-                    .fill(
-                        LinearGradient(
-                            colors: [
-                                Color(red: 0.35, green: 0.22, blue: 0.12),
-                                Color(red: 0.45, green: 0.28, blue: 0.15)
-                            ],
-                            startPoint: .top,
-                            endPoint: .bottom
-                        )
-                    )
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 30, style: .continuous)
-                            .strokeBorder(
-                                Color(red: 0.85, green: 0.75, blue: 0.6),
-                                lineWidth: 3
-                            )
-                    )
-                    .shadow(color: .black.opacity(0.3), radius: 10, x: 0, y: 6)
-            )
         }
-        .buttonStyle(.plain)
+        .buttonStyle(QuestButtonStyle())
     }
 }
 
@@ -266,4 +203,3 @@ struct MainMenuView: View {
     MainMenuView(path: .constant([]))
         .environmentObject(AppEnvironment())
 }
-
