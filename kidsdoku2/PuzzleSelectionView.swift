@@ -4,7 +4,6 @@ import RevenueCatUI
 struct DifficultyTheme {
     let name: String
     let backgroundColor: Color
-    let emoji: String
 }
 
 struct PuzzleSelectionView: View {
@@ -26,26 +25,26 @@ struct PuzzleSelectionView: View {
     // Static themes dictionary - computed once per size, not on every render
     private static let allThemes: [Int: [PuzzleDifficulty: DifficultyTheme]] = [
         3: [
-            .easy: DifficultyTheme(name: String(localized: "Wakey Wakey"), backgroundColor: Color(red: 0.45, green: 0.55, blue: 0.45), emoji: "🌻"),
-            .normal: DifficultyTheme(name: String(localized: "Breakfast Time"), backgroundColor: Color(red: 0.35, green: 0.45, blue: 0.60), emoji: "🌲"),
-            .hard: DifficultyTheme(name: String(localized: "Garden Path"), backgroundColor: Color(red: 0.30, green: 0.35, blue: 0.50), emoji: "💎")
+            .easy: DifficultyTheme(name: String(localized: "Wakey Wakey"), backgroundColor: Color(red: 0.45, green: 0.55, blue: 0.45)),
+            .normal: DifficultyTheme(name: String(localized: "Breakfast Time"), backgroundColor: Color(red: 0.35, green: 0.45, blue: 0.60)),
+            .hard: DifficultyTheme(name: String(localized: "Garden Path"), backgroundColor: Color(red: 0.30, green: 0.35, blue: 0.50))
         ],
         4: [
-            .easy: DifficultyTheme(name: String(localized: "Sunny Meadow"), backgroundColor: Color(red: 0.45, green: 0.55, blue: 0.45), emoji: "🌻"),
-            .normal: DifficultyTheme(name: String(localized: "Twisty Trails"), backgroundColor: Color(red: 0.35, green: 0.45, blue: 0.60), emoji: "🌲"),
-            .hard: DifficultyTheme(name: String(localized: "Mushroom Grove"), backgroundColor: Color(red: 0.30, green: 0.35, blue: 0.50), emoji: "💎")
+            .easy: DifficultyTheme(name: String(localized: "Sunny Meadow"), backgroundColor: Color(red: 0.45, green: 0.55, blue: 0.45)),
+            .normal: DifficultyTheme(name: String(localized: "Twisty Trails"), backgroundColor: Color(red: 0.35, green: 0.45, blue: 0.60)),
+            .hard: DifficultyTheme(name: String(localized: "Mushroom Grove"), backgroundColor: Color(red: 0.30, green: 0.35, blue: 0.50))
         ],
         6: [
-            .easy: DifficultyTheme(name: String(localized: "Echo Cave"), backgroundColor: Color(red: 0.45, green: 0.55, blue: 0.45), emoji: "🌻"),
-            .normal: DifficultyTheme(name: String(localized: "Snowy Slopes"), backgroundColor: Color(red: 0.35, green: 0.45, blue: 0.60), emoji: "🌲"),
-            .hard: DifficultyTheme(name: String(localized: "Starry Summit"), backgroundColor: Color(red: 0.30, green: 0.35, blue: 0.50), emoji: "💎")
+            .easy: DifficultyTheme(name: String(localized: "Echo Cave"), backgroundColor: Color(red: 0.45, green: 0.55, blue: 0.45)),
+            .normal: DifficultyTheme(name: String(localized: "Snowy Slopes"), backgroundColor: Color(red: 0.35, green: 0.45, blue: 0.60)),
+            .hard: DifficultyTheme(name: String(localized: "Starry Summit"), backgroundColor: Color(red: 0.30, green: 0.35, blue: 0.50))
         ]
     ]
     
     private static let defaultTheme: [PuzzleDifficulty: DifficultyTheme] = [
-        .easy: DifficultyTheme(name: String(localized: "Sunny Meadow"), backgroundColor: Color(red: 0.45, green: 0.55, blue: 0.45), emoji: "🌻"),
-        .normal: DifficultyTheme(name: String(localized: "Whispering Woods"), backgroundColor: Color(red: 0.35, green: 0.45, blue: 0.60), emoji: "🌲"),
-        .hard: DifficultyTheme(name: String(localized: "Crystal Caves"), backgroundColor: Color(red: 0.30, green: 0.35, blue: 0.50), emoji: "💎")
+        .easy: DifficultyTheme(name: String(localized: "Sunny Meadow"), backgroundColor: Color(red: 0.45, green: 0.55, blue: 0.45)),
+        .normal: DifficultyTheme(name: String(localized: "Whispering Woods"), backgroundColor: Color(red: 0.35, green: 0.45, blue: 0.60)),
+        .hard: DifficultyTheme(name: String(localized: "Crystal Caves"), backgroundColor: Color(red: 0.30, green: 0.35, blue: 0.50))
     ]
     
     private var themes: [PuzzleDifficulty: DifficultyTheme] {
@@ -199,7 +198,7 @@ struct PuzzleSelectionView: View {
     }
     
     private func difficultyCard(difficulty: PuzzleDifficulty, puzzles: [PremadePuzzle]) -> some View {
-        let theme = themes[difficulty] ?? DifficultyTheme(name: difficulty.rawValue, backgroundColor: .gray, emoji: "")
+        let theme = themes[difficulty] ?? DifficultyTheme(name: difficulty.rawValue, backgroundColor: .gray)
         
         return VStack(spacing: 16) {
             Text("\(difficulty.rawValue) - \(theme.name)")
