@@ -340,73 +340,71 @@ struct PuzzleSelectionView: View {
     }
     
     private var difficultySettingsView: some View {
-        NavigationStack {
-            ZStack {
-                Color(red: 0.85, green: 0.88, blue: 0.92)
-                    .ignoresSafeArea()
-                
-                VStack(spacing: 24) {
+        ZStack {
+            Color(red: 0.85, green: 0.88, blue: 0.92)
+                .ignoresSafeArea()
+            
+            VStack(spacing: 24) {
+                // Header with Done button
+                HStack {
                     Spacer()
-                        .frame(height: 10.0)
-                    
-                    Text("Choose which difficulty levels to show")
-                        .font(.system(size: 16, weight: .medium, design: .rounded))
-                        .foregroundStyle(Color(red: 0.4, green: 0.4, blue: 0.45))
-                        .multilineTextAlignment(.center)
-                        .padding(.top, 8)
-                    
-                    VStack(spacing: 16) {
-                        difficultyToggle(
-                            title: String(localized: "Easy"),
-                            emoji: "🌻",
-                            isOn: $showEasy,
-                            color: Color(red: 0.45, green: 0.55, blue: 0.45)
-                        )
-                        
-                        difficultyToggle(
-                            title: String(localized: "Normal"),
-                            emoji: "🌲",
-                            isOn: $showNormal,
-                            color: Color(red: 0.35, green: 0.45, blue: 0.60)
-                        )
-                        
-                        difficultyToggle(
-                            title: String(localized: "Hard"),
-                            emoji: "💎",
-                            isOn: $showHard,
-                            color: Color(red: 0.30, green: 0.35, blue: 0.50)
-                        )
-                    }
-                    .padding(.horizontal, 20)
-                    
-                    Divider()
-                        .padding(.horizontal, 20)
-                    
-                    VStack(spacing: 16) {
-                        difficultyToggle(
-                            title: String(localized: "Hide Finished"),
-                            emoji: "✅",
-                            isOn: $hideFinishedPuzzles,
-                            color: Color(red: 0.24, green: 0.65, blue: 0.33)
-                        )
-                    }
-                    .padding(.horizontal, 20)
-                    
-                    Spacer()
-                }
-                .padding(.top, 16)
-            }
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .navigationBarTrailing) {
                     Button(String(localized: "Done")) {
                         showSettings = false
                     }
                     .font(.system(size: 17, weight: .semibold, design: .rounded))
+                    .foregroundStyle(.blue)
                 }
+                .padding(.horizontal, 20)
+                .padding(.top, 24)
+                
+                Text("Choose which difficulty levels to show")
+                    .font(.system(size: 16, weight: .medium, design: .rounded))
+                    .foregroundStyle(Color(red: 0.4, green: 0.4, blue: 0.45))
+                    .multilineTextAlignment(.center)
+                    .padding(.top, 8)
+                
+                VStack(spacing: 16) {
+                    difficultyToggle(
+                        title: String(localized: "Easy"),
+                        emoji: "🌻",
+                        isOn: $showEasy,
+                        color: Color(red: 0.45, green: 0.55, blue: 0.45)
+                    )
+                    
+                    difficultyToggle(
+                        title: String(localized: "Normal"),
+                        emoji: "🌲",
+                        isOn: $showNormal,
+                        color: Color(red: 0.35, green: 0.45, blue: 0.60)
+                    )
+                    
+                    difficultyToggle(
+                        title: String(localized: "Hard"),
+                        emoji: "💎",
+                        isOn: $showHard,
+                        color: Color(red: 0.30, green: 0.35, blue: 0.50)
+                    )
+                }
+                .padding(.horizontal, 20)
+                
+                Divider()
+                    .padding(.horizontal, 20)
+                
+                VStack(spacing: 16) {
+                    difficultyToggle(
+                        title: String(localized: "Hide Finished"),
+                        emoji: "✅",
+                        isOn: $hideFinishedPuzzles,
+                        color: Color(red: 0.24, green: 0.65, blue: 0.33)
+                    )
+                }
+                .padding(.horizontal, 20)
+                
+                Spacer()
             }
         }
-        .presentationDetents([.height(UIDevice.current.userInterfaceIdiom == .pad ? 550 : 500)])
+        .presentationDetents([.height(UIDevice.current.userInterfaceIdiom == .pad ? 600 : 550)])
+        .presentationDragIndicator(.visible)
     }
     
     private func difficultyToggle(title: String, emoji: String, isOn: Binding<Bool>, color: Color) -> some View {
