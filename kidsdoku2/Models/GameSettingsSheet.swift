@@ -9,8 +9,8 @@ import SwiftUI
 
 struct GameSettingsSheet: View {
     @Environment(\.dismiss) private var dismiss
-    @ObservedObject var soundManager = SoundManager.shared
-    @ObservedObject var hapticManager = HapticManager.shared
+    @EnvironmentObject var soundManager: SoundManager
+    @EnvironmentObject var hapticManager: HapticManager
     
     @Binding var selectedSymbolGroup: SymbolGroup
     @Binding var showNumbers: Bool
@@ -215,7 +215,7 @@ private struct GameSettingsToggle: View {
             
             Toggle("", isOn: $isOn)
                 .toggleStyle(StorybookToggleStyle())
-                .onChange(of: isOn) { _ in
+                .onChange(of: isOn) { oldValue, newValue in
                     onToggle?()
                 }
         }
@@ -228,12 +228,17 @@ private struct SymbolGroupCard: View {
     let isSelected: Bool
     let onSelect: () -> Void
     
+    private var previewSymbols: [String] {
+        Array(symbolGroup.symbols.dropFirst().prefix(6))
+    }
+    
     var body: some View {
         Button(action: onSelect) {
             VStack(spacing: 12) {
                 // Preview symbols in a mini grid
                 LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 3), spacing: 4) {
-                    ForEach(Array(symbolGroup.symbols.dropFirst().prefix(6).enumerated()), id: \.offset) { _, symbol in
+                    ForEach(previewSymbols.indices, id: \.self) { index in
+                        let symbol = previewSymbols[index]
                         Image(symbol)
                             .resizable()
                             .scaledToFit()
@@ -322,4 +327,6 @@ private struct StorybookToggleStyle: ToggleStyle {
         selectedSymbolGroup: .constant(.animals),
         showNumbers: .constant(false)
     )
+    .environmentObject(SoundManager.shared)
+    .environmentObject(HapticManager.shared)
 }
