@@ -122,10 +122,13 @@ struct PuzzleSelectionView: View {
         }
         // Update cache when completion data changes for this board size only
         .onChange(of: completionManager.completedPuzzles) { oldValue, newValue in
-            // Only update if a puzzle for the current size was completed
-            let oldForSize = oldValue.filter { $0.hasPrefix("\(size)-") }
-            let newForSize = newValue.filter { $0.hasPrefix("\(size)-") }
-            if oldForSize != newForSize {
+            // Efficient check: only update if a puzzle for the current size was affected
+            // Uses symmetricDifference to find changes without filtering entire sets
+            let sizePrefix = "\(size)-"
+            let changes = oldValue.symmetricDifference(newValue)
+            let hasRelevantChange = changes.contains { $0.hasPrefix(sizePrefix) }
+            
+            if hasRelevantChange {
                 updateCachedPuzzles()
             }
         }
