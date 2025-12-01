@@ -9,11 +9,14 @@ import SwiftUI
 
 struct GameSettingsSheet: View {
     @Environment(\.dismiss) private var dismiss
+    @EnvironmentObject private var appEnvironment: AppEnvironment
     
     @Binding var selectedSymbolGroup: SymbolGroup
     @Binding var showNumbers: Bool
     
     let availableSymbolGroups: [SymbolGroup]
+    
+    private static let twoColumnGrid = [GridItem(.flexible()), GridItem(.flexible())]
     
     init(selectedSymbolGroup: Binding<SymbolGroup>, showNumbers: Binding<Bool>) {
         self._selectedSymbolGroup = selectedSymbolGroup
@@ -22,7 +25,7 @@ struct GameSettingsSheet: View {
     }
     
     var body: some View {
-        NavigationView {
+        NavigationStack {
             ZStack {
                 // Background gradient
                 LinearGradient(
@@ -63,7 +66,7 @@ struct GameSettingsSheet: View {
                                     icon: "photo.on.rectangle.angled",
                                     title: String(localized: "Picture Theme")
                                 ) {
-                                    LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 2), spacing: 12) {
+                                    LazyVGrid(columns: Self.twoColumnGrid, spacing: 12) {
                                         ForEach(availableSymbolGroups, id: \.id) { group in
                                 SymbolGroupCard(
                                     symbolGroup: group,
@@ -85,22 +88,22 @@ struct GameSettingsSheet: View {
                                 title: String(localized: "Audio & Feedback")
                             ) {
                             GameSettingsToggle(
-                                icon: SoundManager.shared.isSoundEnabled ? "speaker.2.fill" : "speaker.slash.fill",
+                                icon: appEnvironment.soundManager.isSoundEnabled ? "speaker.2.fill" : "speaker.slash.fill",
                                 title: String(localized: "Sound Effects"),
                                 subtitle: String(localized: "Play sounds during gameplay"),
                                 isOn: Binding(
-                                    get: { SoundManager.shared.isSoundEnabled },
-                                    set: { SoundManager.shared.isSoundEnabled = $0 }
+                                    get: { appEnvironment.soundManager.isSoundEnabled },
+                                    set: { appEnvironment.soundManager.isSoundEnabled = $0 }
                                 )
                             )
                                 
                             GameSettingsToggle(
-                                icon: HapticManager.shared.isHapticsEnabled ? "hand.tap.fill" : "hand.tap",
+                                icon: appEnvironment.hapticManager.isHapticsEnabled ? "hand.tap.fill" : "hand.tap",
                                 title: String(localized: "Haptic Feedback"),
                                 subtitle: String(localized: "Vibration feedback for interactions"),
                                 isOn: Binding(
-                                    get: { HapticManager.shared.isHapticsEnabled },
-                                    set: { HapticManager.shared.isHapticsEnabled = $0 }
+                                    get: { appEnvironment.hapticManager.isHapticsEnabled },
+                                    set: { appEnvironment.hapticManager.isHapticsEnabled = $0 }
                                 )
                             )
                             }
@@ -165,15 +168,6 @@ private struct GameSettingsToggle: View {
     let title: String
     let subtitle: String
     @Binding var isOn: Bool
-    let onToggle: (() -> Void)?
-    
-    init(icon: String, title: String, subtitle: String, isOn: Binding<Bool>, onToggle: (() -> Void)? = nil) {
-        self.icon = icon
-        self.title = title
-        self.subtitle = subtitle
-        self._isOn = isOn
-        self.onToggle = onToggle
-    }
     
     var body: some View {
         HStack(spacing: 16) {
@@ -205,9 +199,6 @@ private struct GameSettingsToggle: View {
             
             Toggle("", isOn: $isOn)
                 .toggleStyle(StorybookToggleStyle())
-                .onChange(of: isOn) { oldValue, newValue in
-                    onToggle?()
-                }
         }
         .padding(.vertical, 8)
     }
@@ -218,15 +209,45 @@ private struct SymbolGroupCard: View {
     let isSelected: Bool
     let onSelect: () -> Void
     
-    private var previewSymbols: [String] {
-        Array(symbolGroup.symbols.dropFirst().prefix(6))
+    private let previewSymbols: [String]
+    private static let previewLimit = 6
+    private static let threeColumnGrid = [GridItem(.flexible()), GridItem(.flexible()), GridItem(.flexible())]
+    
+    init(symbolGroup: SymbolGroup, isSelected: Bool, onSelect: @escaping () -> Void) {
+        self.symbolGroup = symbolGroup
+        self.isSelected = isSelected
+        self.onSelect = onSelect
+        self.previewSymbols = Self.makePreviewSymbols(for: symbolGroup)
+    }
+    
+    private static func makePreviewSymbols(for group: SymbolGroup) -> [String] {
+        let symbols = group.symbols
+        guard !symbols.isEmpty else { return [] }
+        
+        var uniqueSymbols: [String] = []
+        var seen: Set<String> = []
+        
+        for symbol in symbols.dropFirst() where !symbol.isEmpty {
+            if seen.insert(symbol).inserted {
+                uniqueSymbols.append(symbol)
+            }
+            if uniqueSymbols.count == previewLimit {
+                return uniqueSymbols
+            }
+        }
+        
+        if uniqueSymbols.isEmpty, let fallback = symbols.first {
+            uniqueSymbols = [fallback]
+        }
+        
+        return uniqueSymbols
     }
     
     var body: some View {
         Button(action: onSelect) {
             VStack(spacing: 12) {
                 // Preview symbols in a mini grid
-                LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 3), spacing: 4) {
+                LazyVGrid(columns: Self.threeColumnGrid, spacing: 4) {
                     ForEach(previewSymbols.indices, id: \.self) { index in
                         let symbol = previewSymbols[index]
                         Image(symbol)
