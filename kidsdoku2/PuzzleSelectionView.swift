@@ -246,25 +246,6 @@ struct PuzzleSelectionView: View {
         )
     }
     
-    private func emptyPuzzleSlot(number: Int, theme: DifficultyTheme) -> some View {
-        ZStack {
-            RoundedRectangle(cornerRadius: 20, style: .continuous)
-                .fill(Color.white.opacity(0.2))
-                .frame(height: 100)
-            
-            VStack(alignment: .leading, spacing: 0) {
-                numberBadge(
-                    number: number,
-                    backgroundColor: Color.white.opacity(0.22),
-                    textColor: Color.white.opacity(0.65)
-                )
-                
-                Spacer()
-            }
-            .padding(12)
-        }
-    }
-    
     private func numberBadge(number: Int, backgroundColor: Color, textColor: Color) -> some View {
         ZStack(alignment: .topLeading) {
             UnevenRoundedRectangle(
