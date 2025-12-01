@@ -182,6 +182,15 @@ struct PuzzleSelectionView: View {
         applyFilters()
     }
     
+    private func handlePuzzleTap(_ puzzle: PremadePuzzle) {
+        let isLocked = puzzle.number > 3 && !appEnvironment.isPremium
+        if isLocked {
+            showPaywall = true
+        } else {
+            path.append(.premadePuzzle(puzzle: puzzle))
+        }
+    }
+    
     private var headerSection: some View {
         HStack(alignment: .center, spacing: 12) {
             Text("🦉")
@@ -226,14 +235,11 @@ struct PuzzleSelectionView: View {
                         puzzle: puzzle,
                         isPremium: appEnvironment.isPremium,
                         isCompleted: completionManager.isCompleted(puzzle: puzzle),
-                        rating: completionManager.rating(for: puzzle),
-                        onTap: {
-                            path.append(.premadePuzzle(puzzle: puzzle))
-                        },
-                        onLockedTap: {
-                            showPaywall = true
-                        }
+                        rating: completionManager.rating(for: puzzle)
                     )
+                    .onTapGesture {
+                        handlePuzzleTap(puzzle)
+                    }
                 }
             }
             .padding(.horizontal, 20)
@@ -422,8 +428,6 @@ private struct PuzzleButtonView: View, Equatable {
     let isPremium: Bool
     let isCompleted: Bool
     let rating: Double?
-    let onTap: () -> Void
-    let onLockedTap: () -> Void
     
     private var isLocked: Bool {
         puzzle.number > 3 && !isPremium
@@ -437,16 +441,7 @@ private struct PuzzleButtonView: View, Equatable {
     }
     
     var body: some View {
-        Button {
-            if isLocked {
-                onLockedTap()
-            } else {
-                onTap()
-            }
-        } label: {
-            content
-        }
-        .buttonStyle(.plain)
+        content
     }
     
     private var content: some View {
