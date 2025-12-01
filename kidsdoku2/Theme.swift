@@ -34,6 +34,29 @@ enum Theme {
         // Shared
         static let overlayBackground = Color.black.opacity(0.3)
         static let overlayBorder = Color.white.opacity(0.5)
+        
+        // Puzzle Selection
+        static let puzzleSelectionBackground = Color(red: 0.85, green: 0.88, blue: 0.92)
+        static let puzzleHeaderText = Color(red: 0.3, green: 0.3, blue: 0.35)
+        static let puzzleSettingsIcon = Color(red: 0.5, green: 0.5, blue: 0.55)
+        static let puzzleLoadingText = Color(red: 0.4, green: 0.4, blue: 0.45)
+        static let puzzleSettingsBackground = Color(red: 0.85, green: 0.88, blue: 0.92)
+        static let puzzleSettingsText = Color(red: 0.4, green: 0.4, blue: 0.45)
+        static let puzzleSettingsTitle = Color(red: 0.3, green: 0.3, blue: 0.35)
+        static let puzzleToggleHideFinished = Color(red: 0.24, green: 0.65, blue: 0.33)
+        
+        // Difficulty Colors
+        static let difficultyEasy = Color(red: 0.45, green: 0.55, blue: 0.45)
+        static let difficultyNormal = Color(red: 0.35, green: 0.45, blue: 0.60)
+        static let difficultyHard = Color(red: 0.30, green: 0.35, blue: 0.50)
+        
+        // Puzzle Button
+        static let puzzleButtonBackground = Color.white
+        static let puzzleButtonBadge = Color(red: 0.93, green: 0.90, blue: 0.78)
+        static let puzzleButtonBadgeText = Color(red: 0.38, green: 0.34, blue: 0.28)
+        static let puzzleCompletedBorder = Color(red: 0.24, green: 0.65, blue: 0.33)
+        static let puzzleCompletedIcon = Color(red: 0.24, green: 0.65, blue: 0.33)
+        static let puzzleLockOverlay = Color.black.opacity(0.7)
     }
     
     // MARK: - Layout
@@ -60,6 +83,14 @@ enum Theme {
         // Corner radii
         static let smallCornerRadius: CGFloat = 20
         static let largeCornerRadius: CGFloat = 30
+        
+        // Puzzle Selection
+        static let puzzleCardCornerRadius: CGFloat = 24
+        static let puzzleButtonCornerRadius: CGFloat = 20
+        static let puzzleButtonHeight: CGFloat = 100
+        static let puzzleSettingsCornerRadius: CGFloat = 16
+        static let puzzleSettingsSheetHeightPad: CGFloat = 600
+        static let puzzleSettingsSheetHeightPhone: CGFloat = 550
     }
 }
 

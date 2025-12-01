@@ -4,6 +4,14 @@ import RevenueCatUI
 struct DifficultyTheme {
     let name: String
     let backgroundColor: Color
+    
+    static func theme(for difficulty: PuzzleDifficulty) -> Color {
+        switch difficulty {
+        case .easy: return Theme.Colors.difficultyEasy
+        case .normal: return Theme.Colors.difficultyNormal
+        case .hard: return Theme.Colors.difficultyHard
+        }
+    }
 }
 
 /// Wrapper struct to cache puzzle completion status and rating
@@ -49,28 +57,28 @@ struct PuzzleSelectionView: View {
     private static let allThemes: [Int: [PuzzleDifficulty: DifficultyTheme]] = {
         [
             3: [
-                .easy: DifficultyTheme(name: String(localized: "Wakey Wakey"), backgroundColor: Color(red: 0.45, green: 0.55, blue: 0.45)),
-                .normal: DifficultyTheme(name: String(localized: "Breakfast Time"), backgroundColor: Color(red: 0.35, green: 0.45, blue: 0.60)),
-                .hard: DifficultyTheme(name: String(localized: "Garden Path"), backgroundColor: Color(red: 0.30, green: 0.35, blue: 0.50))
+                .easy: DifficultyTheme(name: String(localized: "Wakey Wakey"), backgroundColor: Theme.Colors.difficultyEasy),
+                .normal: DifficultyTheme(name: String(localized: "Breakfast Time"), backgroundColor: Theme.Colors.difficultyNormal),
+                .hard: DifficultyTheme(name: String(localized: "Garden Path"), backgroundColor: Theme.Colors.difficultyHard)
             ],
             4: [
-                .easy: DifficultyTheme(name: String(localized: "Sunny Meadow"), backgroundColor: Color(red: 0.45, green: 0.55, blue: 0.45)),
-                .normal: DifficultyTheme(name: String(localized: "Twisty Trails"), backgroundColor: Color(red: 0.35, green: 0.45, blue: 0.60)),
-                .hard: DifficultyTheme(name: String(localized: "Mushroom Grove"), backgroundColor: Color(red: 0.30, green: 0.35, blue: 0.50))
+                .easy: DifficultyTheme(name: String(localized: "Sunny Meadow"), backgroundColor: Theme.Colors.difficultyEasy),
+                .normal: DifficultyTheme(name: String(localized: "Twisty Trails"), backgroundColor: Theme.Colors.difficultyNormal),
+                .hard: DifficultyTheme(name: String(localized: "Mushroom Grove"), backgroundColor: Theme.Colors.difficultyHard)
             ],
             6: [
-                .easy: DifficultyTheme(name: String(localized: "Echo Cave"), backgroundColor: Color(red: 0.45, green: 0.55, blue: 0.45)),
-                .normal: DifficultyTheme(name: String(localized: "Snowy Slopes"), backgroundColor: Color(red: 0.35, green: 0.45, blue: 0.60)),
-                .hard: DifficultyTheme(name: String(localized: "Starry Summit"), backgroundColor: Color(red: 0.30, green: 0.35, blue: 0.50))
+                .easy: DifficultyTheme(name: String(localized: "Echo Cave"), backgroundColor: Theme.Colors.difficultyEasy),
+                .normal: DifficultyTheme(name: String(localized: "Snowy Slopes"), backgroundColor: Theme.Colors.difficultyNormal),
+                .hard: DifficultyTheme(name: String(localized: "Starry Summit"), backgroundColor: Theme.Colors.difficultyHard)
             ]
         ]
     }()
     
     private static let defaultTheme: [PuzzleDifficulty: DifficultyTheme] = {
         [
-            .easy: DifficultyTheme(name: String(localized: "Sunny Meadow"), backgroundColor: Color(red: 0.45, green: 0.55, blue: 0.45)),
-            .normal: DifficultyTheme(name: String(localized: "Whispering Woods"), backgroundColor: Color(red: 0.35, green: 0.45, blue: 0.60)),
-            .hard: DifficultyTheme(name: String(localized: "Crystal Caves"), backgroundColor: Color(red: 0.30, green: 0.35, blue: 0.50))
+            .easy: DifficultyTheme(name: String(localized: "Sunny Meadow"), backgroundColor: Theme.Colors.difficultyEasy),
+            .normal: DifficultyTheme(name: String(localized: "Whispering Woods"), backgroundColor: Theme.Colors.difficultyNormal),
+            .hard: DifficultyTheme(name: String(localized: "Crystal Caves"), backgroundColor: Theme.Colors.difficultyHard)
         ]
     }()
     
@@ -85,7 +93,7 @@ struct PuzzleSelectionView: View {
     
     var body: some View {
         ZStack {
-            Color(red: 0.85, green: 0.88, blue: 0.92)
+            Theme.Colors.puzzleSelectionBackground
                 .ignoresSafeArea()
             
             ScrollView {
@@ -98,7 +106,7 @@ struct PuzzleSelectionView: View {
                                 .scaleEffect(1.5)
                             Text("Loading puzzles...")
                                 .font(.system(size: 16, weight: .medium, design: .rounded))
-                                .foregroundStyle(Color(red: 0.4, green: 0.4, blue: 0.45))
+                                .foregroundStyle(Theme.Colors.puzzleLoadingText)
                         }
                         .frame(maxWidth: .infinity)
                         .padding(.top, 60)
@@ -233,7 +241,7 @@ struct PuzzleSelectionView: View {
             
             Text("Choose Your Adventure")
                 .font(.system(size: 28, weight: .bold, design: .rounded))
-                .foregroundStyle(Color(red: 0.3, green: 0.3, blue: 0.35))
+                .foregroundStyle(Theme.Colors.puzzleHeaderText)
             
             Spacer()
             
@@ -242,7 +250,7 @@ struct PuzzleSelectionView: View {
             } label: {
                 Image(systemName: "gearshape.fill")
                     .font(.system(size: 28))
-                    .foregroundStyle(Color(red: 0.5, green: 0.5, blue: 0.55))
+                    .foregroundStyle(Theme.Colors.puzzleSettingsIcon)
             }
         }
         .padding(.horizontal, 20)
@@ -282,7 +290,7 @@ struct PuzzleSelectionView: View {
             .padding(.bottom, 24)
         }
         .background(
-            RoundedRectangle(cornerRadius: 24, style: .continuous)
+            RoundedRectangle(cornerRadius: Theme.Layout.puzzleCardCornerRadius, style: .continuous)
                 .fill(theme.backgroundColor)
                 .shadow(color: Color.black.opacity(0.1), radius: 4, x: 0, y: 2)
         )
@@ -290,7 +298,7 @@ struct PuzzleSelectionView: View {
     
     private var difficultySettingsView: some View {
         ZStack {
-            Color(red: 0.85, green: 0.88, blue: 0.92)
+            Theme.Colors.puzzleSettingsBackground
                 .ignoresSafeArea()
             
             VStack(spacing: 24) {
@@ -308,7 +316,7 @@ struct PuzzleSelectionView: View {
                 
                 Text("Choose which difficulty levels to show")
                     .font(.system(size: 16, weight: .medium, design: .rounded))
-                    .foregroundStyle(Color(red: 0.4, green: 0.4, blue: 0.45))
+                    .foregroundStyle(Theme.Colors.puzzleSettingsText)
                     .multilineTextAlignment(.center)
                     .padding(.top, 8)
                 
@@ -317,21 +325,21 @@ struct PuzzleSelectionView: View {
                         title: String(localized: "Easy"),
                         emoji: "🌻",
                         isOn: $showEasy,
-                        color: Color(red: 0.45, green: 0.55, blue: 0.45)
+                        color: Theme.Colors.difficultyEasy
                     )
                     
                     difficultyToggle(
                         title: String(localized: "Normal"),
                         emoji: "🌲",
                         isOn: $showNormal,
-                        color: Color(red: 0.35, green: 0.45, blue: 0.60)
+                        color: Theme.Colors.difficultyNormal
                     )
                     
                     difficultyToggle(
                         title: String(localized: "Hard"),
                         emoji: "💎",
                         isOn: $showHard,
-                        color: Color(red: 0.30, green: 0.35, blue: 0.50)
+                        color: Theme.Colors.difficultyHard
                     )
                 }
                 .padding(.horizontal, 20)
@@ -344,7 +352,7 @@ struct PuzzleSelectionView: View {
                         title: String(localized: "Hide Finished"),
                         emoji: "✅",
                         isOn: $hideFinishedPuzzles,
-                        color: Color(red: 0.24, green: 0.65, blue: 0.33)
+                        color: Theme.Colors.puzzleToggleHideFinished
                     )
                 }
                 .padding(.horizontal, 20)
@@ -352,7 +360,7 @@ struct PuzzleSelectionView: View {
                 Spacer()
             }
         }
-        .presentationDetents([.height(isPad ? 600 : 550)])
+        .presentationDetents([.height(isPad ? Theme.Layout.puzzleSettingsSheetHeightPad : Theme.Layout.puzzleSettingsSheetHeightPhone)])
         .presentationDragIndicator(.visible)
     }
     
@@ -363,7 +371,7 @@ struct PuzzleSelectionView: View {
             
             Text(title)
                 .font(.system(size: 22, weight: .semibold, design: .rounded))
-                .foregroundStyle(Color(red: 0.3, green: 0.3, blue: 0.35))
+                .foregroundStyle(Theme.Colors.puzzleSettingsTitle)
             
             Spacer()
             
@@ -374,7 +382,7 @@ struct PuzzleSelectionView: View {
         .padding(.horizontal, 20)
         .padding(.vertical, 16)
         .background(
-            RoundedRectangle(cornerRadius: 16, style: .continuous)
+            RoundedRectangle(cornerRadius: Theme.Layout.puzzleSettingsCornerRadius, style: .continuous)
                 .fill(Color.white)
                 .shadow(color: Color.black.opacity(0.08), radius: 3, x: 0, y: 1)
         )
@@ -409,9 +417,9 @@ private struct PuzzleButtonView: View, Equatable {
     private var content: some View {
         ZStack {
             // Background
-            RoundedRectangle(cornerRadius: 20, style: .continuous)
-                .fill(Color.white.opacity(isLocked ? 0.5 : 0.9))
-                .frame(height: 100)
+            RoundedRectangle(cornerRadius: Theme.Layout.puzzleButtonCornerRadius, style: .continuous)
+                .fill(Theme.Colors.puzzleButtonBackground.opacity(isLocked ? 0.5 : 0.9))
+                .frame(height: Theme.Layout.puzzleButtonHeight)
             
             // Main content
             VStack(alignment: .leading, spacing: -26) {
@@ -451,12 +459,12 @@ private struct PuzzleButtonView: View, Equatable {
                 cornerRadii: .init(topLeading: 18, bottomLeading: 0, bottomTrailing: 142, topTrailing: 0),
                 style: .continuous
             )
-            .fill(Color(red: 0.93, green: 0.90, blue: 0.78))
+            .fill(Theme.Colors.puzzleButtonBadge)
             .frame(width: 46, height: 46)
             
             Text("\(puzzle.number)")
                 .font(.system(size: 18, weight: .bold, design: .rounded))
-                .foregroundStyle(Color(red: 0.38, green: 0.34, blue: 0.28))
+                .foregroundStyle(Theme.Colors.puzzleButtonBadgeText)
                 .padding(.top, 8)
                 .padding(.leading, 12)
         }
@@ -467,20 +475,20 @@ private struct PuzzleButtonView: View, Equatable {
         if isLocked {
             ZStack {
                 Circle().fill(Color.white)
-                Circle().stroke(Color(red: 0.95, green: 0.77, blue: 0.06), lineWidth: 3)
+                Circle().stroke(Theme.Colors.premiumGold, lineWidth: 3)
                 Image(systemName: "crown.fill")
                     .font(.system(size: 16, weight: .bold, design: .rounded))
-                    .foregroundStyle(Color(red: 0.95, green: 0.77, blue: 0.06))
+                    .foregroundStyle(Theme.Colors.premiumGold)
             }
             .frame(width: 34, height: 34)
             .padding(.top, 4)
         } else if isCompleted {
             ZStack {
                 Circle().fill(Color.white)
-                Circle().stroke(Color(red: 0.24, green: 0.65, blue: 0.33), lineWidth: 3)
+                Circle().stroke(Theme.Colors.puzzleCompletedBorder, lineWidth: 3)
                 Image(systemName: "checkmark")
                     .font(.system(size: 16, weight: .bold, design: .rounded))
-                    .foregroundStyle(Color(red: 0.24, green: 0.65, blue: 0.33))
+                    .foregroundStyle(Theme.Colors.puzzleCompletedIcon)
             }
             .frame(width: 34, height: 34)
             .padding(.top, 4)
@@ -490,7 +498,7 @@ private struct PuzzleButtonView: View, Equatable {
     private var lockOverlay: some View {
         ZStack {
             Circle()
-                .fill(Color.black.opacity(0.7))
+                .fill(Theme.Colors.puzzleLockOverlay)
                 .frame(width: 50, height: 50)
             Image(systemName: "lock.fill")
                 .font(.system(size: 24))
