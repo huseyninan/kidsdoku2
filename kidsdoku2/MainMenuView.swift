@@ -22,15 +22,17 @@ struct MainMenuView: View {
             .edgesIgnoringSafeArea(.all)
 
             VStack(spacing: 0) {
-                Color.clear
-                    .frame(height: isRegularWidth ? 70 : 0)
-                    .ignoresSafeArea(.all, edges: .top)
+                // Top spacing for regular width devices
+                if isRegularWidth {
+                    Spacer()
+                        .frame(height: 70)
+                }
                 
                 headerSection
                     .frame(maxWidth: isRegularWidth ? 680 : .infinity)
                     .padding(.horizontal, 10.0)
                 
-                Color.clear
+                Spacer()
                     .frame(height: isRegularWidth ? 50 : 24)
 
                 questButtonsSection
@@ -42,7 +44,7 @@ struct MainMenuView: View {
                 footerSection
                     .frame(maxWidth: .infinity)
             }
-            .edgesIgnoringSafeArea(.bottom)
+            .ignoresSafeArea(edges: .bottom)
         }
         .fullScreenCover(isPresented: $isShowingTutorial) {
             TutorialView()
@@ -149,7 +151,7 @@ struct MainMenuView: View {
                         subtitle: option.subtitle
                     ) {
                         Analytics.logEvent(AnalyticsEventScreenView, parameters: [
-                            AnalyticsParameterScreenName: "test_screen \(option.size)"
+                            AnalyticsParameterScreenName: "puzzle_selection_\(option.size)x\(option.size)"
                         ])
                         path.append(.puzzleSelection(size: option.size))
                     }
@@ -206,11 +208,6 @@ struct MainMenuView: View {
         }
         
         return options
-    }
-    
-    private var regularWidthColumns: [GridItem] {
-        let columnCount = questOptions.count > 1 ? 2 : 1
-        return Array(repeating: GridItem(.flexible(), spacing: 24), count: columnCount)
     }
     
     private var isRegularWidth: Bool {
