@@ -17,6 +17,7 @@ struct PuzzleSelectionView: View {
     @State private var cachedPuzzlesByDifficulty: [(PuzzleDifficulty, [PremadePuzzle])] = []
     @State private var basePuzzlesByDifficulty: [PuzzleDifficulty: [PremadePuzzle]] = [:]
     @State private var isLoading = true
+    @State private var isPad = UIDevice.current.userInterfaceIdiom == .pad
     @AppStorage("showEasyDifficulty") private var showEasy = true
     @AppStorage("showNormalDifficulty") private var showNormal = true
     @AppStorage("showHardDifficulty") private var showHard = true
@@ -314,7 +315,7 @@ struct PuzzleSelectionView: View {
                 Spacer()
             }
         }
-        .presentationDetents([.height(UIDevice.current.userInterfaceIdiom == .pad ? 600 : 550)])
+        .presentationDetents([.height(isPad ? 600 : 550)])
         .presentationDragIndicator(.visible)
     }
     
