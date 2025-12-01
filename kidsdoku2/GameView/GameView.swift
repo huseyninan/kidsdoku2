@@ -52,9 +52,6 @@ struct GameView: View {
                 .frame(width: proxy.size.width, height: proxy.size.height, alignment: .top)
                 
                 if viewModel.showCelebration {
-                    ConfettiView()
-                        .allowsHitTesting(false)
-                    
                     CelebrationOverlay(
                         rating: viewModel.calculateStars(),
                         mistakeCount: viewModel.mistakeCount,
