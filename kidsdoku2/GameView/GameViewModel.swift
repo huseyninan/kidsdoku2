@@ -461,6 +461,14 @@ final class GameViewModel: ObservableObject {
         return String(format: "%02d:%02d", minutes, seconds)
     }
     
+    func showInitialMessage() {
+        let paletteTitle = selectedSymbolGroup.paletteTitle
+        message = KidSudokuMessage(
+            text: String(localized: "Select a symbol from \(paletteTitle)"),
+            type: .info
+        )
+    }
+    
     deinit {
         // Cancel timer and task without calling MainActor methods
         timerCancellable?.cancel()
