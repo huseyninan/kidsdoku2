@@ -33,7 +33,6 @@ struct PuzzleSelectionView: View {
     @State private var showSettings = false
     @State private var showPaywall = false
     @State private var cachedPuzzlesByDifficulty: [(PuzzleDifficulty, [PuzzleWithStatus])] = []
-    @State private var basePuzzlesByDifficulty: [PuzzleDifficulty: [PremadePuzzle]] = [:]
     @State private var isLoading = true
     @State private var isPad = UIDevice.current.userInterfaceIdiom == .pad
     @AppStorage("showEasyDifficulty") private var showEasy = true
@@ -157,34 +156,21 @@ struct PuzzleSelectionView: View {
     
     /// Loads puzzles asynchronously on a background thread to avoid main thread hitches
     private func loadPuzzlesAsync() async {
-        let currentSize = size
-        
-        // Load base puzzles from store on background thread (one-time fetch)
-        let baseResult = await Task.detached(priority: .userInitiated) {
-            var base: [PuzzleDifficulty: [PremadePuzzle]] = [:]
-            for difficulty in PuzzleDifficulty.allCases {
-                base[difficulty] = PremadePuzzleStore.shared.puzzles(for: currentSize, difficulty: difficulty)
-            }
-            return base
-        }.value
-        
-        // Cache the base puzzles
-        basePuzzlesByDifficulty = baseResult
-        
-        // Apply current filters
+        // Apply filters directly from PremadePuzzleStore (no duplicate caching)
         applyFilters()
         isLoading = false
     }
     
-    /// Applies visibility and completion filters to the cached base puzzles
-    /// Pre-computes completion status and rating to avoid redundant lookups during rendering
+    /// Applies visibility and completion filters directly from PremadePuzzleStore
+    /// Only creates PuzzleWithStatus wrappers for visible difficulties (lazy approach)
     private func applyFilters() {
         // Capture completion data once to avoid repeated property access
         let completedSet = completionManager.completedPuzzles
         let ratingsDict = completionManager.puzzleRatings
+        let currentSize = size
         
         cachedPuzzlesByDifficulty = PuzzleDifficulty.allCases.compactMap { difficulty in
-            // Check difficulty visibility
+            // Check difficulty visibility first - skip fetching if not shown
             let shouldShow: Bool
             switch difficulty {
             case .easy: shouldShow = showEasy
@@ -193,13 +179,12 @@ struct PuzzleSelectionView: View {
             }
             guard shouldShow else { return nil }
             
-            // Get from cache (already loaded)
-            guard let puzzles = basePuzzlesByDifficulty[difficulty], !puzzles.isEmpty else {
-                return nil
-            }
+            // Fetch directly from store (no duplicate caching)
+            let puzzles = PremadePuzzleStore.shared.puzzles(for: currentSize, difficulty: difficulty)
+            guard !puzzles.isEmpty else { return nil }
             
             // Pre-compute completion status and rating for each puzzle
-            // Direct access to Set/Dictionary avoids method call overhead and redundant key generation
+            // Direct access to Set/Dictionary avoids method call overhead
             var puzzlesWithStatus = puzzles.map { puzzle in
                 let key = "\(puzzle.size)-\(puzzle.difficulty.rawValue)-\(puzzle.number)"
                 return PuzzleWithStatus(
@@ -218,10 +203,9 @@ struct PuzzleSelectionView: View {
         }
     }
     
-    /// Synchronous update for filter changes - uses cached base puzzles
+    /// Synchronous update for filter changes
     private func updateCachedPuzzles() {
-        // Skip if base cache not yet loaded
-        guard !basePuzzlesByDifficulty.isEmpty else { return }
+        guard !isLoading else { return }
         applyFilters()
     }
     

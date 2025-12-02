@@ -345,54 +345,38 @@ struct BoardGridView: View {
 ---
 
 ### 6. PuzzleSelectionView Caches Entire Puzzle List
-**File**: `PuzzleSelectionView.swift` (Lines 35-36, 159-177)  
+**File**: `PuzzleSelectionView.swift` (Lines 35, 157-210)  
 **Severity**: Low-Medium  
-**Type**: Memory
+**Type**: Memory  
+**Status**: ✅ FIXED
 
 **Issue**:
-All puzzles for a size are loaded into memory at once:
-
-```swift
-private func loadPuzzlesAsync() async {
-    let currentSize = size
-    
-    let baseResult = await Task.detached(priority: .userInitiated) {
-        var base: [PuzzleDifficulty: [PremadePuzzle]] = [:]
-        for difficulty in PuzzleDifficulty.allCases {
-            base[difficulty] = PremadePuzzleStore.shared.puzzles(for: currentSize, difficulty: difficulty)
-        }
-        return base
-    }.value
-    
-    basePuzzlesByDifficulty = baseResult
-    // ...
-}
-```
+All puzzles for a size were cached in a separate `basePuzzlesByDifficulty` dictionary, duplicating data already held by `PremadePuzzleStore`.
 
 **Problem**:
-- Loads all puzzles (potentially 100+) into memory
-- Each `PremadePuzzle` contains full board arrays
-- Only displays ~10-20 puzzles at a time
+- Duplicate storage of puzzle references in view state
+- Created `PuzzleWithStatus` wrappers for all difficulties even when hidden
+- Unnecessary memory overhead
 
-**Fix**:
-Implement lazy loading or pagination:
+**Fix Applied**:
+Removed duplicate caching - fetch directly from `PremadePuzzleStore` and only create wrappers for visible difficulties:
 ```swift
-// In PremadePuzzleStore
-func puzzles(for size: Int, difficulty: PuzzleDifficulty, range: Range<Int>) -> [PremadePuzzle] {
-    let all = puzzles(for: size, difficulty: difficulty)
-    let start = min(range.lowerBound, all.count)
-    let end = min(range.upperBound, all.count)
-    return Array(all[start..<end])
-}
+@State private var cachedPuzzlesByDifficulty: [(PuzzleDifficulty, [PuzzleWithStatus])] = []
+// Removed: @State private var basePuzzlesByDifficulty: [PuzzleDifficulty: [PremadePuzzle]] = [:]
 
-// In PuzzleSelectionView
-private func loadPuzzlesAsync() async {
-    // Load only first 20 puzzles per difficulty
-    // Load more on scroll
+private func applyFilters() {
+    cachedPuzzlesByDifficulty = PuzzleDifficulty.allCases.compactMap { difficulty in
+        // Check difficulty visibility first - skip fetching if not shown
+        guard shouldShow else { return nil }
+        
+        // Fetch directly from store (no duplicate caching)
+        let puzzles = PremadePuzzleStore.shared.puzzles(for: currentSize, difficulty: difficulty)
+        // ... create PuzzleWithStatus wrappers only for visible puzzles
+    }
 }
 ```
 
-**Impact**: Higher memory usage, slower initial load
+**Impact**: Reduced memory usage, only processes visible difficulties
 
 ---
 
@@ -836,7 +820,7 @@ func testResetClearsProgress()
 
 ### Long Term (Next Release)
 10. ✅ **COMPLETED** - Implement incremental completion checking (Medium Priority Issue #4)
-11. ⬜ Add lazy loading for puzzle list (Medium Priority Issue #6)
+11. ✅ **COMPLETED** - Remove duplicate puzzle caching (Medium Priority Issue #6)
 12. ⬜ Split PremadePuzzleStore into multiple files (Code Quality Issue #15)
 13. ⬜ Add comprehensive accessibility labels (Low Priority Issue #11)
 14. ⬜ Implement proper error handling strategy (Code Quality Issue #14)
