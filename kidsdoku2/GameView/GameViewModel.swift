@@ -408,7 +408,7 @@ final class GameViewModel: ObservableObject {
             updateFilledCount()
             updateCorrectCount(at: randomCell.position, oldValue: oldValue, newValue: randomCell.solution)
             highlightedValue = randomCell.solution
-            selectedPosition = randomCell.position
+            selectedPaletteSymbol = randomCell.solution
             message = KidSudokuMessage(text: String(localized: "Here's a hint! ✨"), type: .info)
             soundManager.play(.hint, volume: 0.6)
             
@@ -427,7 +427,6 @@ final class GameViewModel: ObservableObject {
         puzzle.updateCell(at: lastMove.position, with: lastMove.oldValue)
         updateFilledCount()
         updateCorrectCount(at: lastMove.position, oldValue: currentValue, newValue: lastMove.oldValue)
-        selectedPosition = lastMove.position
         highlightedValue = lastMove.oldValue
         message = nil
     }
