@@ -152,6 +152,7 @@ struct GlowingHighlight: View {
     let size: CGFloat
 
     @State private var animate = false
+    @State private var isVisible = false
 
     var body: some View {
         let cornerRadius = size * 0.28
@@ -205,12 +206,36 @@ struct GlowingHighlight: View {
                 .opacity(animate ? 1 : 0.7)
         }
         .scaleEffect(animate ? 1.06 : 0.94)
-        .animation(.easeInOut(duration: 1.4).repeatForever(autoreverses: true), value: animate)
         .onAppear {
-            animate = true
+            isVisible = true
+            startAnimation()
         }
         .onDisappear {
-            animate = false
+            // Stop animation immediately without triggering new animation
+            isVisible = false
+            var transaction = Transaction()
+            transaction.disablesAnimations = true
+            withTransaction(transaction) {
+                animate = false
+            }
+        }
+    }
+    
+    private func startAnimation() {
+        guard isVisible else { return }
+        withAnimation(.easeInOut(duration: 1.4)) {
+            animate = true
+        }
+        // Schedule the reverse animation
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.4) {
+            guard isVisible else { return }
+            withAnimation(.easeInOut(duration: 1.4)) {
+                animate = false
+            }
+            // Schedule the next cycle
+            DispatchQueue.main.asyncAfter(deadline: .now() + 1.4) {
+                startAnimation()
+            }
         }
     }
 }

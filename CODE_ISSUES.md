@@ -212,7 +212,12 @@ class PuzzleCompletionManager: ObservableObject {
 - **Description:** The `GlowingHighlight` view uses `repeatForever` animation that continues even when the cell is no longer highlighted. The `onDisappear` sets `animate = false` but the animation may still be running in memory.
 - **Impact:** Unnecessary CPU/GPU usage, battery drain.
 - **Suggested Fix:** Use explicit animation control with `withAnimation` and proper cleanup.
-- **Status:** [ ] Not Fixed
+- **Status:** [x] Fixed
+- **Fix Applied:**
+  - Replaced `.animation(.repeatForever)` modifier with explicit `withAnimation` calls in a manual animation loop
+  - Added `isVisible` state flag to track view visibility
+  - `startAnimation()` function checks `isVisible` before each animation cycle, stopping when view disappears
+  - `onDisappear` uses `withTransaction` with `disablesAnimations = true` to immediately stop animation without triggering new transitions
 
 ### PERF-005: Puzzle Generation on Background Thread May Block UI
 - **Severity:** Medium
