@@ -197,8 +197,10 @@ final class GameViewModel: ObservableObject {
                 updateFilledCount()
                 updateCorrectCount(at: cell.position, oldValue: oldValue, newValue: paletteSymbol)
                 highlightedValue = paletteSymbol
-                soundManager.play(.correctPlacement, volume: 0.6)
-                checkForCompletion()
+                let isCompleted = checkForCompletion()
+                if !isCompleted {
+                    soundManager.play(.correctPlacement, volume: 0.6)
+                }
             } else {
                 mistakeCount += 1
                 guard paletteSymbol < config.symbols.count else {
@@ -280,8 +282,10 @@ final class GameViewModel: ObservableObject {
             updateCorrectCount(at: position, oldValue: oldValue, newValue: symbolIndex)
             highlightedValue = symbolIndex
             message = nil
-            soundManager.play(.correctPlacement, volume: 0.6)
-            checkForCompletion()
+            let isCompleted = checkForCompletion()
+            if !isCompleted {
+                soundManager.play(.correctPlacement, volume: 0.6)
+            }
         } else {
             mistakeCount += 1
             guard symbolIndex < config.symbols.count else {
@@ -307,9 +311,11 @@ final class GameViewModel: ObservableObject {
         return ""
     }
 
-    private func checkForCompletion() {
+    private func checkForCompletion() -> Bool {
         // Use incremental tracking instead of O(n²) iteration
-        guard correctCellCount == totalCellCount else { return }
+        guard correctCellCount == totalCellCount else {
+            return false
+        }
         showCelebration = true
         stopTimer()
         message = KidSudokuMessage(text: String(localized: "Amazing! Puzzle complete!"), type: .success)
@@ -320,6 +326,8 @@ final class GameViewModel: ObservableObject {
             PuzzleCompletionManager.shared.markCompleted(puzzle: premadePuzzle)
             PuzzleCompletionManager.shared.setRating(calculateStars(), for: premadePuzzle)
         }
+        
+        return showCelebration
     }
 
     private func isValid(_ value: Int, at position: KidSudokuPosition) -> Bool {
@@ -411,10 +419,12 @@ final class GameViewModel: ObservableObject {
             highlightedValue = randomCell.solution
             selectedPaletteSymbol = randomCell.solution
             message = KidSudokuMessage(text: String(localized: "Here's a hint! ✨"), type: .info)
-            soundManager.play(.hint, volume: 0.6)
             
             // Check if this completes the puzzle
-            checkForCompletion()
+            let isCompleted = checkForCompletion()
+            if !isCompleted {
+                soundManager.play(.hint, volume: 0.6)
+            }
         }
     }
     
