@@ -24,7 +24,7 @@
     "_developerTeamID" : "Y586KYPQWL",
     "_disableDialogs" : false,
     "_failTransactionsEnabled" : false,
-    "_lastSynchronizedDate" : 784974155.65269494,
+    "_lastSynchronizedDate" : 786391878.83956802,
     "_locale" : "en_US",
     "_renewalBillingIssuesEnabled" : false,
     "_storefront" : "USA",
@@ -48,7 +48,7 @@
           "codeOffers" : [
 
           ],
-          "displayPrice" : "7.99",
+          "displayPrice" : "24.99",
           "familyShareable" : true,
           "groupNumber" : 2,
           "internalID" : "6755350594",
@@ -76,7 +76,7 @@
           "codeOffers" : [
 
           ],
-          "displayPrice" : "0.99",
+          "displayPrice" : "2.99",
           "familyShareable" : true,
           "groupNumber" : 1,
           "internalID" : "6755350564",
@@ -91,6 +91,54 @@
           "productID" : "monthly_sub_1",
           "recurringSubscriptionPeriod" : "P1M",
           "referenceName" : "Monthly subscription",
+          "subscriptionGroupID" : "21833869",
+          "type" : "RecurringSubscription",
+          "winbackOffers" : [
+
+          ]
+        },
+        {
+          "adHocOffers" : [
+
+          ],
+          "codeOffers" : [
+
+          ],
+          "displayPrice" : "2.99",
+          "familyShareable" : false,
+          "groupNumber" : 3,
+          "internalID" : "6756026325",
+          "introductoryOffer" : null,
+          "localizations" : [
+
+          ],
+          "productID" : "monthly_sub_2",
+          "recurringSubscriptionPeriod" : "P1M",
+          "referenceName" : "monthly subscription 2",
+          "subscriptionGroupID" : "21833869",
+          "type" : "RecurringSubscription",
+          "winbackOffers" : [
+
+          ]
+        },
+        {
+          "adHocOffers" : [
+
+          ],
+          "codeOffers" : [
+
+          ],
+          "displayPrice" : "24.99",
+          "familyShareable" : false,
+          "groupNumber" : 4,
+          "internalID" : "6756025119",
+          "introductoryOffer" : null,
+          "localizations" : [
+
+          ],
+          "productID" : "yearly_sub_2",
+          "recurringSubscriptionPeriod" : "P1Y",
+          "referenceName" : "yearly subscription 2",
           "subscriptionGroupID" : "21833869",
           "type" : "RecurringSubscription",
           "winbackOffers" : [
