@@ -111,10 +111,13 @@ struct MainMenuView: View {
                         title: option.title,
                         subtitle: option.subtitle
                     ) {
-                        Analytics.logEvent(AnalyticsEventScreenView, parameters: [
-                            AnalyticsParameterScreenName: "puzzle_selection_\(option.size)x\(option.size)"
-                        ])
-                        path.append(.puzzleSelection(size: option.size))
+                        let size = option.size
+                        path.append(.puzzleSelection(size: size))
+                        Task { @MainActor in
+                            Analytics.logEvent(AnalyticsEventScreenView, parameters: [
+                                AnalyticsParameterScreenName: "puzzle_selection_\(size)x\(size)"
+                            ])
+                        }
                     }
                 }
             }
