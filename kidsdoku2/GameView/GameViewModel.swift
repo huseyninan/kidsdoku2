@@ -314,18 +314,19 @@ final class GameViewModel: ObservableObject {
 
     private func isValid(_ value: Int, at position: KidSudokuPosition) -> Bool {
         let size = config.size
+        let cells = puzzleCells  // Cache once to avoid repeated computed property access
 
         for index in 0..<size {
             if index != position.col {
                 let rowCellIndex = position.row * size + index
-                if puzzleCells[rowCellIndex].value == value {
+                if cells[rowCellIndex].value == value {
                     return false
                 }
             }
 
             if index != position.row {
                 let columnCellIndex = index * size + position.col
-                if puzzleCells[columnCellIndex].value == value {
+                if cells[columnCellIndex].value == value {
                     return false
                 }
             }
@@ -338,7 +339,7 @@ final class GameViewModel: ObservableObject {
             for col in startCol..<(startCol + config.subgridCols) {
                 if row == position.row && col == position.col { continue }
                 let index = row * size + col
-                if puzzleCells[index].value == value {
+                if cells[index].value == value {
                     return false
                 }
             }
