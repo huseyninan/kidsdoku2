@@ -22,6 +22,7 @@ final class GameViewModel: ObservableObject {
     @Published private(set) var currentConfig: KidSudokuConfig
     @Published private(set) var filledCellCount: Int = 0
     @Published private(set) var isGeneratingPuzzle = false
+    private var correctCellCount: Int = 0
     private(set) var validSymbolIndices: [Int] = []
     @Published private(set) var paletteSymbols: [(index: Int, symbol: String)] = []
 
@@ -109,6 +110,7 @@ final class GameViewModel: ObservableObject {
             await MainActor.run {
                 self.puzzle = generatedPuzzle
                 self.filledCellCount = generatedPuzzle.cells.filter { $0.value != nil }.count
+                self.correctCellCount = generatedPuzzle.cells.filter { $0.value == $0.solution }.count
                 self.isGeneratingPuzzle = false
                 self.cacheSymbolData()
             }
@@ -124,6 +126,7 @@ final class GameViewModel: ObservableObject {
         self.selectedSymbolGroupRawValue = config.symbolGroup.rawValue
         self.currentConfig = config
         self.filledCellCount = puzzle.cells.filter { $0.value != nil }.count
+        self.correctCellCount = puzzle.cells.filter { $0.value == $0.solution }.count
         cacheSymbolData()
     }
 
@@ -158,6 +161,7 @@ final class GameViewModel: ObservableObject {
                 await MainActor.run {
                     self.puzzle = generatedPuzzle
                     self.filledCellCount = generatedPuzzle.cells.filter { $0.value != nil }.count
+                    self.correctCellCount = generatedPuzzle.cells.filter { $0.value == $0.solution }.count
                     self.isGeneratingPuzzle = false
                     self.cacheSymbolData()
                     self.message = KidSudokuMessage(text: String(localized: "New puzzle ready!"), type: .info)
@@ -187,9 +191,11 @@ final class GameViewModel: ObservableObject {
         // If a palette symbol is selected and the cell is empty, fill it
         if let paletteSymbol = selectedPaletteSymbol, cell.value == nil {
             if isValid(paletteSymbol, at: cell.position) {
-                moveHistory.append((position: cell.position, oldValue: cell.value))
+                let oldValue = cell.value
+                moveHistory.append((position: cell.position, oldValue: oldValue))
                 puzzle.updateCell(at: cell.position, with: paletteSymbol)
                 updateFilledCount()
+                updateCorrectCount(at: cell.position, oldValue: oldValue, newValue: paletteSymbol)
                 highlightedValue = paletteSymbol
                 soundManager.play(.correctPlacement, volume: 0.6)
                 checkForCompletion()
@@ -228,9 +234,11 @@ final class GameViewModel: ObservableObject {
         guard cell.isFixed == false else { return }
 
         if cell.value != nil {
-            moveHistory.append((position: position, oldValue: cell.value))
+            let oldValue = cell.value
+            moveHistory.append((position: position, oldValue: oldValue))
             puzzle.updateCell(at: position, with: nil)
             updateFilledCount()
+            updateCorrectCount(at: position, oldValue: oldValue, newValue: nil)
         }
     }
     
@@ -255,16 +263,20 @@ final class GameViewModel: ObservableObject {
         guard cell.isFixed == false else { return }
 
         if cell.value == symbolIndex {
-            moveHistory.append((position: position, oldValue: cell.value))
+            let oldValue = cell.value
+            moveHistory.append((position: position, oldValue: oldValue))
             puzzle.updateCell(at: position, with: nil)
             updateFilledCount()
+            updateCorrectCount(at: position, oldValue: oldValue, newValue: nil)
             return
         }
 
         if isValid(symbolIndex, at: position) {
-            moveHistory.append((position: position, oldValue: cell.value))
+            let oldValue = cell.value
+            moveHistory.append((position: position, oldValue: oldValue))
             puzzle.updateCell(at: position, with: symbolIndex)
             updateFilledCount()
+            updateCorrectCount(at: position, oldValue: oldValue, newValue: symbolIndex)
             highlightedValue = symbolIndex
             message = nil
             soundManager.play(.correctPlacement, volume: 0.6)
@@ -295,11 +307,8 @@ final class GameViewModel: ObservableObject {
     }
 
     private func checkForCompletion() {
-        for cell in puzzleCells {
-            guard let value = cell.value, value == cell.solution else {
-                return
-            }
-        }
+        // Use incremental tracking instead of O(n²) iteration
+        guard correctCellCount == totalCellCount else { return }
         showCelebration = true
         stopTimer()
         message = KidSudokuMessage(text: String(localized: "Amazing! Puzzle complete!"), type: .success)
@@ -364,6 +373,19 @@ final class GameViewModel: ObservableObject {
         filledCellCount = puzzleCells.filter { $0.value != nil }.count
     }
     
+    /// Updates correct cell count incrementally when a cell value changes
+    private func updateCorrectCount(at position: KidSudokuPosition, oldValue: Int?, newValue: Int?) {
+        let cell = puzzle.cell(at: position)
+        let wasCorrect = oldValue == cell.solution
+        let isCorrect = newValue == cell.solution
+        
+        if wasCorrect && !isCorrect {
+            correctCellCount -= 1
+        } else if !wasCorrect && isCorrect {
+            correctCellCount += 1
+        }
+    }
+    
     var totalCellCount: Int {
         config.size * config.size
     }
@@ -380,9 +402,11 @@ final class GameViewModel: ObservableObject {
         // Pick a random empty cell
         if let randomCell = emptyCells.randomElement() {
             hintCount += 1
-            moveHistory.append((position: randomCell.position, oldValue: randomCell.value))
+            let oldValue = randomCell.value
+            moveHistory.append((position: randomCell.position, oldValue: oldValue))
             puzzle.updateCell(at: randomCell.position, with: randomCell.solution)
             updateFilledCount()
+            updateCorrectCount(at: randomCell.position, oldValue: oldValue, newValue: randomCell.solution)
             highlightedValue = randomCell.solution
             selectedPosition = randomCell.position
             message = KidSudokuMessage(text: String(localized: "Here's a hint! ✨"), type: .info)
@@ -399,8 +423,10 @@ final class GameViewModel: ObservableObject {
             return
         }
         
+        let currentValue = puzzle.cell(at: lastMove.position).value
         puzzle.updateCell(at: lastMove.position, with: lastMove.oldValue)
         updateFilledCount()
+        updateCorrectCount(at: lastMove.position, oldValue: currentValue, newValue: lastMove.oldValue)
         selectedPosition = lastMove.position
         highlightedValue = lastMove.oldValue
         message = nil
