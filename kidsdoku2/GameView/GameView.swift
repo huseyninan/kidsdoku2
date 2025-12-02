@@ -256,23 +256,44 @@ struct GameView: View {
     }
 
     private func messageBanner(_ message: KidSudokuMessage) -> some View {
-        HStack(spacing: 6) {
+        HStack(alignment: .center, spacing: 10) {
             if let symbolImageName = message.symbolImageName {
-                Image(symbolImageName)
-                    .resizable()
-                    .scaledToFit()
-                    .frame(width: 24, height: 24)
+                ZStack {
+                    RoundedRectangle(cornerRadius: 12, style: .continuous)
+                        .fill(Color.white.opacity(0.95))
+                    Image(symbolImageName)
+                        .resizable()
+                        .scaledToFit()
+                        .padding(4)
+                }
+                .frame(width: 32, height: 32)
             }
             Text(message.text)
-                .font(.system(size: 16, weight: .semibold, design: .rounded))
-                .foregroundStyle(Color.white)
+                .font(.system(size: 15, weight: .semibold, design: .rounded))
+                .foregroundStyle(Color(red: 0.37, green: 0.28, blue: 0.18))
+                .multilineTextAlignment(.leading)
         }
+        .padding(.horizontal, 16)
         .padding(.vertical, 10)
-        .padding(.horizontal, 18)
         .background(
-            Capsule()
-                .fill(color(for: message.type))
+            RoundedRectangle(cornerRadius: 22, style: .continuous)
+                .fill(
+                    LinearGradient(
+                        colors: [
+                            color(for: message.type).opacity(0.2),
+                            color(for: message.type).opacity(0.4)
+                        ],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    )
+                )
         )
+        .overlay(
+            RoundedRectangle(cornerRadius: 22, style: .continuous)
+                .stroke(Color.white.opacity(0.7), lineWidth: 1)
+        )
+        .shadow(color: Color.black.opacity(0.12), radius: 8, x: 0, y: 4)
+        .padding(.horizontal, 16)
         .transition(.move(edge: .top).combined(with: .opacity))
     }
 
