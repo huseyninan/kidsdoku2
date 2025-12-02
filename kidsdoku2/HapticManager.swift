@@ -15,7 +15,17 @@ final class HapticManager: ObservableObject {
     
     @AppStorage("hapticsEnabled") var isHapticsEnabled: Bool = true
     
-    private init() {}
+    // Pre-initialized generators for better performance
+    private let lightGenerator = UIImpactFeedbackGenerator(style: .light)
+    private let mediumGenerator = UIImpactFeedbackGenerator(style: .medium)
+    private let heavyGenerator = UIImpactFeedbackGenerator(style: .heavy)
+    private let notificationGenerator = UINotificationFeedbackGenerator()
+    private let selectionGenerator = UISelectionFeedbackGenerator()
+    
+    private init() {
+        // Prepare all generators on initialization
+        prepareAllGenerators()
+    }
     
     enum HapticType {
         case light
@@ -27,37 +37,46 @@ final class HapticManager: ObservableObject {
         case selection
     }
     
+    /// Prepares all haptic generators for immediate use
+    private func prepareAllGenerators() {
+        lightGenerator.prepare()
+        mediumGenerator.prepare()
+        heavyGenerator.prepare()
+        notificationGenerator.prepare()
+        selectionGenerator.prepare()
+    }
+    
     func trigger(_ type: HapticType) {
         guard isHapticsEnabled else { return }
         
         switch type {
         case .light:
-            let generator = UIImpactFeedbackGenerator(style: .light)
-            generator.impactOccurred()
+            lightGenerator.impactOccurred()
+            lightGenerator.prepare() // Prepare for next use
             
         case .medium:
-            let generator = UIImpactFeedbackGenerator(style: .medium)
-            generator.impactOccurred()
+            mediumGenerator.impactOccurred()
+            mediumGenerator.prepare()
             
         case .heavy:
-            let generator = UIImpactFeedbackGenerator(style: .heavy)
-            generator.impactOccurred()
+            heavyGenerator.impactOccurred()
+            heavyGenerator.prepare()
             
         case .success:
-            let generator = UINotificationFeedbackGenerator()
-            generator.notificationOccurred(.success)
+            notificationGenerator.notificationOccurred(.success)
+            notificationGenerator.prepare()
             
         case .warning:
-            let generator = UINotificationFeedbackGenerator()
-            generator.notificationOccurred(.warning)
+            notificationGenerator.notificationOccurred(.warning)
+            notificationGenerator.prepare()
             
         case .error:
-            let generator = UINotificationFeedbackGenerator()
-            generator.notificationOccurred(.error)
+            notificationGenerator.notificationOccurred(.error)
+            notificationGenerator.prepare()
             
         case .selection:
-            let generator = UISelectionFeedbackGenerator()
-            generator.selectionChanged()
+            selectionGenerator.selectionChanged()
+            selectionGenerator.prepare()
         }
     }
 }

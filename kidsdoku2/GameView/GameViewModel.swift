@@ -195,6 +195,12 @@ final class GameViewModel: ObservableObject {
                 checkForCompletion()
             } else {
                 mistakeCount += 1
+                guard paletteSymbol < config.symbols.count else {
+                    print("⚠️ Symbol index \(paletteSymbol) out of bounds (max: \(config.symbols.count - 1))")
+                    message = KidSudokuMessage(text: String(localized: "Invalid symbol!"), type: .warning)
+                    soundManager.play(.incorrectPlacement, volume: 0.5)
+                    return
+                }
                 let symbol = config.symbols[paletteSymbol]
                 message = KidSudokuMessage(text: String(localized: "That \(symbol) is already there!"), type: .warning)
                 soundManager.play(.incorrectPlacement, volume: 0.5)
@@ -265,6 +271,12 @@ final class GameViewModel: ObservableObject {
             checkForCompletion()
         } else {
             mistakeCount += 1
+            guard symbolIndex < config.symbols.count else {
+                print("⚠️ Symbol index \(symbolIndex) out of bounds (max: \(config.symbols.count - 1))")
+                message = KidSudokuMessage(text: String(localized: "Invalid symbol!"), type: .warning)
+                soundManager.play(.incorrectPlacement, volume: 0.5)
+                return
+            }
             let symbol = config.symbols[symbolIndex]
             message = KidSudokuMessage(text: String(localized: "That \(symbol) is already there!"), type: .warning)
             soundManager.play(.incorrectPlacement, volume: 0.5)
@@ -273,6 +285,10 @@ final class GameViewModel: ObservableObject {
 
     func displaySymbol(for cell: KidSudokuCell) -> String {
         if let value = cell.value {
+            guard value < config.symbols.count else {
+                print("⚠️ Symbol value \(value) out of bounds (max: \(config.symbols.count - 1))")
+                return "?"
+            }
             return config.symbols[value]
         }
         return ""
@@ -443,6 +459,12 @@ final class GameViewModel: ObservableObject {
         let minutes = Int(elapsedTime) / 60
         let seconds = Int(elapsedTime) % 60
         return String(format: "%02d:%02d", minutes, seconds)
+    }
+    
+    deinit {
+        // Cancel timer and task without calling MainActor methods
+        timerCancellable?.cancel()
+        generationTask?.cancel()
     }
 }
 
