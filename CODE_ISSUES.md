@@ -108,7 +108,12 @@ class PuzzleCompletionManager: ObservableObject {
 - **Description:** The timer closure captures `self` with `[weak self]`, which is correct. However, the `timerCancellable` is stored as a property, and if the view model is not properly deallocated, the timer continues running.
 - **Impact:** Memory leak if GameView is dismissed but timer keeps running.
 - **Suggested Fix:** Ensure `stopTimer()` is called in `deinit` (already done) and verify the view properly triggers cleanup on disappear.
-- **Status:** [ ] Not Fixed
+- **Status:** [x] Fixed
+- **Fix Applied:**
+  - Enhanced `deinit` to explicitly set `timerCancellable` and `generationTask` to `nil` after cancellation
+  - Improved `stopTimer()` with guard to avoid redundant operations
+  - Added `scenePhase` handling in `GameView` to pause timer when app goes to background and resume when active
+  - Timer now properly stops on: view disappear, app background, puzzle completion, and view model deallocation
 
 ### BUG-003: SettingsView Uses Deprecated onChange Signature
 - **Severity:** High

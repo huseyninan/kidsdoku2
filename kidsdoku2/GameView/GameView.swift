@@ -5,6 +5,7 @@ struct GameView: View {
     @StateObject private var viewModel: GameViewModel
     private let hapticManager = HapticManager.shared
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.scenePhase) private var scenePhase
     
     @State private var showSettings: Bool = false
 
@@ -92,6 +93,19 @@ struct GameView: View {
         }
         .onDisappear {
             viewModel.stopTimer()
+        }
+        .onChange(of: scenePhase) { _, newPhase in
+            // Pause timer when app goes to background, resume when active
+            switch newPhase {
+            case .active:
+                if !viewModel.showCelebration {
+                    viewModel.startTimer()
+                }
+            case .inactive, .background:
+                viewModel.stopTimer()
+            @unknown default:
+                break
+            }
         }
     }
 

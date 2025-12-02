@@ -466,12 +466,17 @@ final class GameViewModel: ObservableObject {
         timerCancellable = Timer.publish(every: 1.0, on: .main, in: .common)
             .autoconnect()
             .sink { [weak self] _ in
-                guard let self = self, !self.showCelebration else { return }
+                guard let self = self else {
+                    // Self was deallocated, timer will be cleaned up
+                    return
+                }
+                guard !self.showCelebration else { return }
                 self.elapsedTime += 1
             }
     }
     
     func stopTimer() {
+        guard isTimerRunning || timerCancellable != nil else { return }
         isTimerRunning = false
         timerCancellable?.cancel()
         timerCancellable = nil
@@ -497,9 +502,14 @@ final class GameViewModel: ObservableObject {
     }
     
     deinit {
-        // Cancel timer and task without calling MainActor methods
+        // Cancel timer subscription to prevent any further callbacks
+        // Note: AnyCancellable.cancel() is thread-safe and can be called from deinit
         timerCancellable?.cancel()
+        timerCancellable = nil
+        
+        // Cancel any ongoing puzzle generation task
         generationTask?.cancel()
+        generationTask = nil
     }
 }
 
