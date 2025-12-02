@@ -239,6 +239,7 @@ final class GameViewModel: ObservableObject {
             puzzle.updateCell(at: position, with: nil)
             updateFilledCount()
             updateCorrectCount(at: position, oldValue: oldValue, newValue: nil)
+            selectedPosition = nil
         }
     }
     
