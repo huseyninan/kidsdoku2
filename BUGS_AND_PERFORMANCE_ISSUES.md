@@ -212,40 +212,27 @@ private func isValid(_ value: Int, at position: KidSudokuPosition) -> Bool {
 ---
 
 ### 2. RunningFoxView Creates Infinite Tasks
-**File**: `RunningFoxView.swift` (Lines 26-29, 33-38, 40-61)  
+**File**: `RunningFoxView.swift` (Lines 25-30, 34-42, 45-70)  
 **Severity**: Medium  
-**Type**: Memory/Performance
+**Type**: Memory/Performance  
+**Status**: ✅ FIXED
 
 **Issue**:
-Two concurrent infinite loops without proper cancellation:
-
-```swift
-.task {
-    async let frames: () = animateFrames()
-    await runFoxLoop()
-    await frames  // Never reached
-}
-
-private func animateFrames() async {
-    while !Task.isCancelled {
-        try? await Task.sleep(nanoseconds: 100_000_000)
-        currentFrame = (currentFrame + 1) % foxFrames.count
-    }
-}
-```
+Two concurrent infinite loops without proper cancellation.
 
 **Problem**:
-- `await frames` is never reached because `runFoxLoop()` never completes
-- Both tasks run indefinitely
-- If view is recreated multiple times, tasks accumulate
+- `await frames` was never reached because `runFoxLoop()` never completes
+- Both tasks ran indefinitely
+- If view was recreated multiple times, tasks accumulated
 - Silent error swallowing with `try?`
 
-**Fix**:
+**Fix Applied**:
+Used `TaskGroup` for proper concurrent task management and explicit cancellation handling:
 ```swift
-.task { @MainActor in
+.task {
     await withTaskGroup(of: Void.self) { group in
-        group.addTask { await self.animateFrames() }
-        group.addTask { await self.runFoxLoop() }
+        group.addTask { await animateFrames() }
+        group.addTask { await runFoxLoop() }
     }
 }
 
@@ -261,7 +248,7 @@ private func animateFrames() async {
 }
 ```
 
-**Impact**: Memory leak, CPU usage
+**Impact**: Proper task cancellation, no memory leak or CPU waste
 
 ## 🟢 Medium Priority Issues
 
@@ -843,7 +830,7 @@ func testResetClearsProgress()
 ### Short Term (This Month)
 5. ✅ **COMPLETED** - Optimize haptic feedback with prepared generators
 6. ✅ **COMPLETED** - Cache cells array in validation function (High Priority Issue #1)
-7. ⬜ Fix RunningFoxView task management (High Priority Issue #2)
+7. ✅ **COMPLETED** - Fix RunningFoxView task management (High Priority Issue #2)
 8. ⬜ Add error handling for sound loading (High Priority Issue #3)
 9. ⬜ Add basic unit tests (Code Quality Issue #16)
 
