@@ -256,32 +256,44 @@ struct GameView: View {
     }
 
     private func messageBanner(_ message: KidSudokuMessage) -> some View {
-        HStack(alignment: .center, spacing: 10) {
+        let accentColor = color(for: message.type)
+        
+        return HStack(alignment: .center, spacing: 10) {
             if let symbolImageName = message.symbolImageName {
                 ZStack {
-                    RoundedRectangle(cornerRadius: 12, style: .continuous)
-                        .fill(Color.white.opacity(0.95))
+                    RoundedRectangle(cornerRadius: 14, style: .continuous)
+                        .fill(
+                            LinearGradient(
+                                colors: [
+                                    Color.white.opacity(0.98),
+                                    Color(red: 1.0, green: 0.96, blue: 0.9)
+                                ],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            )
+                        )
                     Image(symbolImageName)
                         .resizable()
                         .scaledToFit()
-                        .padding(4)
+                        .padding(5)
                 }
-                .frame(width: 32, height: 32)
+                .frame(width: 36, height: 36)
+                .shadow(color: accentColor.opacity(0.3), radius: 6, x: 0, y: 3)
             }
             Text(message.text)
-                .font(.system(size: 15, weight: .semibold, design: .rounded))
+                .font(.system(size: 16, weight: .semibold, design: .rounded))
                 .foregroundStyle(Color(red: 0.37, green: 0.28, blue: 0.18))
                 .multilineTextAlignment(.leading)
         }
-        .padding(.horizontal, 16)
-        .padding(.vertical, 10)
+        .padding(.horizontal, 18)
+        .padding(.vertical, 12)
         .background(
-            RoundedRectangle(cornerRadius: 22, style: .continuous)
+            RoundedRectangle(cornerRadius: 24, style: .continuous)
                 .fill(
                     LinearGradient(
                         colors: [
-                            color(for: message.type).opacity(0.2),
-                            color(for: message.type).opacity(0.4)
+                            Color(red: 1.0, green: 0.97, blue: 0.91),
+                            accentColor.opacity(0.7)
                         ],
                         startPoint: .topLeading,
                         endPoint: .bottomTrailing
@@ -289,10 +301,21 @@ struct GameView: View {
                 )
         )
         .overlay(
-            RoundedRectangle(cornerRadius: 22, style: .continuous)
-                .stroke(Color.white.opacity(0.7), lineWidth: 1)
+            RoundedRectangle(cornerRadius: 24, style: .continuous)
+                .stroke(
+                    LinearGradient(
+                        colors: [
+                            Color.white.opacity(0.9),
+                            accentColor.opacity(0.8)
+                        ],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    ),
+                    lineWidth: 1.2
+                )
         )
-        .shadow(color: Color.black.opacity(0.12), radius: 8, x: 0, y: 4)
+        .shadow(color: accentColor.opacity(0.35), radius: 14, x: 0, y: 8)
+        .shadow(color: Color.black.opacity(0.15), radius: 4, x: 0, y: 1)
         .padding(.horizontal, 16)
         .transition(.move(edge: .top).combined(with: .opacity))
     }
