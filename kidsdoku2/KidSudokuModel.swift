@@ -188,6 +188,13 @@ struct KidSudokuMessage: Identifiable {
     let id = UUID()
     let text: String
     let type: KidSudokuMessageType
+    let symbolImageName: String?
+    
+    init(text: String, type: KidSudokuMessageType, symbolImageName: String? = nil) {
+        self.text = text
+        self.type = type
+        self.symbolImageName = symbolImageName
+    }
 }
 
 enum KidSudokuRoute: Hashable {

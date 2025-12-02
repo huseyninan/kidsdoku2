@@ -201,8 +201,8 @@ final class GameViewModel: ObservableObject {
                     soundManager.play(.incorrectPlacement, volume: 0.5)
                     return
                 }
-                let symbol = config.symbols[paletteSymbol]
-                message = KidSudokuMessage(text: String(localized: "That \(symbol) is already there!"), type: .warning)
+                let symbolImageName = config.symbols[paletteSymbol]
+                message = KidSudokuMessage(text: String(localized: "That symbol is already there!"), type: .warning, symbolImageName: symbolImageName)
                 soundManager.play(.incorrectPlacement, volume: 0.5)
             }
             return
@@ -277,8 +277,8 @@ final class GameViewModel: ObservableObject {
                 soundManager.play(.incorrectPlacement, volume: 0.5)
                 return
             }
-            let symbol = config.symbols[symbolIndex]
-            message = KidSudokuMessage(text: String(localized: "That \(symbol) is already there!"), type: .warning)
+            let symbolImageName = config.symbols[symbolIndex]
+            message = KidSudokuMessage(text: String(localized: "That symbol is already there!"), type: .warning, symbolImageName: symbolImageName)
             soundManager.play(.incorrectPlacement, volume: 0.5)
         }
     }

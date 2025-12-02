@@ -255,16 +255,24 @@ struct GameView: View {
     }
 
     private func messageBanner(_ message: KidSudokuMessage) -> some View {
-        Text(message.text)
-            .font(.system(size: 16, weight: .semibold, design: .rounded))
-            .foregroundStyle(Color.white)
-            .padding(.vertical, 10)
-            .padding(.horizontal, 18)
-            .background(
-                Capsule()
-                    .fill(color(for: message.type))
-            )
-            .transition(.move(edge: .top).combined(with: .opacity))
+        HStack(spacing: 6) {
+            if let symbolImageName = message.symbolImageName {
+                Image(symbolImageName)
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 24, height: 24)
+            }
+            Text(message.text)
+                .font(.system(size: 16, weight: .semibold, design: .rounded))
+                .foregroundStyle(Color.white)
+        }
+        .padding(.vertical, 10)
+        .padding(.horizontal, 18)
+        .background(
+            Capsule()
+                .fill(color(for: message.type))
+        )
+        .transition(.move(edge: .top).combined(with: .opacity))
     }
 
     private func color(for type: KidSudokuMessageType) -> Color {
