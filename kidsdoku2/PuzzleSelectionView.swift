@@ -156,21 +156,63 @@ struct PuzzleSelectionView: View {
     
     /// Loads puzzles asynchronously on a background thread to avoid main thread hitches
     private func loadPuzzlesAsync() async {
-        // Apply filters directly from PremadePuzzleStore (no duplicate caching)
-        applyFilters()
+        let result = await computeFilteredPuzzles()
+        cachedPuzzlesByDifficulty = result
         isLoading = false
     }
     
-    /// Applies visibility and completion filters directly from PremadePuzzleStore
-    /// Only creates PuzzleWithStatus wrappers for visible difficulties (lazy approach)
-    private func applyFilters() {
+    /// Computes filtered puzzles on a background thread
+    private func computeFilteredPuzzles() async -> [(PuzzleDifficulty, [PuzzleWithStatus])] {
+        // Capture values for background processing
+        let completedSet = completionManager.completedPuzzles
+        let ratingsDict = completionManager.puzzleRatings
+        let currentSize = size
+        let currentShowEasy = showEasy
+        let currentShowNormal = showNormal
+        let currentShowHard = showHard
+        let currentHideFinished = hideFinishedPuzzles
+        
+        return await Task.detached(priority: .userInitiated) {
+            PuzzleDifficulty.allCases.compactMap { difficulty in
+                // Check difficulty visibility first
+                let shouldShow: Bool
+                switch difficulty {
+                case .easy: shouldShow = currentShowEasy
+                case .normal: shouldShow = currentShowNormal
+                case .hard: shouldShow = currentShowHard
+                }
+                guard shouldShow else { return nil }
+                
+                let puzzles = PremadePuzzleStore.shared.puzzles(for: currentSize, difficulty: difficulty)
+                guard !puzzles.isEmpty else { return nil }
+                
+                var puzzlesWithStatus = puzzles.map { puzzle in
+                    let key = "\(puzzle.size)-\(puzzle.difficulty.rawValue)-\(puzzle.number)"
+                    return PuzzleWithStatus(
+                        puzzle: puzzle,
+                        isCompleted: completedSet.contains(key),
+                        rating: ratingsDict[key]
+                    )
+                }
+                
+                if currentHideFinished {
+                    puzzlesWithStatus = puzzlesWithStatus.filter { !$0.isCompleted }
+                }
+                
+                return puzzlesWithStatus.isEmpty ? nil : (difficulty, puzzlesWithStatus)
+            }
+        }.value
+    }
+    
+    /// Synchronous update for filter changes (runs on main thread for responsiveness)
+    private func updateCachedPuzzles() {
+        guard !isLoading else { return }
         // Capture completion data once to avoid repeated property access
         let completedSet = completionManager.completedPuzzles
         let ratingsDict = completionManager.puzzleRatings
         let currentSize = size
         
         cachedPuzzlesByDifficulty = PuzzleDifficulty.allCases.compactMap { difficulty in
-            // Check difficulty visibility first - skip fetching if not shown
             let shouldShow: Bool
             switch difficulty {
             case .easy: shouldShow = showEasy
@@ -179,12 +221,9 @@ struct PuzzleSelectionView: View {
             }
             guard shouldShow else { return nil }
             
-            // Fetch directly from store (no duplicate caching)
             let puzzles = PremadePuzzleStore.shared.puzzles(for: currentSize, difficulty: difficulty)
             guard !puzzles.isEmpty else { return nil }
             
-            // Pre-compute completion status and rating for each puzzle
-            // Direct access to Set/Dictionary avoids method call overhead
             var puzzlesWithStatus = puzzles.map { puzzle in
                 let key = "\(puzzle.size)-\(puzzle.difficulty.rawValue)-\(puzzle.number)"
                 return PuzzleWithStatus(
@@ -194,19 +233,12 @@ struct PuzzleSelectionView: View {
                 )
             }
             
-            // Apply hide-finished filter using cached status
             if hideFinishedPuzzles {
                 puzzlesWithStatus = puzzlesWithStatus.filter { !$0.isCompleted }
             }
             
             return puzzlesWithStatus.isEmpty ? nil : (difficulty, puzzlesWithStatus)
         }
-    }
-    
-    /// Synchronous update for filter changes
-    private func updateCachedPuzzles() {
-        guard !isLoading else { return }
-        applyFilters()
     }
     
     private func handlePuzzleTap(_ puzzle: PremadePuzzle) {

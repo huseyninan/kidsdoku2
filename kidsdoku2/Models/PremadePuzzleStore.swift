@@ -30,8 +30,22 @@
 
 import Foundation
 
-struct PremadePuzzleStore {
+final class PremadePuzzleStore {
     static let shared = PremadePuzzleStore()
+    
+    /// Pre-computed index for O(1) lookup
+    private var indexedPuzzles: [Int: [PuzzleDifficulty: [PremadePuzzle]]] = [:]
+    
+    private init() {
+        // Build index eagerly at app startup
+        for (size, puzzles) in [(3, threeByThreePuzzles), (4, fourByFourPuzzles), (6, sixBySixPuzzles)] {
+            var byDifficulty: [PuzzleDifficulty: [PremadePuzzle]] = [:]
+            for difficulty in PuzzleDifficulty.allCases {
+                byDifficulty[difficulty] = puzzles.filter { $0.difficulty == difficulty }
+            }
+            indexedPuzzles[size] = byDifficulty
+        }
+    }
     
     // MARK: - 3x3 Puzzles
     private let threeByThreePuzzles: [PremadePuzzle] = [
@@ -1997,7 +2011,7 @@ struct PremadePuzzleStore {
     }
     
     func puzzles(for size: Int, difficulty: PuzzleDifficulty) -> [PremadePuzzle] {
-        return puzzles(for: size).filter { $0.difficulty == difficulty }
+        return indexedPuzzles[size]?[difficulty] ?? []
     }
 }
 
