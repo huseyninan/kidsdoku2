@@ -17,7 +17,6 @@ struct SettingsView: View {
     @State private var showResetAlert = false
     @State private var resetType: ResetType?
     @State private var showAbout = false
-    @State private var showPrivacyPolicy = false
     
     enum ResetType {
         case all
@@ -160,15 +159,6 @@ struct SettingsView: View {
                             ) {
                                 showAbout = true
                             }
-                            
-                            SettingsButton(
-                                icon: "hand.raised.fill",
-                                title: String(localized: "Privacy Policy"),
-                                subtitle: String(localized: "How we protect your data"),
-                                color: Color(red: 0.45, green: 0.55, blue: 0.65)
-                            ) {
-                                showPrivacyPolicy = true
-                            }
                         }
                         
                         // Version info
@@ -192,9 +182,6 @@ struct SettingsView: View {
         }
         .sheet(isPresented: $showAbout) {
             AboutView()
-        }
-        .sheet(isPresented: $showPrivacyPolicy) {
-            PrivacyPolicyView()
         }
     }
     
@@ -465,110 +452,6 @@ struct AboutSection: View {
             Spacer()
         }
         .padding(16)
-        .background(
-            RoundedRectangle(cornerRadius: 16, style: .continuous)
-                .fill(Color.white.opacity(0.7))
-                .shadow(color: .black.opacity(0.08), radius: 8, x: 0, y: 4)
-        )
-    }
-}
-
-// MARK: - Privacy Policy View
-struct PrivacyPolicyView: View {
-    @Environment(\.dismiss) var dismiss
-    
-    var body: some View {
-        NavigationView {
-            ZStack {
-                LinearGradient(
-                    colors: [
-                        Color(red: 0.95, green: 0.93, blue: 0.87),
-                        Color(red: 0.90, green: 0.88, blue: 0.82)
-                    ],
-                    startPoint: .top,
-                    endPoint: .bottom
-                )
-                .ignoresSafeArea()
-                
-                ScrollView {
-                    VStack(alignment: .leading, spacing: 20) {
-                        Image(systemName: "hand.raised.fill")
-                            .font(.system(size: 60))
-                            .foregroundColor(Color(red: 0.7, green: 0.35, blue: 0.3))
-                            .frame(maxWidth: .infinity)
-                            .padding(.top, 20)
-                        
-                        Text("Privacy Policy")
-                            .font(.system(size: 36, weight: .heavy, design: .rounded))
-                            .foregroundStyle(Color(red: 0.4, green: 0.25, blue: 0.15))
-                            .frame(maxWidth: .infinity)
-                        
-                        PrivacySection(
-                            title: String(localized: "Your Privacy Matters"),
-                            content: String(localized: "KidsDoku is designed with children's privacy and safety as our top priority.")
-                        )
-                        
-                        PrivacySection(
-                            title: String(localized: "Data Collection"),
-                            content: String(localized: "We do NOT collect, store, or share any personal information. All game progress is stored locally on your device.")
-                        )
-                        
-                        PrivacySection(
-                            title: String(localized: "No Third-Party Services"),
-                            content: String(localized: "This app does not use any analytics, advertising, or third-party tracking services.")
-                        )
-                        
-                        PrivacySection(
-                            title: String(localized: "Offline First"),
-                            content: String(localized: "KidsDoku works completely offline. No internet connection is required or used during gameplay.")
-                        )
-                        
-                        PrivacySection(
-                            title: String(localized: "Parental Control"),
-                            content: String(localized: "Parents maintain full control over app data through device settings and can reset all progress at any time through the Settings menu.")
-                        )
-                        
-                        Text("Last Updated: November 2025")
-                            .font(.system(size: 14, weight: .medium, design: .rounded))
-                            .foregroundColor(.gray)
-                            .frame(maxWidth: .infinity)
-                            .padding(.top, 16)
-                            .padding(.bottom, 24)
-                    }
-                    .padding(.horizontal, 24)
-                }
-            }
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Button(String(localized: "Done")) {
-                        dismiss()
-                    }
-                    .font(.system(size: 17, weight: .semibold, design: .rounded))
-                    .foregroundColor(Color(red: 0.7, green: 0.35, blue: 0.3))
-                }
-            }
-        }
-    }
-}
-
-struct PrivacySection: View {
-    let title: String
-    let content: String
-    
-    var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text(title)
-                .font(.system(size: 20, weight: .bold, design: .rounded))
-                .foregroundStyle(Color(red: 0.4, green: 0.25, blue: 0.15))
-            
-            Text(content)
-                .font(.system(size: 16, weight: .medium, design: .rounded))
-                .foregroundStyle(Color.gray)
-                .fixedSize(horizontal: false, vertical: true)
-        }
-        .padding(16)
-        .frame(maxWidth: .infinity, alignment: .leading)
         .background(
             RoundedRectangle(cornerRadius: 16, style: .continuous)
                 .fill(Color.white.opacity(0.7))
