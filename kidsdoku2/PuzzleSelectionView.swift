@@ -388,6 +388,9 @@ struct PuzzleSelectionView: View {
             Text(title)
                 .font(.system(size: 22, weight: .semibold, design: .rounded))
                 .foregroundStyle(Theme.Colors.puzzleSettingsTitle)
+                .multilineTextAlignment(.leading)
+                .fixedSize(horizontal: false, vertical: true)
+                .layoutPriority(1)
             
             Spacer()
             
