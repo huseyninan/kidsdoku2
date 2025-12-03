@@ -255,8 +255,8 @@ struct PuzzleSelectionView: View {
             // LazyVGrid with adaptive columns for responsive layout
             // Minimum 100pt ensures buttons remain usable on small screens
             // Adapts to 2-4 columns depending on device width
-            let columns = [GridItem(.adaptive(minimum: 80, maximum: 150), spacing: 12)]
-            LazyVGrid(columns: columns, spacing: 12) {
+            let columns = [GridItem(.adaptive(minimum: 100, maximum: 150), spacing: 16)]
+            LazyVGrid(columns: columns, spacing: 16) {
                 ForEach(puzzles) { puzzleWithStatus in
                     PuzzleButtonView(
                         puzzle: puzzleWithStatus.puzzle,
@@ -270,7 +270,7 @@ struct PuzzleSelectionView: View {
                 }
             }
             .drawingGroup() // Optimize rendering by rasterizing the grid
-            .padding(.horizontal, 20)
+            .padding(.horizontal, 12)
             .padding(.bottom, 24)
         }
         .background(
