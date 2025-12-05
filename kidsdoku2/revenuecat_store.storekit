@@ -24,7 +24,7 @@
     "_developerTeamID" : "Y586KYPQWL",
     "_disableDialogs" : false,
     "_failTransactionsEnabled" : false,
-    "_lastSynchronizedDate" : 786391878.83956802,
+    "_lastSynchronizedDate" : 786613879.59251499,
     "_locale" : "en_US",
     "_renewalBillingIssuesEnabled" : false,
     "_storefront" : "USA",
@@ -48,69 +48,37 @@
           "codeOffers" : [
 
           ],
-          "displayPrice" : "24.99",
-          "familyShareable" : true,
-          "groupNumber" : 2,
-          "internalID" : "6755350594",
-          "introductoryOffer" : null,
-          "localizations" : [
-            {
-              "description" : "Unlock all Puzzles on yearly base",
-              "displayName" : "Yearly Plan",
-              "locale" : "en_US"
-            }
-          ],
-          "productID" : "annual_sub_1",
-          "recurringSubscriptionPeriod" : "P1Y",
-          "referenceName" : "Annual Subscription",
-          "subscriptionGroupID" : "21833869",
-          "type" : "RecurringSubscription",
-          "winbackOffers" : [
-
-          ]
-        },
-        {
-          "adHocOffers" : [
-
-          ],
-          "codeOffers" : [
-
-          ],
-          "displayPrice" : "2.99",
-          "familyShareable" : true,
-          "groupNumber" : 1,
-          "internalID" : "6755350564",
-          "introductoryOffer" : null,
-          "localizations" : [
-            {
-              "description" : "Unlock all puzzles monthly base",
-              "displayName" : "Month Plan",
-              "locale" : "en_US"
-            }
-          ],
-          "productID" : "monthly_sub_1",
-          "recurringSubscriptionPeriod" : "P1M",
-          "referenceName" : "Monthly subscription",
-          "subscriptionGroupID" : "21833869",
-          "type" : "RecurringSubscription",
-          "winbackOffers" : [
-
-          ]
-        },
-        {
-          "adHocOffers" : [
-
-          ],
-          "codeOffers" : [
-
-          ],
           "displayPrice" : "2.99",
           "familyShareable" : false,
           "groupNumber" : 3,
           "internalID" : "6756026325",
           "introductoryOffer" : null,
           "localizations" : [
-
+            {
+              "description" : "Unlock all puzzles monthly base",
+              "displayName" : "Monthly Plan",
+              "locale" : "en_US"
+            },
+            {
+              "description" : "Sblocca tutti i puzzle su base mensile",
+              "displayName" : "Piano Mensile",
+              "locale" : "it"
+            },
+            {
+              "description" : "Aylık tabanlı tüm bulmacaların kilidini aç",
+              "displayName" : "Aylık Plan",
+              "locale" : "tr"
+            },
+            {
+              "description" : "Desbloquear todos los puzles con base mensual",
+              "displayName" : "Plan Mensual",
+              "locale" : "es_ES"
+            },
+            {
+              "description" : "Разблокировать все головоломки на ежемесячной основе",
+              "displayName" : "Ежемесячный план",
+              "locale" : "ru"
+            }
           ],
           "productID" : "monthly_sub_2",
           "recurringSubscriptionPeriod" : "P1M",
@@ -134,7 +102,31 @@
           "internalID" : "6756025119",
           "introductoryOffer" : null,
           "localizations" : [
-
+            {
+              "description" : "Sblocca tutti i puzzle per un anno",
+              "displayName" : "Piano Annuale",
+              "locale" : "it"
+            },
+            {
+              "description" : "Bir ay boyunca tüm bulmacaların kilidini aç",
+              "displayName" : "Aylık Plan",
+              "locale" : "tr"
+            },
+            {
+              "description" : "Unlock all puzzles for one year",
+              "displayName" : "Annual Plan",
+              "locale" : "en_US"
+            },
+            {
+              "description" : "Разблокировать все головоломки на один год",
+              "displayName" : "Годовой план",
+              "locale" : "ru"
+            },
+            {
+              "description" : "Desbloquear todos los puzles durante un año",
+              "displayName" : "Plan Anual",
+              "locale" : "es_ES"
+            }
           ],
           "productID" : "yearly_sub_2",
           "recurringSubscriptionPeriod" : "P1Y",
