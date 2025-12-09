@@ -32,6 +32,7 @@ struct PuzzleSelectionView: View {
     
     @State private var showSettings = false
     @State private var showPaywall = false
+    @State private var showParentalGate = false
     @State private var cachedPuzzlesByDifficulty: [(PuzzleDifficulty, [PuzzleWithStatus])] = []
     @State private var isLoading = true
     @State private var isPad = UIDevice.current.userInterfaceIdiom == .pad
@@ -145,6 +146,11 @@ struct PuzzleSelectionView: View {
         .sheet(isPresented: $showSettings) {
             difficultySettingsView
         }
+        .fullScreenCover(isPresented: $showParentalGate) {
+            ParentalGateView {
+                showPaywall = true
+            }
+        }
         .sheet(isPresented: $showPaywall) {
             PaywallView()
                 .onPurchaseCompleted { customerInfo in
@@ -244,7 +250,7 @@ struct PuzzleSelectionView: View {
     private func handlePuzzleTap(_ puzzle: PremadePuzzle) {
         let isLocked = puzzle.number > 3 && !appEnvironment.isPremium
         if isLocked {
-            showPaywall = true
+            showParentalGate = true
         } else {
             path.append(.premadePuzzle(puzzle: puzzle))
         }

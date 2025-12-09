@@ -8,6 +8,7 @@ struct MainMenuView: View {
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
     @State private var isShowingTutorial = false
     @State private var isShowingSheet = false
+    @State private var isShowingParentalGate = false
 
     var body: some View {
         ZStack {
@@ -49,6 +50,11 @@ struct MainMenuView: View {
         .fullScreenCover(isPresented: $isShowingTutorial) {
             TutorialView()
         }
+        .fullScreenCover(isPresented: $isShowingParentalGate) {
+            ParentalGateView {
+                isShowingSheet = true
+            }
+        }
         .sheet(isPresented: $isShowingSheet) {
             PaywallView()
                 .onPurchaseCompleted { customerInfo in
@@ -75,7 +81,7 @@ struct MainMenuView: View {
             
             if !appEnvironment.isPremium {
                 Button(action: {
-                    isShowingSheet.toggle()
+                    isShowingParentalGate = true
                 }) {
                     HStack(spacing: 6) {
                         Image(systemName: "crown.fill")
