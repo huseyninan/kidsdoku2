@@ -1,6 +1,5 @@
 import SwiftUI
 import RevenueCatUI
-import FirebaseAnalytics
 
 struct MainMenuView: View {
     @Binding var path: [KidSudokuRoute]
@@ -119,11 +118,6 @@ struct MainMenuView: View {
                     ) {
                         let size = option.size
                         path.append(.puzzleSelection(size: size))
-                        Task { @MainActor in
-                            Analytics.logEvent(AnalyticsEventScreenView, parameters: [
-                                AnalyticsParameterScreenName: "puzzle_selection_\(size)x\(size)"
-                            ])
-                        }
                     }
                 }
             }
