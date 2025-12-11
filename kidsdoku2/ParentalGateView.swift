@@ -62,6 +62,8 @@ struct ParentalGateView: View {
                         .font(.system(size: 16, weight: .medium, design: .rounded))
                         .foregroundStyle(Color.gray)
                         .multilineTextAlignment(.center)
+                        .lineLimit(nil)
+                        .fixedSize(horizontal: false, vertical: true)
                         .padding(.horizontal, 32)
                     
                     // Math problem card
@@ -77,6 +79,7 @@ struct ParentalGateView: View {
                         TextField("", text: $userAnswer)
                             .keyboardType(.numberPad)
                             .font(.system(size: 28, weight: .bold, design: .rounded))
+                            .foregroundStyle(Color(red: 0.4, green: 0.25, blue: 0.15))
                             .multilineTextAlignment(.center)
                             .frame(width: 120, height: 56)
                             .background(
