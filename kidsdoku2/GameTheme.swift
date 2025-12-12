@@ -119,6 +119,7 @@ protocol GameTheme {
     var puzzleSettingsBackground: Color { get }
     var puzzleSettingsText: Color { get }
     var puzzleSettingsTitle: Color { get }
+    var puzzleSettingsDoneButton: Color { get }
     var puzzleToggleHideFinished: Color { get }
     
     // Difficulty Card Colors
@@ -239,6 +240,7 @@ struct StorybookTheme: GameTheme {
     let puzzleSettingsBackground = Color(red: 0.85, green: 0.88, blue: 0.92)
     let puzzleSettingsText = Color(red: 0.4, green: 0.4, blue: 0.45)
     let puzzleSettingsTitle = Color(red: 0.3, green: 0.3, blue: 0.35)
+    let puzzleSettingsDoneButton = Color.blue
     let puzzleToggleHideFinished = Color(red: 0.24, green: 0.65, blue: 0.33)
     
     // Difficulty Cards - Forest tones
@@ -356,7 +358,8 @@ struct ChristmasTheme: GameTheme {
     let puzzleLoadingText = Color(red: 0.8, green: 0.85, blue: 0.9) // Frosty blue-white
     let puzzleSettingsBackground = Color(red: 0.15, green: 0.2, blue: 0.28) // Deep winter night
     let puzzleSettingsText = Color(red: 0.85, green: 0.88, blue: 0.92) // Snow white
-    let puzzleSettingsTitle = Color(red: 0.95, green: 0.92, blue: 0.85) // Warm white
+    let puzzleSettingsTitle = Color(red: 0.35, green: 0.25, blue: 0.2) // Dark brown for light backgrounds
+    let puzzleSettingsDoneButton = Color(red: 0.4, green: 0.7, blue: 1.0) // Bright sky blue for dark background
     let puzzleToggleHideFinished = Color(red: 0.2, green: 0.6, blue: 0.35) // Christmas green
     
     // Difficulty Cards - Festive red/green/gold

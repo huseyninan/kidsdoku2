@@ -349,7 +349,7 @@ struct PuzzleSelectionView: View {
                         showSettings = false
                     }
                     .font(.system(size: 17, weight: .semibold, design: .rounded))
-                    .foregroundStyle(.blue)
+                    .foregroundStyle(gameTheme.puzzleSettingsDoneButton)
                 }
                 .padding(.horizontal, 20)
                 .padding(.top, 24)
