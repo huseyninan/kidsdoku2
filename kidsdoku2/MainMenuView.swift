@@ -107,10 +107,12 @@ struct MainMenuView: View {
 
     @ViewBuilder
     private var questButtonsSection: some View {
-        if questOptions.isEmpty {
-            EmptyView()
-        } else {
-            VStack(spacing: Theme.Layout.questButtonSpacing) {
+        VStack(spacing: Theme.Layout.questButtonSpacing) {
+            // Christmas Quest Button
+            christmasQuestButton
+            
+            // Regular quest options
+            if !questOptions.isEmpty {
                 ForEach(questOptions) { option in
                     questButton(
                         title: option.title,
@@ -122,6 +124,34 @@ struct MainMenuView: View {
                 }
             }
         }
+    }
+    
+    private var christmasQuestButton: some View {
+        Button(action: {
+            appEnvironment.setTheme(.christmas)
+            path.append(.puzzleSelection(size: 4))
+        }) {
+            HStack(spacing: 16) {
+                Text("🎄")
+                    .font(.system(size: 42))
+                
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(String(localized: "Christmas Quest"))
+                        .font(.system(size: 26, weight: .bold, design: .rounded))
+                        .foregroundStyle(.white)
+                    
+                    Text(String(localized: "Holiday Magic"))
+                        .font(.system(size: 16, weight: .medium, design: .rounded))
+                        .foregroundStyle(Color(red: 1.0, green: 0.9, blue: 0.75))
+                }
+                
+                Spacer()
+                
+                Text("❄️")
+                    .font(.system(size: 32))
+            }
+        }
+        .buttonStyle(ChristmasQuestButtonStyle())
     }
     
     private var footerSection: some View {

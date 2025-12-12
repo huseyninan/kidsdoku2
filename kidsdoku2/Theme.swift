@@ -190,3 +190,42 @@ struct OverlayButtonStyle: ButtonStyle {
     }
 }
 
+struct ChristmasQuestButtonStyle: ButtonStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 24)
+            .padding(.horizontal, 20)
+            .background(
+                RoundedRectangle(cornerRadius: Theme.Layout.largeCornerRadius, style: .continuous)
+                    .fill(
+                        LinearGradient(
+                            colors: [
+                                Color(red: 0.85, green: 0.18, blue: 0.22),
+                                Color(red: 0.72, green: 0.12, blue: 0.16)
+                            ],
+                            startPoint: .top,
+                            endPoint: .bottom
+                        )
+                    )
+                    .overlay(
+                        RoundedRectangle(cornerRadius: Theme.Layout.largeCornerRadius, style: .continuous)
+                            .strokeBorder(
+                                LinearGradient(
+                                    colors: [
+                                        Color(red: 1.0, green: 0.85, blue: 0.4),
+                                        Color(red: 0.95, green: 0.7, blue: 0.25)
+                                    ],
+                                    startPoint: .topLeading,
+                                    endPoint: .bottomTrailing
+                                ),
+                                lineWidth: 3
+                            )
+                    )
+                    .shadow(color: Color(red: 0.6, green: 0.1, blue: 0.1).opacity(0.4), radius: 12, x: 0, y: 6)
+            )
+            .scaleEffect(configuration.isPressed ? 0.98 : 1.0)
+            .animation(.easeInOut(duration: 0.1), value: configuration.isPressed)
+    }
+}
+
