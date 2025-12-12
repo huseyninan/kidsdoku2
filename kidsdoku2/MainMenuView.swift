@@ -118,6 +118,7 @@ struct MainMenuView: View {
                         title: option.title,
                         subtitle: option.subtitle
                     ) {
+                        appEnvironment.setTheme(.storybook)
                         let size = option.size
                         path.append(.puzzleSelection(size: size))
                     }
