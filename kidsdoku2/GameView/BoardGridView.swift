@@ -8,6 +8,8 @@ struct BoardGridView: View {
     let showNumbers: Bool
     let onTap: (KidSudokuCell) -> Void
     
+    @Environment(\.gameTheme) private var theme
+    
     var body: some View {
         GeometryReader { geometry in
             let side = min(geometry.size.width, geometry.size.height)
@@ -15,7 +17,7 @@ struct BoardGridView: View {
 
             ZStack {
                 RoundedRectangle(cornerRadius: 24, style: .continuous)
-                    .fill(Color.white)
+                    .fill(theme.boardBackgroundColor)
                     .shadow(color: Color.black.opacity(0.08), radius: 8, x: 0, y: 4)
 
                 VStack(spacing: 0) {
@@ -56,7 +58,7 @@ struct BoardGridView: View {
                     .fill(cellBackground(for: cell, isSelected: isSelected))
 
                 if isMatchingHighlighted {
-                    GlowingHighlight(size: cellSize)
+                    ThemedGlowingHighlight(size: cellSize)
                 }
 
                 let symbolName = symbol(for: cell)
@@ -77,21 +79,18 @@ struct BoardGridView: View {
         .frame(width: cellSize, height: cellSize)
         .overlay(
             Rectangle()
-                .stroke(Color(red: 0.89, green: 0.84, blue: 0.76), lineWidth: 1)
+                .stroke(theme.cellBorderColor, lineWidth: 1)
         )
     }
 
     private func cellBackground(for cell: KidSudokuCell, isSelected: Bool) -> Color {
         if cell.isFixed {
-            // Warm beige for fixed cells - like parchment paper in a storybook
-            return Color(red: 0.96, green: 0.94, blue: 0.89)
+            return theme.fixedCellColor
         }
         if isSelected {
-            // Red highlight for selected cells
-            return Color.red.opacity(0.6)
+            return theme.selectedCellColor
         }
-        // Pure white for empty cells - clean storybook pages
-        return Color.white
+        return theme.emptyCellColor
     }
 
     private func symbol(for cell: KidSudokuCell) -> String {
@@ -115,8 +114,7 @@ struct BoardGridView: View {
     private func drawSubgridLines(context: inout GraphicsContext, size: CGSize) {
         let dimension = min(size.width, size.height)
         let cell = dimension / CGFloat(config.size)
-        // Warm brown color like storybook illustrations
-        let lineColor = Color(red: 0.76, green: 0.65, blue: 0.52)
+        let lineColor = theme.subgridLineColor
 
         for row in 0...config.size where row % config.subgridRows == 0 {
             var path = Path()
@@ -148,8 +146,9 @@ struct BoardGridView: View {
     }
 }
 
-struct GlowingHighlight: View {
+struct ThemedGlowingHighlight: View {
     let size: CGFloat
+    @Environment(\.gameTheme) private var theme
 
     @State private var animate = false
     @State private var isVisible = false
@@ -162,16 +161,16 @@ struct GlowingHighlight: View {
                 .fill(
                     LinearGradient(
                         colors: [
-                            Color(red: 0.23, green: 0.78, blue: 1.0),
-                            Color(red: 0.0, green: 0.58, blue: 0.93)
+                            theme.highlightGradientStart,
+                            theme.highlightGradientEnd
                         ],
                         startPoint: .topLeading,
                         endPoint: .bottomTrailing
                     )
                 )
                 .frame(width: size * 0.82, height: size * 0.82)
-                .shadow(color: Color.cyan.opacity(0.35), radius: 0.1)
-                .shadow(color: Color(red: 0.1, green: 0.7, blue: 0.95).opacity(0.6), radius: 0.82)
+                .shadow(color: theme.highlightGlowColor.opacity(0.35), radius: 0.1)
+                .shadow(color: theme.highlightGlowColor.opacity(0.6), radius: 0.82)
 
             RoundedRectangle(cornerRadius: cornerRadius)
                 .stroke(Color.white.opacity(0.18), lineWidth: size * 0.05)
@@ -200,7 +199,7 @@ struct GlowingHighlight: View {
                 .opacity(animate ? 0.95 : 0.55)
 
             RoundedRectangle(cornerRadius: cornerRadius)
-                .stroke(Color.cyan.opacity(animate ? 0.65 : 0.25), lineWidth: size * 0.14)
+                .stroke(theme.highlightGlowColor.opacity(animate ? 0.65 : 0.25), lineWidth: size * 0.14)
                 .frame(width: size * 0.54, height: size * 0.54)
                 .blur(radius: size * 0.1)
                 .opacity(animate ? 1 : 0.7)
@@ -239,4 +238,3 @@ struct GlowingHighlight: View {
         }
     }
 }
-

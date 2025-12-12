@@ -2,11 +2,12 @@ import SwiftUI
 
 struct StorybookBadge: View {
     let text: String
+    @Environment(\.gameTheme) private var theme
     
     var body: some View {
         Text(text)
             .font(.system(size: 15, weight: .heavy, design: .rounded))
-            .foregroundStyle(Color(red: 0.33, green: 0.22, blue: 0.12))
+            .foregroundStyle(theme.badgeTextColor)
             .multilineTextAlignment(.center)
             .padding(.horizontal, 10)
             .padding(.vertical, 5)
@@ -15,8 +16,8 @@ struct StorybookBadge: View {
                     .fill(
                         LinearGradient(
                             colors: [
-                                Color(red: 0.99, green: 0.94, blue: 0.82),
-                                Color(red: 0.95, green: 0.87, blue: 0.74)
+                                theme.badgeGradientStart,
+                                theme.badgeGradientEnd
                             ],
                             startPoint: .top,
                             endPoint: .bottom
@@ -25,7 +26,7 @@ struct StorybookBadge: View {
             )
             .overlay(
                 Capsule()
-                    .stroke(Color(red: 0.85, green: 0.67, blue: 0.46), lineWidth: 1)
+                    .stroke(theme.badgeBorderColor, lineWidth: 1)
             )
     }
 }
@@ -56,6 +57,7 @@ struct StorybookIconCircle: View {
 struct StorybookInfoChip: View {
     let icon: String
     let text: String
+    @Environment(\.gameTheme) private var theme
     
     var body: some View {
         HStack(spacing: 4) {
@@ -65,15 +67,15 @@ struct StorybookInfoChip: View {
                 .font(.system(size: 14, weight: .bold, design: .rounded))
                 .monospacedDigit()
         }
-        .foregroundStyle(Color(red: 0.62, green: 0.34, blue: 0.24))
+        .foregroundStyle(theme.infoChipTextColor)
         .padding(.horizontal, 8)
         .padding(.vertical, 4)
         .background(
             Capsule().fill(
                 LinearGradient(
                     colors: [
-                        Color(red: 1.0, green: 0.92, blue: 0.81),
-                        Color(red: 0.98, green: 0.82, blue: 0.65)
+                        theme.infoChipGradientStart,
+                        theme.infoChipGradientEnd
                     ],
                     startPoint: .topLeading,
                     endPoint: .bottomTrailing
@@ -85,20 +87,17 @@ struct StorybookInfoChip: View {
 
 struct StorybookProgressBar: View {
     let progress: Double
+    @Environment(\.gameTheme) private var theme
     
     var body: some View {
         GeometryReader { geo in
             ZStack(alignment: .leading) {
                 RoundedRectangle(cornerRadius: 8)
-                    .fill(Color.white.opacity(0.6))
+                    .fill(theme.progressBarBackground)
                 RoundedRectangle(cornerRadius: 8)
                     .fill(
                         LinearGradient(
-                            colors: [
-                                Color(red: 0.99, green: 0.78, blue: 0.33),
-                                Color(red: 0.98, green: 0.6, blue: 0.37),
-                                Color(red: 0.4, green: 0.7, blue: 0.35)
-                            ],
+                            colors: theme.progressBarGradient,
                             startPoint: .leading,
                             endPoint: .trailing
                         )
@@ -157,13 +156,15 @@ struct StorybookMiniBoardPreview: View {
 }
 
 struct StorybookHeaderCard: View {
+    @Environment(\.gameTheme) private var theme
+    
     var body: some View {
         RoundedRectangle(cornerRadius: 28, style: .continuous)
             .fill(
                 LinearGradient(
                     colors: [
-                        Color.white.opacity(0.9),
-                        Color(red: 0.99, green: 0.94, blue: 0.86)
+                        theme.headerCardGradientStart,
+                        theme.headerCardGradientEnd
                     ],
                     startPoint: .topLeading,
                     endPoint: .bottomTrailing
@@ -171,20 +172,22 @@ struct StorybookHeaderCard: View {
             )
             .overlay(
                 RoundedRectangle(cornerRadius: 28, style: .continuous)
-                    .stroke(Color(red: 0.91, green: 0.83, blue: 0.7), lineWidth: 2)
+                    .stroke(theme.headerCardBorderColor, lineWidth: 2)
             )
             .shadow(color: Color.black.opacity(0.08), radius: 8, x: 0, y: 6)
     }
 }
 
 struct StorybookPaletteMat: View {
+    @Environment(\.gameTheme) private var theme
+    
     var body: some View {
         RoundedRectangle(cornerRadius: 28, style: .continuous)
             .fill(
                 LinearGradient(
                     colors: [
-                        Color(red: 1.0, green: 0.97, blue: 0.91),
-                        Color(red: 0.96, green: 0.92, blue: 0.84)
+                        theme.paletteMatGradientStart,
+                        theme.paletteMatGradientEnd
                     ],
                     startPoint: .topLeading,
                     endPoint: .bottomTrailing
@@ -192,7 +195,7 @@ struct StorybookPaletteMat: View {
             )
             .overlay(
                 RoundedRectangle(cornerRadius: 28, style: .continuous)
-                    .stroke(Color(red: 0.91, green: 0.82, blue: 0.69), lineWidth: 2)
+                    .stroke(theme.paletteMatBorderColor, lineWidth: 2)
             )
             .shadow(color: Color.black.opacity(0.08), radius: 10, x: 0, y: 6)
     }
@@ -200,14 +203,15 @@ struct StorybookPaletteMat: View {
 
 struct StorybookBoardMat: View {
     let size: CGFloat
+    @Environment(\.gameTheme) private var theme
     
     var body: some View {
         RoundedRectangle(cornerRadius: 34, style: .continuous)
             .fill(
                 LinearGradient(
                     colors: [
-                        Color(red: 1.0, green: 0.97, blue: 0.92),
-                        Color.white
+                        theme.boardMatGradientStart,
+                        theme.boardMatGradientEnd
                     ],
                     startPoint: .topLeading,
                     endPoint: .bottomTrailing
@@ -220,8 +224,8 @@ struct StorybookBoardMat: View {
                     .stroke(
                         LinearGradient(
                             colors: [
-                                Color(red: 0.94, green: 0.83, blue: 0.67),
-                                Color(red: 0.86, green: 0.68, blue: 0.5)
+                                theme.boardMatBorderGradientStart,
+                                theme.boardMatBorderGradientEnd
                             ],
                             startPoint: .topLeading,
                             endPoint: .bottomTrailing
@@ -238,6 +242,7 @@ struct StorybookActionButton: View {
     let isEnabled: Bool
     let gradient: [Color]
     let action: () -> Void
+    @Environment(\.gameTheme) private var theme
     
     private var resolvedGradient: [Color] {
         guard gradient.count >= 2 else {
@@ -254,7 +259,7 @@ struct StorybookActionButton: View {
                 Text(title)
                     .font(.system(size: 16, weight: .semibold, design: .rounded))
             }
-            .foregroundColor(isEnabled ? Color(red: 0.37, green: 0.28, blue: 0.18) : Color(.systemGray3))
+            .foregroundColor(isEnabled ? theme.actionButtonTextColor : theme.actionButtonDisabledColor)
             .frame(maxWidth: .infinity)
             .padding(.vertical, 10)
             .background(
@@ -278,4 +283,3 @@ struct StorybookActionButton: View {
         .disabled(!isEnabled)
     }
 }
-

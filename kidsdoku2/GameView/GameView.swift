@@ -6,6 +6,7 @@ struct GameView: View {
     private let hapticManager = HapticManager.shared
     @Environment(\.dismiss) private var dismiss
     @Environment(\.scenePhase) private var scenePhase
+    @EnvironmentObject private var appEnvironment: AppEnvironment
     
     @State private var showSettings: Bool = false
 
@@ -22,30 +23,33 @@ struct GameView: View {
     var body: some View {
         GeometryReader { proxy in
             let boardSize = computeBoardSize(from: proxy)
+            let theme = appEnvironment.currentTheme
             
             ZStack {
-                // Background image
-                Image("gridbg")
+                // Background image - uses theme
+                Image(theme.backgroundImageName)
                     .resizable(resizingMode: .stretch)
                     .ignoresSafeArea()
                 
-                // Animated running fox at the bottom of the screen
-                VStack {
-                    Spacer()
-                    RunningFoxView()
-                        .frame(height: 200)
-                        .allowsHitTesting(false)
+                // Animated running fox at the bottom of the screen (if theme supports it)
+                if theme.showRunningFox {
+                    VStack {
+                        Spacer()
+                        RunningFoxView()
+                            .frame(height: 200)
+                            .allowsHitTesting(false)
+                    }
                 }
                 
                 VStack(spacing: 8) {
-                    header
+                    header(theme: theme)
                     
                     boardSection(size: boardSize)
                             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
                     
-                    paletteSection
+                    paletteSection(theme: theme)
                     
-                    actionButtons
+                    actionButtons(theme: theme)
                 }
                 .padding(.horizontal, 10)
                 .padding(.top, 8)
@@ -66,7 +70,7 @@ struct GameView: View {
                 // Message banner overlay
                 if let message = viewModel.message {
                     VStack {
-                        messageBanner(message)
+                        messageBanner(message, theme: theme)
                             .padding(.top, 60)
                         Spacer()
                     }
@@ -74,6 +78,7 @@ struct GameView: View {
                     .allowsHitTesting(false)
                 }
             }
+            .gameTheme(theme)
         }
         .navigationBarBackButtonHidden(viewModel.showCelebration)
         .navigationTitle("")
@@ -109,7 +114,7 @@ struct GameView: View {
         }
     }
 
-    private var header: some View {
+    private func header(theme: GameTheme) -> some View {
         HStack(spacing: DeviceSizing.headerSpacing) {
             StorybookBadge(text: viewModel.navigationTitle)
                 .scaleEffect(DeviceSizing.badgeScale)
@@ -164,16 +169,16 @@ struct GameView: View {
         .frame(maxWidth: .infinity)
     }
 
-    private var paletteSection: some View {
+    private func paletteSection(theme: GameTheme) -> some View {
         VStack(spacing: 8) {
             HStack {
                 Text(viewModel.currentConfig.symbolGroup.paletteTitle)
                     .font(.system(size: 16, weight: .heavy, design: .rounded))
-                    .foregroundStyle(Theme.Colors.gamePaletteTitle)
+                    .foregroundStyle(theme.paletteTitleColor)
                 Spacer()
                 Text(viewModel.showNumbers ? "Tap a number below" : "Tap a friend below")
                     .font(.system(size: 12, weight: .semibold, design: .rounded))
-                    .foregroundStyle(Theme.Colors.gamePaletteSubtitle)
+                    .foregroundStyle(theme.paletteSubtitleColor)
             }
             
             HStack(spacing: 8) {
@@ -211,15 +216,15 @@ struct GameView: View {
         .buttonStyle(.plain)
     }
 
-    private var actionButtons: some View {
+    private func actionButtons(theme: GameTheme) -> some View {
         HStack(spacing: 12) {
             StorybookActionButton(
                 title: String(localized: "Undo"),
                 icon: "arrow.uturn.backward",
                 isEnabled: viewModel.canUndo,
                 gradient: [
-                    Theme.Colors.undoGradientStart,
-                    Theme.Colors.undoGradientEnd
+                    theme.undoGradientStart,
+                    theme.undoGradientEnd
                 ],
                 action: {
                     withAnimation(.easeInOut(duration: 0.2)) {
@@ -234,8 +239,8 @@ struct GameView: View {
                 icon: "xmark.circle",
                 isEnabled: true,
                 gradient: [
-                    Theme.Colors.eraseGradientStart,
-                    Theme.Colors.eraseGradientEnd
+                    theme.eraseGradientStart,
+                    theme.eraseGradientEnd
                 ],
                 action: {
                     withAnimation(.easeInOut(duration: 0.2)) {
@@ -250,8 +255,8 @@ struct GameView: View {
                 icon: "lightbulb",
                 isEnabled: true,
                 gradient: [
-                    Theme.Colors.hintGradientStart,
-                    Theme.Colors.hintGradientEnd
+                    theme.hintGradientStart,
+                    theme.hintGradientEnd
                 ],
                 action: {
                     withAnimation(.easeInOut(duration: 0.2)) {
@@ -269,7 +274,7 @@ struct GameView: View {
         }
     }
 
-    private func messageBanner(_ message: KidSudokuMessage) -> some View {
+    private func messageBanner(_ message: KidSudokuMessage, theme: GameTheme) -> some View {
         let accentColor = color(for: message.type)
         
         return HStack(alignment: .center, spacing: 10) {
@@ -279,8 +284,8 @@ struct GameView: View {
                         .fill(
                             LinearGradient(
                                 colors: [
-                                    Color.white.opacity(0.98),
-                                    Color(red: 1.0, green: 0.96, blue: 0.9)
+                                    theme.messageBannerSymbolBackgroundStart,
+                                    theme.messageBannerSymbolBackgroundEnd
                                 ],
                                 startPoint: .topLeading,
                                 endPoint: .bottomTrailing
@@ -296,7 +301,7 @@ struct GameView: View {
             }
             Text(message.text)
                 .font(.system(size: 16, weight: .semibold, design: .rounded))
-                .foregroundStyle(Color(red: 0.37, green: 0.28, blue: 0.18))
+                .foregroundStyle(theme.messageBannerTextColor)
                 .multilineTextAlignment(.leading)
         }
         .padding(.horizontal, 18)
@@ -306,7 +311,7 @@ struct GameView: View {
                 .fill(
                     LinearGradient(
                         colors: [
-                            Color(red: 1.0, green: 0.97, blue: 0.91),
+                            theme.messageBannerBackgroundStart,
                             accentColor.opacity(0.7)
                         ],
                         startPoint: .topLeading,
@@ -374,5 +379,5 @@ private struct GameTimerView: View {
 
 #Preview {
     GameView(config: .sixBySix)
+        .environmentObject(AppEnvironment())
 }
-

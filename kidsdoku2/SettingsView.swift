@@ -67,6 +67,25 @@ struct SettingsView: View {
                             )
                         }
                         
+                        // Theme Section
+                        SettingsSection(
+                            icon: "paintpalette.fill",
+                            title: String(localized: "Game Theme")
+                        ) {
+                            ForEach(GameThemeType.allCases) { themeType in
+                                ThemeSelectionRow(
+                                    themeType: themeType,
+                                    isSelected: appEnvironment.currentThemeType == themeType,
+                                    onSelect: {
+                                        withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
+                                            appEnvironment.setTheme(themeType)
+                                        }
+                                        hapticManager.trigger(.selection)
+                                    }
+                                )
+                            }
+                        }
+                        
                         // Grid Visibility Section
                         SettingsSection(
                             icon: "square.grid.3x3.fill",
@@ -457,6 +476,112 @@ struct AboutSection: View {
                 .fill(Color.white.opacity(0.7))
                 .shadow(color: .black.opacity(0.08), radius: 8, x: 0, y: 4)
         )
+    }
+}
+
+// MARK: - Theme Selection Row
+struct ThemeSelectionRow: View {
+    let themeType: GameThemeType
+    let isSelected: Bool
+    let onSelect: () -> Void
+    
+    private var themeIcon: String {
+        switch themeType {
+        case .storybook:
+            return "book.fill"
+        case .christmas:
+            return "snowflake"
+        }
+    }
+    
+    private var themeDescription: String {
+        switch themeType {
+        case .storybook:
+            return String(localized: "Warm, cozy storybook aesthetics")
+        case .christmas:
+            return String(localized: "Festive holiday theme with snow")
+        }
+    }
+    
+    private var themeColors: [Color] {
+        switch themeType {
+        case .storybook:
+            return [Color(red: 0.96, green: 0.94, blue: 0.89), Color(red: 0.76, green: 0.65, blue: 0.52)]
+        case .christmas:
+            return [Color(red: 0.85, green: 0.2, blue: 0.2), Color(red: 0.2, green: 0.6, blue: 0.3)]
+        }
+    }
+    
+    var body: some View {
+        Button(action: onSelect) {
+            HStack(spacing: 14) {
+                // Theme preview circle with gradient
+                ZStack {
+                    Circle()
+                        .fill(
+                            LinearGradient(
+                                colors: themeColors,
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            )
+                        )
+                        .frame(width: 44, height: 44)
+                    
+                    Image(systemName: themeIcon)
+                        .font(.system(size: 20, weight: .semibold))
+                        .foregroundColor(.white)
+                }
+                
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(themeType.displayName)
+                        .font(.system(size: 17, weight: .semibold, design: .rounded))
+                        .foregroundStyle(Color(red: 0.4, green: 0.25, blue: 0.15))
+                    
+                    Text(themeDescription)
+                        .font(.system(size: 13, weight: .medium, design: .rounded))
+                        .foregroundStyle(Color.gray)
+                }
+                
+                Spacer()
+                
+                // Selection indicator
+                ZStack {
+                    Circle()
+                        .stroke(
+                            isSelected ? Color(red: 0.4, green: 0.7, blue: 0.4) : Color.gray.opacity(0.3),
+                            lineWidth: 2
+                        )
+                        .frame(width: 24, height: 24)
+                    
+                    if isSelected {
+                        Circle()
+                            .fill(Color(red: 0.4, green: 0.7, blue: 0.4))
+                            .frame(width: 16, height: 16)
+                        
+                        Image(systemName: "checkmark")
+                            .font(.system(size: 10, weight: .bold))
+                            .foregroundColor(.white)
+                    }
+                }
+            }
+            .padding(12)
+            .background(
+                RoundedRectangle(cornerRadius: 12, style: .continuous)
+                    .fill(
+                        isSelected
+                            ? Color(red: 0.98, green: 0.96, blue: 0.92)
+                            : Color(red: 0.98, green: 0.97, blue: 0.95)
+                    )
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 12, style: .continuous)
+                            .stroke(
+                                isSelected ? Color(red: 0.4, green: 0.7, blue: 0.4).opacity(0.5) : Color.clear,
+                                lineWidth: 2
+                            )
+                    )
+            )
+        }
+        .buttonStyle(.plain)
     }
 }
 
