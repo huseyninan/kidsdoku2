@@ -99,6 +99,9 @@ struct ParentalGateView: View {
                                 .foregroundStyle(Color.red)
                         }
                     }
+                    .onTapGesture {
+                        isInputFocused = false
+                    }
                     .padding(24)
                     .background(
                         RoundedRectangle(cornerRadius: 20, style: .continuous)
@@ -136,6 +139,9 @@ struct ParentalGateView: View {
             }
             .onAppear {
                 isInputFocused = true
+            }
+            .onTapGesture {
+                isInputFocused = false
             }
         }
     }
