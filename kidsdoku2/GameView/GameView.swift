@@ -95,7 +95,8 @@ struct GameView: View {
                     get: { viewModel.selectedSymbolGroup },
                     set: { viewModel.selectedSymbolGroupRawValue = $0.rawValue }
                 ),
-                showNumbers: $viewModel.showNumbers
+                showNumbers: $viewModel.showNumbers,
+                themeType: appEnvironment.currentThemeType
             )
         }
         .onAppear {

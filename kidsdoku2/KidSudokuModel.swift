@@ -15,6 +15,10 @@ enum SymbolGroup: Int, CaseIterable, Hashable {
     case animals4
     case numbers
     case animalItems
+    case christmas1
+    case christmas2
+    case christmas3
+    case christmas4
 
     var symbols: [String] {
             switch self {
@@ -42,6 +46,14 @@ enum SymbolGroup: Int, CaseIterable, Hashable {
                 return ["number1", "number1", "number2", "number3", "number4", "number5", "number6"]
             case .animalItems:
                 return ["animal_with_item_1", "animal_with_item_1", "animal_with_item_2", "animal_with_item_3", "animal_with_item_4", "animal_with_item_5", "animal_with_item_6"]
+            case .christmas1:
+                return ["christmas_1", "christmas_1", "christmas_2", "christmas_6", "christmas_4", "christmas_5", "christmas_3"]
+            case .christmas2:
+                return ["christmas_8", "christmas_8", "christmas_7", "christmas_9", "christmas_10", "christmas_11", "christmas_12"]
+            case .christmas3:
+                return ["christmas_13", "christmas_13", "christmas_9", "christmas_12", "christmas_4", "christmas_5", "christmas_3"]
+            case .christmas4:
+                return ["christmas_2", "christmas_2", "christmas_5", "christmas_9", "christmas_10", "christmas_8", "christmas_11"]
             }
         }
     
@@ -59,11 +71,17 @@ enum SymbolGroup: Int, CaseIterable, Hashable {
             return String(localized: "Bird's Nest")
         case .numbers:
             return String(localized: "Numbers")
+        case .christmas1, .christmas2, .christmas3, .christmas4:
+            return String(localized: "Christmas Box")
         }
     }
     
     static var puzzleCases: [SymbolGroup] {
         return [.animalItems, .animals, .animals2, .animals3, .animals4, .birds, .birds2, .birds3, .birds4, .sea, .weather]
+    }
+    
+    static var christmasCases: [SymbolGroup] {
+        return [.christmas1, .christmas3, .christmas4, .christmas2]
     }
 }
 

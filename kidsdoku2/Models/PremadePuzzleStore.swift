@@ -2013,6 +2013,27 @@ final class PremadePuzzleStore {
     func puzzles(for size: Int, difficulty: PuzzleDifficulty) -> [PremadePuzzle] {
         return indexedPuzzles[size]?[difficulty] ?? []
     }
+    
+    func puzzles(for size: Int, difficulty: PuzzleDifficulty, themeType: GameThemeType) -> [PremadePuzzle] {
+        let basePuzzles = indexedPuzzles[size]?[difficulty] ?? []
+        return basePuzzles.map { puzzle in
+            let symbolGroup = assignSymbolGroup(size: size, difficulty: difficulty, number: puzzle.number, themeType: themeType)
+            let newConfig = KidSudokuConfig(
+                size: puzzle.config.size,
+                subgridRows: puzzle.config.subgridRows,
+                subgridCols: puzzle.config.subgridCols,
+                symbolGroup: symbolGroup
+            )
+            return PremadePuzzle(
+                number: puzzle.number,
+                size: puzzle.size,
+                difficulty: puzzle.difficulty,
+                config: newConfig,
+                initialBoard: puzzle.initialBoard,
+                solutionBoard: puzzle.solutionBoard
+            )
+        }
+    }
 }
 
 
@@ -2072,11 +2093,18 @@ private func puzzle(
     )
 }
 
-private func assignSymbolGroup(size: Int, difficulty: PuzzleDifficulty, number: Int) -> SymbolGroup {
+private func assignSymbolGroup(size: Int, difficulty: PuzzleDifficulty, number: Int, themeType: GameThemeType = .storybook) -> SymbolGroup {
     // Create a deterministic assignment based on puzzle characteristics
     let seed = size * 1000 + (difficulty == .easy ? 0 : difficulty == .normal ? 100 : 200) + number
-    let groupIndex = abs(seed) % SymbolGroup.puzzleCases.count
-    return SymbolGroup.puzzleCases[groupIndex]
+    let symbolCases: [SymbolGroup]
+    switch themeType {
+    case .storybook:
+        symbolCases = SymbolGroup.puzzleCases
+    case .christmas:
+        symbolCases = SymbolGroup.christmasCases
+    }
+    let groupIndex = abs(seed) % symbolCases.count
+    return symbolCases[groupIndex]
 }
 
 /// Parse a string representation into a board with optional cells

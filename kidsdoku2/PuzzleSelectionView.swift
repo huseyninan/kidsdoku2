@@ -177,6 +177,7 @@ struct PuzzleSelectionView: View {
         let currentShowNormal = showNormal
         let currentShowHard = showHard
         let currentHideFinished = hideFinishedPuzzles
+        let currentThemeType = appEnvironment.currentThemeType
         
         return await Task.detached(priority: .userInitiated) {
             PuzzleDifficulty.allCases.compactMap { difficulty in
@@ -189,7 +190,7 @@ struct PuzzleSelectionView: View {
                 }
                 guard shouldShow else { return nil }
                 
-                let puzzles = PremadePuzzleStore.shared.puzzles(for: currentSize, difficulty: difficulty)
+                let puzzles = PremadePuzzleStore.shared.puzzles(for: currentSize, difficulty: difficulty, themeType: currentThemeType)
                 guard !puzzles.isEmpty else { return nil }
                 
                 var puzzlesWithStatus = puzzles.map { puzzle in
@@ -227,7 +228,7 @@ struct PuzzleSelectionView: View {
             }
             guard shouldShow else { return nil }
             
-            let puzzles = PremadePuzzleStore.shared.puzzles(for: currentSize, difficulty: difficulty)
+            let puzzles = PremadePuzzleStore.shared.puzzles(for: currentSize, difficulty: difficulty, themeType: appEnvironment.currentThemeType)
             guard !puzzles.isEmpty else { return nil }
             
             var puzzlesWithStatus = puzzles.map { puzzle in
