@@ -109,6 +109,35 @@ protocol GameTheme {
     var messageInfoColor: Color { get }
     var messageSuccessColor: Color { get }
     var messageWarningColor: Color { get }
+    
+    // MARK: - Puzzle Selection Colors
+    var puzzleSelectionBackground: Color { get }
+    var puzzleHeaderText: Color { get }
+    var puzzleHeaderEmoji: String { get }
+    var puzzleSettingsIcon: Color { get }
+    var puzzleLoadingText: Color { get }
+    var puzzleSettingsBackground: Color { get }
+    var puzzleSettingsText: Color { get }
+    var puzzleSettingsTitle: Color { get }
+    var puzzleToggleHideFinished: Color { get }
+    
+    // Difficulty Card Colors
+    var difficultyEasy: Color { get }
+    var difficultyNormal: Color { get }
+    var difficultyHard: Color { get }
+    
+    // Puzzle Button Colors
+    var puzzleButtonBackground: Color { get }
+    var puzzleButtonBackgroundLocked: Double { get }
+    var puzzleButtonBadge: Color { get }
+    var puzzleButtonBadgeText: Color { get }
+    var puzzleCompletedBorder: Color { get }
+    var puzzleCompletedIcon: Color { get }
+    var puzzleLockOverlay: Color { get }
+    
+    // Puzzle Card Shadow
+    var puzzleCardShadow: Color { get }
+    var puzzleSettingsCardShadow: Color { get }
 }
 
 // MARK: - Default Implementation
@@ -200,6 +229,35 @@ struct StorybookTheme: GameTheme {
     let messageInfoColor = Color(.systemBlue)
     let messageSuccessColor = Color(.systemGreen)
     let messageWarningColor = Color(.systemOrange)
+    
+    // MARK: - Puzzle Selection (Storybook - Warm earthy tones)
+    let puzzleSelectionBackground = Color(red: 0.85, green: 0.88, blue: 0.92)
+    let puzzleHeaderText = Color(red: 0.3, green: 0.3, blue: 0.35)
+    let puzzleHeaderEmoji = "🦉"
+    let puzzleSettingsIcon = Color(red: 0.5, green: 0.5, blue: 0.55)
+    let puzzleLoadingText = Color(red: 0.4, green: 0.4, blue: 0.45)
+    let puzzleSettingsBackground = Color(red: 0.85, green: 0.88, blue: 0.92)
+    let puzzleSettingsText = Color(red: 0.4, green: 0.4, blue: 0.45)
+    let puzzleSettingsTitle = Color(red: 0.3, green: 0.3, blue: 0.35)
+    let puzzleToggleHideFinished = Color(red: 0.24, green: 0.65, blue: 0.33)
+    
+    // Difficulty Cards - Forest tones
+    let difficultyEasy = Color(red: 0.45, green: 0.55, blue: 0.45)
+    let difficultyNormal = Color(red: 0.35, green: 0.45, blue: 0.60)
+    let difficultyHard = Color(red: 0.30, green: 0.35, blue: 0.50)
+    
+    // Puzzle Buttons
+    let puzzleButtonBackground = Color.white
+    let puzzleButtonBackgroundLocked: Double = 0.5
+    let puzzleButtonBadge = Color(red: 0.93, green: 0.90, blue: 0.78)
+    let puzzleButtonBadgeText = Color(red: 0.38, green: 0.34, blue: 0.28)
+    let puzzleCompletedBorder = Color(red: 0.24, green: 0.65, blue: 0.33)
+    let puzzleCompletedIcon = Color(red: 0.24, green: 0.65, blue: 0.33)
+    let puzzleLockOverlay = Color.black.opacity(0.7)
+    
+    // Shadows
+    let puzzleCardShadow = Color.black.opacity(0.1)
+    let puzzleSettingsCardShadow = Color.black.opacity(0.08)
 }
 
 // MARK: - Christmas Theme
@@ -288,6 +346,36 @@ struct ChristmasTheme: GameTheme {
     let messageInfoColor = Color(red: 0.2, green: 0.55, blue: 0.75) // Frosty blue
     let messageSuccessColor = Color(red: 0.2, green: 0.55, blue: 0.3) // Christmas green
     let messageWarningColor = Color(red: 0.9, green: 0.65, blue: 0.15) // Christmas gold
+    
+    // MARK: - Puzzle Selection (Christmas - Festive winter wonderland)
+    // Deep winter night sky with subtle aurora tint
+    let puzzleSelectionBackground = Color(red: 0.12, green: 0.18, blue: 0.28)
+    let puzzleHeaderText = Color(red: 0.95, green: 0.92, blue: 0.85) // Warm snow white
+    let puzzleHeaderEmoji = "🎅"
+    let puzzleSettingsIcon = Color(red: 0.85, green: 0.75, blue: 0.55) // Christmas gold
+    let puzzleLoadingText = Color(red: 0.8, green: 0.85, blue: 0.9) // Frosty blue-white
+    let puzzleSettingsBackground = Color(red: 0.15, green: 0.2, blue: 0.28) // Deep winter night
+    let puzzleSettingsText = Color(red: 0.85, green: 0.88, blue: 0.92) // Snow white
+    let puzzleSettingsTitle = Color(red: 0.95, green: 0.92, blue: 0.85) // Warm white
+    let puzzleToggleHideFinished = Color(red: 0.2, green: 0.6, blue: 0.35) // Christmas green
+    
+    // Difficulty Cards - Festive red/green/gold
+    let difficultyEasy = Color(red: 0.2, green: 0.5, blue: 0.35) // Christmas green
+    let difficultyNormal = Color(red: 0.7, green: 0.2, blue: 0.2) // Christmas red
+    let difficultyHard = Color(red: 0.6, green: 0.45, blue: 0.2) // Christmas gold
+    
+    // Puzzle Buttons - Snowy with festive accents
+    let puzzleButtonBackground = Color(red: 0.98, green: 0.97, blue: 0.95) // Snow white
+    let puzzleButtonBackgroundLocked: Double = 0.6
+    let puzzleButtonBadge = Color(red: 0.85, green: 0.25, blue: 0.25) // Christmas red
+    let puzzleButtonBadgeText = Color.white
+    let puzzleCompletedBorder = Color(red: 0.2, green: 0.6, blue: 0.35) // Christmas green
+    let puzzleCompletedIcon = Color(red: 0.2, green: 0.6, blue: 0.35) // Christmas green
+    let puzzleLockOverlay = Color(red: 0.1, green: 0.15, blue: 0.25).opacity(0.8) // Deep night blue
+    
+    // Shadows - Warmer for festive glow
+    let puzzleCardShadow = Color(red: 0.0, green: 0.1, blue: 0.2).opacity(0.3)
+    let puzzleSettingsCardShadow = Color(red: 0.05, green: 0.1, blue: 0.2).opacity(0.2)
 }
 
 // MARK: - Theme Environment Key

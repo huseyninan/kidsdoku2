@@ -85,6 +85,11 @@ struct PuzzleSelectionView: View {
     // Cached themes for this specific size - computed once, not on every render
     private let themes: [PuzzleDifficulty: DifficultyTheme]
     
+    // Current game theme for color access
+    private var gameTheme: GameTheme {
+        appEnvironment.currentTheme
+    }
+    
     init(size: Int, path: Binding<[KidSudokuRoute]>) {
         self.size = size
         self._path = path
@@ -93,7 +98,7 @@ struct PuzzleSelectionView: View {
     
     var body: some View {
         ZStack {
-            Theme.Colors.puzzleSelectionBackground
+            gameTheme.puzzleSelectionBackground
                 .ignoresSafeArea()
             
             ScrollView {
@@ -104,9 +109,10 @@ struct PuzzleSelectionView: View {
                         VStack(spacing: 20) {
                             ProgressView()
                                 .scaleEffect(1.5)
+                                .tint(gameTheme.puzzleLoadingText)
                             Text("Loading puzzles...")
                                 .font(.system(size: 16, weight: .medium, design: .rounded))
-                                .foregroundStyle(Theme.Colors.puzzleLoadingText)
+                                .foregroundStyle(gameTheme.puzzleLoadingText)
                         }
                         .frame(maxWidth: .infinity)
                         .padding(.top, 60)
@@ -259,12 +265,12 @@ struct PuzzleSelectionView: View {
     
     private var headerSection: some View {
         HStack(alignment: .center, spacing: 12) {
-            Text("🦉")
+            Text(gameTheme.puzzleHeaderEmoji)
                 .font(.system(size: 44))
             
             Text("Choose Your Adventure")
                 .font(.system(size: 28, weight: .bold, design: .rounded))
-                .foregroundStyle(Theme.Colors.puzzleHeaderText)
+                .foregroundStyle(gameTheme.puzzleHeaderText)
             
             Spacer()
             
@@ -273,7 +279,7 @@ struct PuzzleSelectionView: View {
             } label: {
                 Image(systemName: "gearshape.fill")
                     .font(.system(size: 28))
-                    .foregroundStyle(Theme.Colors.puzzleSettingsIcon)
+                    .foregroundStyle(gameTheme.puzzleSettingsIcon)
             }
         }
         .padding(.horizontal, 20)
@@ -283,6 +289,7 @@ struct PuzzleSelectionView: View {
     
     private func difficultyCard(difficulty: PuzzleDifficulty, puzzles: [PuzzleWithStatus]) -> some View {
         let theme = themes[difficulty] ?? DifficultyTheme(name: difficulty.rawValue, backgroundColor: .gray)
+        let difficultyColor = difficultyColor(for: difficulty)
         
         return VStack(spacing: 16) {
             Text("\(difficulty.rawValue) - \(theme.name)")
@@ -301,7 +308,8 @@ struct PuzzleSelectionView: View {
                         puzzle: puzzleWithStatus.puzzle,
                         isPremium: appEnvironment.isPremium,
                         isCompleted: puzzleWithStatus.isCompleted,
-                        rating: puzzleWithStatus.rating
+                        rating: puzzleWithStatus.rating,
+                        theme: gameTheme
                     )
                     .onTapGesture {
                         handlePuzzleTap(puzzleWithStatus.puzzle)
@@ -314,14 +322,23 @@ struct PuzzleSelectionView: View {
         }
         .background(
             RoundedRectangle(cornerRadius: Theme.Layout.puzzleCardCornerRadius, style: .continuous)
-                .fill(theme.backgroundColor)
-                .shadow(color: Color.black.opacity(0.1), radius: 4, x: 0, y: 2)
+                .fill(difficultyColor)
+                .shadow(color: gameTheme.puzzleCardShadow, radius: 4, x: 0, y: 2)
         )
+    }
+    
+    /// Returns theme-aware difficulty color
+    private func difficultyColor(for difficulty: PuzzleDifficulty) -> Color {
+        switch difficulty {
+        case .easy: return gameTheme.difficultyEasy
+        case .normal: return gameTheme.difficultyNormal
+        case .hard: return gameTheme.difficultyHard
+        }
     }
     
     private var difficultySettingsView: some View {
         ZStack {
-            Theme.Colors.puzzleSettingsBackground
+            gameTheme.puzzleSettingsBackground
                 .ignoresSafeArea()
             
             VStack(spacing: 24) {
@@ -339,7 +356,7 @@ struct PuzzleSelectionView: View {
                 
                 Text("Choose which difficulty levels to show")
                     .font(.system(size: 16, weight: .medium, design: .rounded))
-                    .foregroundStyle(Theme.Colors.puzzleSettingsText)
+                    .foregroundStyle(gameTheme.puzzleSettingsText)
                     .multilineTextAlignment(.center)
                     .padding(.top, 8)
                 
@@ -348,21 +365,21 @@ struct PuzzleSelectionView: View {
                         title: String(localized: "Easy"),
                         emoji: "🌻",
                         isOn: $showEasy,
-                        color: Theme.Colors.difficultyEasy
+                        color: gameTheme.difficultyEasy
                     )
                     
                     difficultyToggle(
                         title: String(localized: "Normal"),
                         emoji: "🌲",
                         isOn: $showNormal,
-                        color: Theme.Colors.difficultyNormal
+                        color: gameTheme.difficultyNormal
                     )
                     
                     difficultyToggle(
                         title: String(localized: "Hard"),
                         emoji: "💎",
                         isOn: $showHard,
-                        color: Theme.Colors.difficultyHard
+                        color: gameTheme.difficultyHard
                     )
                 }
                 .padding(.horizontal, 20)
@@ -375,7 +392,7 @@ struct PuzzleSelectionView: View {
                         title: String(localized: "Hide Finished"),
                         emoji: "✅",
                         isOn: $hideFinishedPuzzles,
-                        color: Theme.Colors.puzzleToggleHideFinished
+                        color: gameTheme.puzzleToggleHideFinished
                     )
                 }
                 .padding(.horizontal, 20)
@@ -394,7 +411,7 @@ struct PuzzleSelectionView: View {
             
             Text(title)
                 .font(.system(size: 22, weight: .semibold, design: .rounded))
-                .foregroundStyle(Theme.Colors.puzzleSettingsTitle)
+                .foregroundStyle(gameTheme.puzzleSettingsTitle)
                 .multilineTextAlignment(.leading)
                 .fixedSize(horizontal: false, vertical: true)
                 .layoutPriority(1)
@@ -409,8 +426,8 @@ struct PuzzleSelectionView: View {
         .padding(.vertical, 16)
         .background(
             RoundedRectangle(cornerRadius: Theme.Layout.puzzleSettingsCornerRadius, style: .continuous)
-                .fill(Color.white)
-                .shadow(color: Color.black.opacity(0.08), radius: 3, x: 0, y: 1)
+                .fill(gameTheme.puzzleButtonBackground)
+                .shadow(color: gameTheme.puzzleSettingsCardShadow, radius: 3, x: 0, y: 1)
         )
     }
 }
@@ -419,21 +436,15 @@ struct PuzzleSelectionView: View {
 /// Separate view struct to isolate isPremium dependency from parent view.
 /// This prevents unnecessary re-renders of the entire grid when unrelated
 /// AppEnvironment properties change.
-private struct PuzzleButtonView: View, Equatable {
+private struct PuzzleButtonView: View {
     let puzzle: PremadePuzzle
     let isPremium: Bool
     let isCompleted: Bool
     let rating: Double?
+    let theme: GameTheme
     
     private var isLocked: Bool {
         puzzle.number > 3 && !isPremium
-    }
-    
-    static func == (lhs: PuzzleButtonView, rhs: PuzzleButtonView) -> Bool {
-        lhs.puzzle.id == rhs.puzzle.id &&
-        lhs.isPremium == rhs.isPremium &&
-        lhs.isCompleted == rhs.isCompleted &&
-        lhs.rating == rhs.rating
     }
     
     var body: some View {
@@ -444,7 +455,7 @@ private struct PuzzleButtonView: View, Equatable {
         ZStack {
             // Background
             RoundedRectangle(cornerRadius: Theme.Layout.puzzleButtonCornerRadius, style: .continuous)
-                .fill(Theme.Colors.puzzleButtonBackground.opacity(isLocked ? 0.5 : 0.9))
+                .fill(theme.puzzleButtonBackground.opacity(isLocked ? theme.puzzleButtonBackgroundLocked : 0.9))
                 .frame(height: Theme.Layout.puzzleButtonHeight)
             
             // Main content
@@ -485,12 +496,12 @@ private struct PuzzleButtonView: View, Equatable {
                 cornerRadii: .init(topLeading: 18, bottomLeading: 0, bottomTrailing: 142, topTrailing: 0),
                 style: .continuous
             )
-            .fill(Theme.Colors.puzzleButtonBadge)
+            .fill(theme.puzzleButtonBadge)
             .frame(width: 46, height: 46)
             
             Text("\(puzzle.number)")
                 .font(.system(size: 18, weight: .bold, design: .rounded))
-                .foregroundStyle(Theme.Colors.puzzleButtonBadgeText)
+                .foregroundStyle(theme.puzzleButtonBadgeText)
                 .padding(.top, 8)
                 .padding(.leading, 12)
         }
@@ -511,10 +522,10 @@ private struct PuzzleButtonView: View, Equatable {
         } else if isCompleted {
             ZStack {
                 Circle().fill(Color.white)
-                Circle().stroke(Theme.Colors.puzzleCompletedBorder, lineWidth: 3)
+                Circle().stroke(theme.puzzleCompletedBorder, lineWidth: 3)
                 Image(systemName: "checkmark")
                     .font(.system(size: 16, weight: .bold, design: .rounded))
-                    .foregroundStyle(Theme.Colors.puzzleCompletedIcon)
+                    .foregroundStyle(theme.puzzleCompletedIcon)
             }
             .frame(width: 34, height: 34)
             .padding(.top, 4)
@@ -524,7 +535,7 @@ private struct PuzzleButtonView: View, Equatable {
     private var lockOverlay: some View {
         ZStack {
             Circle()
-                .fill(Theme.Colors.puzzleLockOverlay)
+                .fill(theme.puzzleLockOverlay)
                 .frame(width: 50, height: 50)
             Image(systemName: "lock.fill")
                 .font(.system(size: 24))
