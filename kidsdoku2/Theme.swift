@@ -194,8 +194,8 @@ struct ChristmasQuestButtonStyle: ButtonStyle {
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
             .frame(maxWidth: .infinity)
-            .padding(.vertical, 24)
-            .padding(.horizontal, 20)
+//            .padding(.vertical, 24)
+//            .padding(.horizontal, 20)
             .background(
                 RoundedRectangle(cornerRadius: Theme.Layout.largeCornerRadius, style: .continuous)
                     .fill(
