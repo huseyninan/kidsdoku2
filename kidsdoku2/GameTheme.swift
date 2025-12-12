@@ -40,6 +40,7 @@ protocol GameTheme {
     // MARK: - Background
     var backgroundImageName: String { get }
     var showRunningFox: Bool { get }
+    var showSnowfall: Bool { get }
     
     // MARK: - Header Colors
     var badgeTextColor: Color { get }
@@ -99,12 +100,22 @@ protocol GameTheme {
     var highlightGradientStart: Color { get }
     var highlightGradientEnd: Color { get }
     var highlightGlowColor: Color { get }
+    
+    // MARK: - Settings Button
+    var settingsButtonGradientStart: Color { get }
+    var settingsButtonGradientEnd: Color { get }
+    
+    // MARK: - Message Type Colors
+    var messageInfoColor: Color { get }
+    var messageSuccessColor: Color { get }
+    var messageWarningColor: Color { get }
 }
 
 // MARK: - Default Implementation
 
 extension GameTheme {
     var showRunningFox: Bool { true }
+    var showSnowfall: Bool { false }
 }
 
 // MARK: - Storybook Theme (Default)
@@ -180,6 +191,15 @@ struct StorybookTheme: GameTheme {
     let highlightGradientStart = Color(red: 0.23, green: 0.78, blue: 1.0)
     let highlightGradientEnd = Color(red: 0.0, green: 0.58, blue: 0.93)
     let highlightGlowColor = Color.cyan
+    
+    // Settings Button (Purple)
+    let settingsButtonGradientStart = Color(red: 0.7, green: 0.5, blue: 0.9)
+    let settingsButtonGradientEnd = Color(red: 0.6, green: 0.4, blue: 0.8)
+    
+    // Message Colors
+    let messageInfoColor = Color(.systemBlue)
+    let messageSuccessColor = Color(.systemGreen)
+    let messageWarningColor = Color(.systemOrange)
 }
 
 // MARK: - Christmas Theme
@@ -188,6 +208,7 @@ struct ChristmasTheme: GameTheme {
     // Background
     let backgroundImageName = "christmas_bg"
     let showRunningFox = true
+    let showSnowfall = true
     
     // Header - Badge (Festive red and gold)
     let badgeTextColor = Color(red: 0.5, green: 0.15, blue: 0.15)
@@ -258,6 +279,15 @@ struct ChristmasTheme: GameTheme {
     let highlightGradientStart = Color(red: 1.0, green: 0.85, blue: 0.3)
     let highlightGradientEnd = Color(red: 0.95, green: 0.7, blue: 0.1)
     let highlightGlowColor = Color(red: 1.0, green: 0.85, blue: 0.4)
+    
+    // Settings Button (Christmas Green)
+    let settingsButtonGradientStart = Color(red: 0.3, green: 0.65, blue: 0.35)
+    let settingsButtonGradientEnd = Color(red: 0.2, green: 0.5, blue: 0.25)
+    
+    // Message Colors (Christmas themed)
+    let messageInfoColor = Color(red: 0.2, green: 0.55, blue: 0.75) // Frosty blue
+    let messageSuccessColor = Color(red: 0.2, green: 0.55, blue: 0.3) // Christmas green
+    let messageWarningColor = Color(red: 0.9, green: 0.65, blue: 0.15) // Christmas gold
 }
 
 // MARK: - Theme Environment Key

@@ -31,6 +31,12 @@ struct GameView: View {
                     .resizable(resizingMode: .stretch)
                     .ignoresSafeArea()
                 
+                // Snowfall effect for Christmas theme
+                if theme.showSnowfall {
+                    SnowfallView()
+                        .ignoresSafeArea()
+                }
+                
                 // Animated running fox at the bottom of the screen (if theme supports it)
                 if theme.showRunningFox {
                     VStack {
@@ -134,8 +140,8 @@ struct GameView: View {
                 StorybookIconCircle(
                     systemName: "slider.horizontal.3",
                     gradient: [
-                        Theme.Colors.gameSettingsGradientStart,
-                        Theme.Colors.gameSettingsGradientEnd
+                        theme.settingsButtonGradientStart,
+                        theme.settingsButtonGradientEnd
                     ]
                 )
                 .scaleEffect(DeviceSizing.settingsButtonScale)
@@ -275,7 +281,7 @@ struct GameView: View {
     }
 
     private func messageBanner(_ message: KidSudokuMessage, theme: GameTheme) -> some View {
-        let accentColor = color(for: message.type)
+        let accentColor = color(for: message.type, theme: theme)
         
         return HStack(alignment: .center, spacing: 10) {
             if let symbolImageName = message.symbolImageName {
@@ -339,14 +345,14 @@ struct GameView: View {
         .transition(.move(edge: .top).combined(with: .opacity))
     }
 
-    private func color(for type: KidSudokuMessageType) -> Color {
+    private func color(for type: KidSudokuMessageType, theme: GameTheme) -> Color {
         switch type {
         case .info:
-            return Color(.systemBlue)
+            return theme.messageInfoColor
         case .success:
-            return Color(.systemGreen)
+            return theme.messageSuccessColor
         case .warning:
-            return Color(.systemOrange)
+            return theme.messageWarningColor
         }
     }
 
