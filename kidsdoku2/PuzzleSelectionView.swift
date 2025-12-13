@@ -21,7 +21,7 @@ struct PuzzleWithStatus: Identifiable {
     let isCompleted: Bool
     let rating: Double?
     
-    var id: UUID { puzzle.id }
+    var id: String { puzzle.id }
 }
 
 // MARK: - Section Types for grouping puzzles
@@ -260,11 +260,10 @@ struct PuzzleSelectionView: View {
                     guard !puzzles.isEmpty else { return nil }
                     
                     var puzzlesWithStatus = puzzles.map { puzzle in
-                        let key = "\(puzzle.size)-\(puzzle.difficulty.rawValue)-\(puzzle.number)"
                         return PuzzleWithStatus(
                             puzzle: puzzle,
-                            isCompleted: completedSet.contains(key),
-                            rating: ratingsDict[key]
+                            isCompleted: completedSet.contains(puzzle.id),
+                            rating: ratingsDict[puzzle.id]
                         )
                     }
                     
@@ -290,11 +289,10 @@ struct PuzzleSelectionView: View {
                     guard !puzzles.isEmpty else { return nil }
                     
                     var puzzlesWithStatus = puzzles.map { puzzle in
-                        let key = "\(puzzle.size)-\(puzzle.difficulty.rawValue)-\(puzzle.number)"
                         return PuzzleWithStatus(
                             puzzle: puzzle,
-                            isCompleted: completedSet.contains(key),
-                            rating: ratingsDict[key]
+                            isCompleted: completedSet.contains(puzzle.id),
+                            rating: ratingsDict[puzzle.id]
                         )
                     }
                     

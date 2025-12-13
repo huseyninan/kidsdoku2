@@ -24,10 +24,10 @@ class AppEnvironment: ObservableObject {
     @AppStorage("show6x6Grid") var show6x6Grid: Bool = true
     
     /// Current game theme
-    @AppStorage("selectedTheme") private var selectedThemeRaw: String = GameThemeType.christmas.rawValue
+    @AppStorage("selectedTheme") private var selectedThemeRaw: String = GameThemeType.storybook.rawValue
     
     /// Published property for the current theme type
-    @Published var currentThemeType: GameThemeType = .christmas
+    @Published var currentThemeType: GameThemeType = .storybook
     
     /// Get the current theme
     var currentTheme: GameTheme {

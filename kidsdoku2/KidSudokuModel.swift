@@ -238,7 +238,7 @@ enum PuzzleDifficulty: String, CaseIterable {
 }
 
 struct PremadePuzzle: Hashable, Identifiable {
-    let id = UUID()
+    let id: String  // Stable ID in format "size-difficulty-number"
     let number: Int
     let size: Int
     let difficulty: PuzzleDifficulty

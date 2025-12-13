@@ -25,28 +25,24 @@ class PuzzleCompletionManager: ObservableObject {
     
     /// Mark a puzzle as completed
     func markCompleted(puzzle: PremadePuzzle) {
-        let key = puzzleKey(size: puzzle.size, difficulty: puzzle.difficulty, number: puzzle.number)
-        completedPuzzles.insert(key)
+        completedPuzzles.insert(puzzle.id)
         saveCompletedPuzzles()
     }
     
     /// Store the earned rating for a puzzle
     func setRating(_ rating: Double, for puzzle: PremadePuzzle) {
-        let key = puzzleKey(size: puzzle.size, difficulty: puzzle.difficulty, number: puzzle.number)
-        puzzleRatings[key] = rating
+        puzzleRatings[puzzle.id] = rating
         savePuzzleRatings()
     }
     
     /// Retrieve the saved rating for a puzzle, if any
     func rating(for puzzle: PremadePuzzle) -> Double? {
-        let key = puzzleKey(size: puzzle.size, difficulty: puzzle.difficulty, number: puzzle.number)
-        return puzzleRatings[key]
+        return puzzleRatings[puzzle.id]
     }
     
     /// Check if a puzzle is completed
     func isCompleted(puzzle: PremadePuzzle) -> Bool {
-        let key = puzzleKey(size: puzzle.size, difficulty: puzzle.difficulty, number: puzzle.number)
-        return completedPuzzles.contains(key)
+        return completedPuzzles.contains(puzzle.id)
     }
     
     /// Reset all completion data
@@ -98,10 +94,6 @@ class PuzzleCompletionManager: ObservableObject {
     }
     
     // MARK: - Private Helpers
-    
-    private func puzzleKey(size: Int, difficulty: PuzzleDifficulty, number: Int) -> String {
-        return "\(size)-\(difficulty.rawValue)-\(number)"
-    }
     
     private func loadCompletedPuzzles() {
         if let data = UserDefaults.standard.array(forKey: userDefaultsKey) as? [String] {
