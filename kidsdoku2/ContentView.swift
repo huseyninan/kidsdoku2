@@ -21,8 +21,8 @@ struct ContentView: View {
                         } else {
                             Text("Puzzle not available")
                         }
-                    case .puzzleSelection(let size):
-                        PuzzleSelectionView(size: size, path: $path)
+                    case .puzzleSelection(let size, let themeOverride):
+                        PuzzleSelectionView(size: size, path: $path, themeOverride: themeOverride)
                     case .premadePuzzle(let puzzle):
                         GameView(config: puzzle.config, premadePuzzle: puzzle)
                     case .settings:

@@ -130,8 +130,7 @@ struct MainMenuView: View {
     
     private var christmasQuestButton: some View {
         Button(action: {
-            appEnvironment.setTheme(.christmas)
-            path.append(.puzzleSelection(size: 4))
+            path.append(.puzzleSelection(size: 4, themeOverride: .christmas))
         }) {
             ZStack {
                 // Background image

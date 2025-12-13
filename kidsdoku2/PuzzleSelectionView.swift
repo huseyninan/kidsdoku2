@@ -57,8 +57,10 @@ enum PuzzleSectionType: Hashable {
 struct PuzzleSelectionView: View {
     let size: Int
     @Binding var path: [KidSudokuRoute]
+    let themeOverride: GameThemeType?
     @ObservedObject private var completionManager = PuzzleCompletionManager.shared
     @EnvironmentObject var appEnvironment: AppEnvironment
+    @State private var originalTheme: GameThemeType?
     
     @State private var showSettings = false
     @State private var showPaywall = false
@@ -134,9 +136,10 @@ struct PuzzleSelectionView: View {
         gameTheme.groupPuzzlesBySize
     }
     
-    init(size: Int, path: Binding<[KidSudokuRoute]>) {
+    init(size: Int, path: Binding<[KidSudokuRoute]>, themeOverride: GameThemeType? = nil) {
         self.size = size
         self._path = path
+        self.themeOverride = themeOverride
         self.themes = Self.allThemes[size] ?? Self.defaultTheme
     }
     
@@ -174,6 +177,20 @@ struct PuzzleSelectionView: View {
         }
         .navigationBarTitleDisplayMode(.inline)
         .navigationBarBackButtonHidden(false)
+        .onAppear {
+            // Apply theme override temporarily if provided
+            if let override = themeOverride {
+                originalTheme = appEnvironment.currentThemeType
+                appEnvironment.setTheme(override)
+            }
+        }
+        .onDisappear {
+            // Restore original theme when leaving
+            if let original = originalTheme {
+                appEnvironment.setTheme(original)
+                originalTheme = nil
+            }
+        }
         .task {
             await loadPuzzlesAsync()
         }
