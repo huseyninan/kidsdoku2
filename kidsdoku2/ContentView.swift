@@ -27,6 +27,8 @@ struct ContentView: View {
                         GameView(config: puzzle.config, premadePuzzle: puzzle)
                     case .settings:
                         SettingsView()
+                    case .badges:
+                        BadgesView()
                     }
                 }
         }

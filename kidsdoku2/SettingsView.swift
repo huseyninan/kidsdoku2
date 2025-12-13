@@ -17,6 +17,8 @@ struct SettingsView: View {
     @State private var showResetAlert = false
     @State private var resetType: ResetType?
     @State private var showAbout = false
+    @State private var showBadges = false
+    @ObservedObject var badgeManager = BadgeManager.shared
     
     enum ResetType {
         case all
@@ -47,6 +49,45 @@ struct SettingsView: View {
                         .padding(.top, 8)
                     
                     VStack(spacing: 20) {
+                        // Theme Selection Section
+                        SettingsSection(
+                            icon: "paintpalette.fill",
+                            title: String(localized: "Theme")
+                        ) {
+                            ThemeSelectionRow(
+                                theme: .storybook,
+                                isSelected: appEnvironment.currentThemeType == .storybook,
+                                isLocked: false,
+                                lockReason: nil
+                            ) {
+                                appEnvironment.setTheme(.storybook)
+                            }
+                            
+                            ThemeSelectionRow(
+                                theme: .christmas,
+                                isSelected: appEnvironment.currentThemeType == .christmas,
+                                isLocked: !completionManager.areAllChristmasPuzzlesCompleted(),
+                                lockReason: christmasLockReason
+                            ) {
+                                if completionManager.areAllChristmasPuzzlesCompleted() {
+                                    appEnvironment.setTheme(.christmas)
+                                }
+                            }
+                        }
+                        
+                        // Badges Section
+                        SettingsSection(
+                            icon: "rosette",
+                            title: String(localized: "Achievements")
+                        ) {
+                            BadgesButton(
+                                earnedCount: badgeManager.earnedBadgesCount(),
+                                totalCount: badgeManager.totalBadgesCount()
+                            ) {
+                                showBadges = true
+                            }
+                        }
+                        
                         // Audio & Feedback Section
                         SettingsSection(
                             icon: "speaker.wave.3.fill",
@@ -183,6 +224,9 @@ struct SettingsView: View {
         .sheet(isPresented: $showAbout) {
             AboutView()
         }
+        .fullScreenCover(isPresented: $showBadges) {
+            BadgesView()
+        }
     }
     
     private var resetAlertMessage: String {
@@ -198,6 +242,14 @@ struct SettingsView: View {
         case .none:
             return ""
         }
+    }
+    
+    private var christmasLockReason: String? {
+        let progress = completionManager.christmasPuzzleProgress()
+        if progress.completed < progress.total {
+            return String(localized: "Complete all Christmas puzzles (\(progress.completed)/\(progress.total))")
+        }
+        return nil
     }
     
     private func performReset() {
@@ -339,6 +391,193 @@ struct SettingsButton: View {
             )
         }
         .buttonStyle(.plain)
+    }
+}
+
+// MARK: - Badges Button
+struct BadgesButton: View {
+    let earnedCount: Int
+    let totalCount: Int
+    let action: () -> Void
+    
+    var body: some View {
+        Button(action: {
+            HapticManager.shared.trigger(.light)
+            action()
+        }) {
+            HStack(spacing: 14) {
+                ZStack {
+                    Circle()
+                        .fill(
+                            LinearGradient(
+                                colors: [
+                                    Color(red: 0.95, green: 0.77, blue: 0.06),
+                                    Color(red: 0.85, green: 0.55, blue: 0.0)
+                                ],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            )
+                        )
+                        .frame(width: 44, height: 44)
+                    
+                    Image(systemName: "rosette")
+                        .font(.system(size: 22, weight: .semibold))
+                        .foregroundColor(.white)
+                }
+                
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(String(localized: "View Badges"))
+                        .font(.system(size: 17, weight: .semibold, design: .rounded))
+                        .foregroundStyle(Color(red: 0.4, green: 0.25, blue: 0.15))
+                    
+                    HStack(spacing: 4) {
+                        Text(String(localized: "Collected:"))
+                            .font(.system(size: 13, weight: .medium, design: .rounded))
+                            .foregroundStyle(Color.gray)
+                        
+                        Text("\(earnedCount)/\(totalCount)")
+                            .font(.system(size: 13, weight: .bold, design: .rounded))
+                            .foregroundStyle(Color(red: 0.7, green: 0.35, blue: 0.3))
+                    }
+                }
+                
+                Spacer()
+                
+                // Progress ring
+                ZStack {
+                    Circle()
+                        .stroke(Color.gray.opacity(0.2), lineWidth: 4)
+                        .frame(width: 40, height: 40)
+                    
+                    Circle()
+                        .trim(from: 0, to: totalCount > 0 ? CGFloat(earnedCount) / CGFloat(totalCount) : 0)
+                        .stroke(
+                            Color(red: 0.7, green: 0.35, blue: 0.3),
+                            style: StrokeStyle(lineWidth: 4, lineCap: .round)
+                        )
+                        .frame(width: 40, height: 40)
+                        .rotationEffect(.degrees(-90))
+                    
+                    Text("\(Int((Double(earnedCount) / Double(max(totalCount, 1))) * 100))%")
+                        .font(.system(size: 10, weight: .bold, design: .rounded))
+                        .foregroundColor(Color(red: 0.4, green: 0.25, blue: 0.15))
+                }
+                
+                Image(systemName: "chevron.right")
+                    .font(.system(size: 14, weight: .semibold))
+                    .foregroundColor(.gray)
+            }
+            .padding(12)
+            .background(
+                RoundedRectangle(cornerRadius: 12, style: .continuous)
+                    .fill(Color(red: 0.98, green: 0.97, blue: 0.95))
+            )
+        }
+        .buttonStyle(.plain)
+    }
+}
+
+// MARK: - Theme Selection Row
+struct ThemeSelectionRow: View {
+    let theme: GameThemeType
+    let isSelected: Bool
+    let isLocked: Bool
+    let lockReason: String?
+    let action: () -> Void
+    
+    private var themeIcon: String {
+        switch theme {
+        case .storybook:
+            return "book.fill"
+        case .christmas:
+            return "snowflake"
+        }
+    }
+    
+    private var themeSubtitle: String {
+        switch theme {
+        case .storybook:
+            return String(localized: "Classic warm storybook style")
+        case .christmas:
+            return String(localized: "Festive winter wonderland")
+        }
+    }
+    
+    private var themeColor: Color {
+        switch theme {
+        case .storybook:
+            return Color(red: 0.45, green: 0.28, blue: 0.15)
+        case .christmas:
+            return Color(red: 0.2, green: 0.5, blue: 0.35)
+        }
+    }
+    
+    var body: some View {
+        Button(action: {
+            if !isLocked {
+                HapticManager.shared.trigger(.light)
+                action()
+            }
+        }) {
+            HStack(spacing: 14) {
+                ZStack {
+                    Image(systemName: themeIcon)
+                        .font(.system(size: 24))
+                        .foregroundColor(isLocked ? .gray : themeColor)
+                        .frame(width: 40)
+                    
+                    if isLocked {
+                        Image(systemName: "lock.fill")
+                            .font(.system(size: 12, weight: .bold))
+                            .foregroundColor(.white)
+                            .padding(4)
+                            .background(Circle().fill(Color.gray))
+                            .offset(x: 14, y: 12)
+                    }
+                }
+                
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(theme.displayName)
+                        .font(.system(size: 17, weight: .semibold, design: .rounded))
+                        .foregroundStyle(isLocked ? Color.gray : Color(red: 0.4, green: 0.25, blue: 0.15))
+                    
+                    if isLocked, let reason = lockReason {
+                        Text(reason)
+                            .font(.system(size: 12, weight: .medium, design: .rounded))
+                            .foregroundStyle(Color.orange)
+                    } else {
+                        Text(themeSubtitle)
+                            .font(.system(size: 13, weight: .medium, design: .rounded))
+                            .foregroundStyle(Color.gray)
+                    }
+                }
+                
+                Spacer()
+                
+                if isSelected && !isLocked {
+                    Image(systemName: "checkmark.circle.fill")
+                        .font(.system(size: 24))
+                        .foregroundColor(themeColor)
+                } else if !isLocked {
+                    Circle()
+                        .strokeBorder(Color.gray.opacity(0.4), lineWidth: 2)
+                        .frame(width: 24, height: 24)
+                }
+            }
+            .padding(12)
+            .background(
+                RoundedRectangle(cornerRadius: 12, style: .continuous)
+                    .fill(isSelected && !isLocked 
+                        ? themeColor.opacity(0.1) 
+                        : Color(red: 0.98, green: 0.97, blue: 0.95))
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: 12, style: .continuous)
+                    .strokeBorder(isSelected && !isLocked ? themeColor.opacity(0.5) : Color.clear, lineWidth: 2)
+            )
+        }
+        .buttonStyle(.plain)
+        .opacity(isLocked ? 0.7 : 1.0)
     }
 }
 

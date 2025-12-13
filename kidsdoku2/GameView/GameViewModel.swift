@@ -325,6 +325,9 @@ final class GameViewModel: ObservableObject {
         if let premadePuzzle = originalPremadePuzzle {
             PuzzleCompletionManager.shared.markCompleted(puzzle: premadePuzzle)
             PuzzleCompletionManager.shared.setRating(calculateStars(), for: premadePuzzle)
+            
+            // Check for any newly earned badges
+            BadgeManager.shared.checkAndAwardBadges()
         }
         
         return showCelebration

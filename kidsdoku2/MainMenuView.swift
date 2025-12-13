@@ -111,14 +111,15 @@ struct MainMenuView: View {
             // Christmas Quest Button
             christmasQuestButton
             
-            // Regular quest options
+            // Regular quest options - use the theme selected in Settings
             if !questOptions.isEmpty {
                 ForEach(questOptions) { option in
                     questButton(
                         title: option.title,
                         subtitle: option.subtitle
                     ) {
-                        appEnvironment.setTheme(.storybook)
+                        // Use current theme from Settings (don't override)
+                        // Christmas theme is only forced for Christmas Quest
                         let size = option.size
                         path.append(.puzzleSelection(size: size))
                     }

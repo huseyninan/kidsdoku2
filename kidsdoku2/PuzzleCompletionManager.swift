@@ -65,6 +65,38 @@ class PuzzleCompletionManager: ObservableObject {
         savePuzzleRatings()
     }
     
+    /// Check if all Christmas quest puzzles are completed
+    func areAllChristmasPuzzlesCompleted() -> Bool {
+        let store = PremadePuzzleStore.shared
+        
+        // Get all Christmas puzzles for each size
+        let christmasPuzzles3x3 = store.puzzles(for: 3, themeType: .christmas)
+        let christmasPuzzles4x4 = store.puzzles(for: 4, themeType: .christmas)
+        let christmasPuzzles6x6 = store.puzzles(for: 6, themeType: .christmas)
+        
+        let allChristmasPuzzles = christmasPuzzles3x3 + christmasPuzzles4x4 + christmasPuzzles6x6
+        
+        // If no Christmas puzzles exist, consider it not completed
+        guard !allChristmasPuzzles.isEmpty else { return false }
+        
+        // Check if all Christmas puzzles are completed
+        return allChristmasPuzzles.allSatisfy { isCompleted(puzzle: $0) }
+    }
+    
+    /// Get the Christmas puzzle completion progress (completed/total)
+    func christmasPuzzleProgress() -> (completed: Int, total: Int) {
+        let store = PremadePuzzleStore.shared
+        
+        let christmasPuzzles3x3 = store.puzzles(for: 3, themeType: .christmas)
+        let christmasPuzzles4x4 = store.puzzles(for: 4, themeType: .christmas)
+        let christmasPuzzles6x6 = store.puzzles(for: 6, themeType: .christmas)
+        
+        let allChristmasPuzzles = christmasPuzzles3x3 + christmasPuzzles4x4 + christmasPuzzles6x6
+        let completedCount = allChristmasPuzzles.filter { isCompleted(puzzle: $0) }.count
+        
+        return (completedCount, allChristmasPuzzles.count)
+    }
+    
     // MARK: - Private Helpers
     
     private func puzzleKey(size: Int, difficulty: PuzzleDifficulty, number: Int) -> String {
