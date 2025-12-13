@@ -17,10 +17,40 @@ class PuzzleCompletionManager: ObservableObject {
     
     private let userDefaultsKey = "completedPuzzles"
     private let ratingsKey = "puzzleRatings"
+    private let ratingsMigrationVersionKey = "ratingsIdMigrationVersion"
+    private let currentMigrationVersion = 1
     
     private init() {
         loadCompletedPuzzles()
         loadPuzzleRatings()
+        migrateOldRatingIds()
+    }
+    
+    /// Migrates old rating IDs (without theme prefix) to new format or removes them
+    private func migrateOldRatingIds() {
+        let savedVersion = UserDefaults.standard.integer(forKey: ratingsMigrationVersionKey)
+        guard savedVersion < currentMigrationVersion else { return }
+        
+        // Filter out old-format rating IDs
+        let validRatings = puzzleRatings.filter { key, _ in
+            // New format: "theme-size-difficulty-number"
+            let components = key.split(separator: "-")
+            return components.count == 4 && (key.hasPrefix("christmas-") || key.hasPrefix("storybook-"))
+        }
+        
+        puzzleRatings = validRatings
+        savePuzzleRatings()
+        
+        // Also clear old completedPuzzles (they use old format keys)
+        let validCompleted = completedPuzzles.filter { id in
+            let components = id.split(separator: "-")
+            return components.count == 4 && (id.hasPrefix("christmas-") || id.hasPrefix("storybook-"))
+        }
+        
+        completedPuzzles = validCompleted
+        saveCompletedPuzzles()
+        
+        UserDefaults.standard.set(currentMigrationVersion, forKey: ratingsMigrationVersionKey)
     }
     
     /// Mark a puzzle as completed
@@ -32,15 +62,13 @@ class PuzzleCompletionManager: ObservableObject {
     
     /// Store the earned rating for a puzzle
     func setRating(_ rating: Double, for puzzle: PremadePuzzle) {
-        let key = puzzleKey(size: puzzle.size, difficulty: puzzle.difficulty, number: puzzle.number)
-        puzzleRatings[key] = rating
+        puzzleRatings[puzzle.id] = rating
         savePuzzleRatings()
     }
     
     /// Retrieve the saved rating for a puzzle, if any
     func rating(for puzzle: PremadePuzzle) -> Double? {
-        let key = puzzleKey(size: puzzle.size, difficulty: puzzle.difficulty, number: puzzle.number)
-        return puzzleRatings[key]
+        return puzzleRatings[puzzle.id]
     }
     
     /// Check if a puzzle is completed

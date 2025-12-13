@@ -59,7 +59,8 @@ final class PremadePuzzleStore {
                           123
                           312
                           231
-                          """),
+                          """,
+               theme: .christmas),
         
         puzzle(2, 3, .easy,
                initial:  """
@@ -71,7 +72,8 @@ final class PremadePuzzleStore {
                           123
                           231
                           312
-                          """),
+                          """,
+               theme: .christmas),
         
         puzzle(3, 3, .easy,
                initial:  """
@@ -83,7 +85,8 @@ final class PremadePuzzleStore {
                           123
                           231
                           312
-                          """),
+                          """,
+               theme: .christmas),
         
         // Normal 3x3 (Yeni 10, 11, 12)
         puzzle(4, 3, .normal,
@@ -96,7 +99,8 @@ final class PremadePuzzleStore {
                           123
                           231
                           312
-                          """),
+                          """,
+               theme: .christmas),
         
         puzzle(5, 3, .normal,
                initial:  """
@@ -108,7 +112,8 @@ final class PremadePuzzleStore {
                           123
                           231
                           312
-                          """),
+                          """,
+               theme: .christmas),
         
         puzzle(6, 3, .normal,
                initial:  """
@@ -120,7 +125,8 @@ final class PremadePuzzleStore {
                           123
                           231
                           312
-                          """),
+                          """,
+               theme: .christmas),
         
         // Hard 3x3 (Yeni 9, 10, 11)
         puzzle(7, 3, .hard,
@@ -133,7 +139,8 @@ final class PremadePuzzleStore {
                           123
                           231
                           312
-                          """),
+                          """,
+               theme: .christmas),
         
         puzzle(8, 3, .hard,
                initial:  """
@@ -145,7 +152,8 @@ final class PremadePuzzleStore {
                           123
                           231
                           312
-                          """),
+                          """,
+               theme: .christmas),
         
         puzzle(9, 3, .hard,
                initial:  """
@@ -157,7 +165,8 @@ final class PremadePuzzleStore {
                           123
                           231
                           312
-                          """),
+                          """,
+               theme: .christmas),
     ]
     
     private let christmasFourByFourPuzzles: [PremadePuzzle] = [
@@ -174,7 +183,8 @@ final class PremadePuzzleStore {
                           3412
                           2143
                           4321
-                          """),
+                          """,
+               theme: .christmas),
         
         puzzle(2, 4, .easy,
                initial:  """
@@ -188,7 +198,8 @@ final class PremadePuzzleStore {
                           3412
                           2143
                           4321
-                          """),
+                          """,
+               theme: .christmas),
         
         puzzle(3, 4, .easy,
                initial:  """
@@ -202,7 +213,8 @@ final class PremadePuzzleStore {
                           3412
                           2143
                           4321
-                          """),
+                          """,
+               theme: .christmas),
         
         // Normal 4x4 (Yeni 28, 29, 30)
         puzzle(4, 4, .normal,
@@ -217,7 +229,8 @@ final class PremadePuzzleStore {
                           3412
                           2143
                           4321
-                          """),
+                          """,
+               theme: .christmas),
         
         puzzle(5, 4, .normal,
                initial:  """
@@ -231,7 +244,8 @@ final class PremadePuzzleStore {
                           3412
                           2143
                           4321
-                          """),
+                          """,
+               theme: .christmas),
         
         puzzle(6, 4, .normal,
                initial:  """
@@ -245,7 +259,8 @@ final class PremadePuzzleStore {
                         4321
                         2143
                         3412
-                        """),
+                        """,
+               theme: .christmas),
         // Hard 4x4 (Yeni 26, 27, 28)
         puzzle(7, 4, .hard,
                initial:  """
@@ -259,7 +274,8 @@ final class PremadePuzzleStore {
                         3412
                         2143
                         4321
-                        """),
+                        """,
+               theme: .christmas),
         
         puzzle(8, 4, .hard,
                initial:  """
@@ -273,7 +289,8 @@ final class PremadePuzzleStore {
                         3412
                         2143
                         4321
-                        """),
+                        """,
+               theme: .christmas),
         
         puzzle(9, 4, .hard,
                initial:  """
@@ -287,7 +304,8 @@ final class PremadePuzzleStore {
                           3412
                           2143
                           4321
-                          """),
+                          """,
+               theme: .christmas),
     ]
     
     private let chrismasSixBySixPuzzles: [PremadePuzzle] = [
@@ -308,7 +326,8 @@ final class PremadePuzzleStore {
                               564231
                               312645
                               645312
-                              """),
+                              """,
+               theme: .christmas),
         
         puzzle(2, 6, .easy,
                initial:  """
@@ -326,7 +345,8 @@ final class PremadePuzzleStore {
                               236145
                               412563
                               563412
-                              """),
+                              """,
+               theme: .christmas),
         
         puzzle(3, 6, .easy,
                initial:  """
@@ -344,7 +364,8 @@ final class PremadePuzzleStore {
                               213546
                               465132
                               132465
-                              """),
+                              """,
+               theme: .christmas),
         
         puzzle(4, 6, .easy,
                initial:  """
@@ -362,7 +383,8 @@ final class PremadePuzzleStore {
                               436512
                               254361
                               613425
-                              """),
+                              """,
+               theme: .christmas),
         
         puzzle(5, 6, .easy,
                initial:  """
@@ -380,7 +402,8 @@ final class PremadePuzzleStore {
                               456123
                               231564
                               564231
-                              """),
+                              """,
+               theme: .christmas),
         
         puzzle(6, 6, .easy,
                     initial:  """
@@ -398,7 +421,8 @@ final class PremadePuzzleStore {
                               654231
                               132645
                               465312
-                              """),
+                              """,
+               theme: .christmas),
         
         puzzle(7, 6, .easy,
                initial:  """
@@ -416,7 +440,8 @@ final class PremadePuzzleStore {
                               634512
                               425136
                               163254
-                              """),
+                              """,
+               theme: .christmas),
         
         puzzle(8, 6, .easy,
                initial:  """
@@ -434,7 +459,8 @@ final class PremadePuzzleStore {
                               563412
                               651234
                               324165
-                              """),
+                              """,
+               theme: .christmas),
         
         puzzle(9, 6, .easy,
                initial:  """
@@ -452,7 +478,8 @@ final class PremadePuzzleStore {
                               463251
                               651324
                               234165
-                              """)
+                              """,
+               theme: .christmas)
     ]
     
     // MARK: - 3x3 Puzzles
@@ -468,7 +495,8 @@ final class PremadePuzzleStore {
                       123
                       231
                       312
-                      """),
+                      """,
+               theme: .storybook),
         
         puzzle(2, 3, .easy,
                initial:  """
@@ -2433,6 +2461,7 @@ final class PremadePuzzleStore {
                 symbolGroup: symbolGroup
             )
             return PremadePuzzle(
+                id: puzzle.id,
                 number: puzzle.number,
                 size: puzzle.size,
                 difficulty: puzzle.difficulty,
@@ -2467,6 +2496,7 @@ final class PremadePuzzleStore {
                     symbolGroup: symbolGroup
                 )
                 return PremadePuzzle(
+                    id: puzzle.id,
                     number: puzzle.number,
                     size: puzzle.size,
                     difficulty: puzzle.difficulty,
@@ -2502,7 +2532,8 @@ private func puzzle(
     _ size: Int,
     _ difficulty: PuzzleDifficulty,
     initial: String,
-    solution: String
+    solution: String,
+    theme: GameThemeType = .storybook
 ) -> PremadePuzzle {
     let symbolGroup = assignSymbolGroup(size: size, difficulty: difficulty, number: number)
     
@@ -2534,7 +2565,10 @@ private func puzzle(
     assert(initialBoard.allSatisfy { $0.count == size }, "All initial board rows must have \(size) columns")
     assert(solutionBoard.allSatisfy { $0.count == size }, "All solution board rows must have \(size) columns")
     
+    let id = "\(theme.rawValue)-\(size)-\(difficulty.rawValue.lowercased())-\(number)"
+    
     return PremadePuzzle(
+        id: id,
         number: number,
         size: size,
         difficulty: difficulty,

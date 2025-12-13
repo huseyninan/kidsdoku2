@@ -21,7 +21,7 @@ struct PuzzleWithStatus: Identifiable {
     let isCompleted: Bool
     let rating: Double?
     
-    var id: UUID { puzzle.id }
+    var id: String { puzzle.id }
 }
 
 // MARK: - Section Types for grouping puzzles
@@ -181,8 +181,8 @@ struct PuzzleSelectionView: View {
         .onChange(of: filterState) { _, _ in
             updateCachedPuzzles()
         }
-        // Update cache when completion data changes
-        .onChange(of: completionManager.completedPuzzles) { oldValue, newValue in
+        // Update cache when solve status changes
+        .onChange(of: PuzzleSolveStatusManager.shared.getSolvedPuzzleIds()) { oldValue, newValue in
             // For size-based grouping, check all sizes; for difficulty-based, check current size only
             let hasRelevantChange: Bool
             if groupBySize {
@@ -243,11 +243,10 @@ struct PuzzleSelectionView: View {
                     guard !puzzles.isEmpty else { return nil }
                     
                     var puzzlesWithStatus = puzzles.map { puzzle in
-                        let key = "\(puzzle.size)-\(puzzle.difficulty.rawValue)-\(puzzle.number)"
                         return PuzzleWithStatus(
                             puzzle: puzzle,
-                            isCompleted: completedSet.contains(key),
-                            rating: ratingsDict[key]
+                            isCompleted: puzzle.isSolved,
+                            rating: ratingsDict[puzzle.id]
                         )
                     }
                     
@@ -273,11 +272,10 @@ struct PuzzleSelectionView: View {
                     guard !puzzles.isEmpty else { return nil }
                     
                     var puzzlesWithStatus = puzzles.map { puzzle in
-                        let key = "\(puzzle.size)-\(puzzle.difficulty.rawValue)-\(puzzle.number)"
                         return PuzzleWithStatus(
                             puzzle: puzzle,
-                            isCompleted: completedSet.contains(key),
-                            rating: ratingsDict[key]
+                            isCompleted: puzzle.isSolved,
+                            rating: ratingsDict[puzzle.id]
                         )
                     }
                     

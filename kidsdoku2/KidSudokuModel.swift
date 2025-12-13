@@ -237,7 +237,7 @@ enum PuzzleDifficulty: String, CaseIterable {
 }
 
 struct PremadePuzzle: Hashable, Identifiable {
-    let id = UUID()
+    let id: String
     let number: Int
     let size: Int
     let difficulty: PuzzleDifficulty
@@ -251,6 +251,18 @@ struct PremadePuzzle: Hashable, Identifiable {
     
     var displayEmoji: String {
         return config.symbolGroup.symbols.first ?? ""
+    }
+    
+    var isSolved: Bool {
+        return PuzzleSolveStatusManager.shared.isSolved(puzzleId: id)
+    }
+    
+    func markAsSolved() {
+        PuzzleSolveStatusManager.shared.markAsSolved(puzzleId: id)
+    }
+    
+    func markAsUnsolved() {
+        PuzzleSolveStatusManager.shared.markAsUnsolved(puzzleId: id)
     }
 }
 

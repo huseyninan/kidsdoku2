@@ -323,7 +323,7 @@ final class GameViewModel: ObservableObject {
         
         // Mark premade puzzle as completed
         if let premadePuzzle = originalPremadePuzzle {
-            PuzzleCompletionManager.shared.markCompleted(puzzle: premadePuzzle)
+            premadePuzzle.markAsSolved()
             PuzzleCompletionManager.shared.setRating(calculateStars(), for: premadePuzzle)
         }
         
