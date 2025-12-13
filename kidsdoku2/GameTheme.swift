@@ -139,6 +139,14 @@ protocol GameTheme {
     // Puzzle Card Shadow
     var puzzleCardShadow: Color { get }
     var puzzleSettingsCardShadow: Color { get }
+    
+    // Grid Size Section Colors (for Christmas theme)
+    var gridSize3x3Color: Color { get }
+    var gridSize4x4Color: Color { get }
+    var gridSize6x6Color: Color { get }
+    
+    // Section grouping mode
+    var groupPuzzlesBySize: Bool { get }
 }
 
 // MARK: - Default Implementation
@@ -146,6 +154,14 @@ protocol GameTheme {
 extension GameTheme {
     var showRunningFox: Bool { true }
     var showSnowfall: Bool { false }
+    
+    // Default: group by difficulty (Storybook behavior)
+    var groupPuzzlesBySize: Bool { false }
+    
+    // Default grid size colors (used when groupPuzzlesBySize is true)
+    var gridSize3x3Color: Color { Color(red: 0.45, green: 0.55, blue: 0.45) }
+    var gridSize4x4Color: Color { Color(red: 0.35, green: 0.45, blue: 0.60) }
+    var gridSize6x6Color: Color { Color(red: 0.30, green: 0.35, blue: 0.50) }
 }
 
 // MARK: - Storybook Theme (Default)
@@ -379,6 +395,12 @@ struct ChristmasTheme: GameTheme {
     // Shadows - Warmer for festive glow
     let puzzleCardShadow = Color(red: 0.0, green: 0.1, blue: 0.2).opacity(0.3)
     let puzzleSettingsCardShadow = Color(red: 0.05, green: 0.1, blue: 0.2).opacity(0.2)
+    
+    // Grid Size Section Colors - Festive Christmas palette
+    let groupPuzzlesBySize = true
+    let gridSize3x3Color = Color(red: 0.2, green: 0.5, blue: 0.35) // Christmas green
+    let gridSize4x4Color = Color(red: 0.7, green: 0.2, blue: 0.2) // Christmas red
+    let gridSize6x6Color = Color(red: 0.6, green: 0.45, blue: 0.2) // Christmas gold
 }
 
 // MARK: - Theme Environment Key

@@ -48,6 +48,116 @@ final class PremadePuzzleStore {
     }
     
     // MARK: - 3x3 Puzzles
+    private let christMasThreeByThreePuzzles: [PremadePuzzle] = [
+        // Easy 3x3
+        puzzle(1, 3, .easy,
+               initial:  """
+                      1.3
+                      .31
+                      31.
+                      """,
+               solution: """
+                      123
+                      231
+                      312
+                      """),
+        
+        puzzle(2, 3, .easy,
+               initial:  """
+                      1..
+                      231
+                      .1.
+                      """,
+               solution: """
+                      123
+                      231
+                      312
+                      """),
+        
+        puzzle(3, 3, .easy,
+               initial:  """
+                      12.
+                      3.2
+                      .31
+                      """,
+               solution: """
+                      123
+                      312
+                      231
+                      """)
+    ]
+    
+    private let christmasFourByFourPuzzles: [PremadePuzzle] = [
+        // Easy 4x4
+        puzzle(1, 4, .easy,
+               initial:  """
+                      .234
+                      3...
+                      21.3
+                      4.21
+                      """,
+               solution: """
+                      1234
+                      3412
+                      2143
+                      4321
+                      """),
+        
+        puzzle(2, 4, .easy,
+               initial:  """
+                      12.4
+                      .412
+                      21.3
+                      ..21
+                      """,
+               solution: """
+                      1234
+                      3412
+                      2143
+                      4321
+                      """)
+    ]
+    
+    private let chrismasSixBySixPuzzles: [PremadePuzzle] = [
+        // Easy 6x6
+        puzzle(1, 6, .easy,
+               initial:  """
+                      .234.6
+                      4.612.
+                      23.6.5
+                      .643.2
+                      .12.64
+                      64523.
+                      """,
+               solution: """
+                      123456
+                      456123
+                      231645
+                      564312
+                      312564
+                      645231
+                      """),
+        
+        puzzle(2, 6, .easy,
+               initial:  """
+                      1.32.4
+                      25..63
+                      6.15.2
+                      5.2631
+                      .164.5
+                      42.31.
+                      """,
+               solution: """
+                      163254
+                      254163
+                      631542
+                      542631
+                      316425
+                      425316
+                      """)
+    ]
+    
+    // MARK: - 3x3 Puzzles
     private let threeByThreePuzzles: [PremadePuzzle] = [
         // Easy 3x3
         puzzle(1, 3, .easy,
@@ -2032,6 +2142,49 @@ final class PremadePuzzleStore {
                 initialBoard: puzzle.initialBoard,
                 solutionBoard: puzzle.solutionBoard
             )
+        }
+    }
+    
+    /// Returns all puzzles for a given size with theme-specific symbols
+    /// For Christmas theme: Returns dedicated Christmas puzzles
+    /// For other themes: Combines all difficulties for the size
+    func puzzles(for size: Int, themeType: GameThemeType) -> [PremadePuzzle] {
+        switch themeType {
+        case .christmas:
+            // Return dedicated Christmas puzzles for each size
+            let basePuzzles: [PremadePuzzle]
+            switch size {
+            case 3: basePuzzles = christMasThreeByThreePuzzles
+            case 4: basePuzzles = christmasFourByFourPuzzles
+            case 6: basePuzzles = chrismasSixBySixPuzzles
+            default: basePuzzles = []
+            }
+            // Apply Christmas symbol groups
+            return basePuzzles.map { puzzle in
+                let symbolGroup = assignSymbolGroup(size: size, difficulty: puzzle.difficulty, number: puzzle.number, themeType: themeType)
+                let newConfig = KidSudokuConfig(
+                    size: puzzle.config.size,
+                    subgridRows: puzzle.config.subgridRows,
+                    subgridCols: puzzle.config.subgridCols,
+                    symbolGroup: symbolGroup
+                )
+                return PremadePuzzle(
+                    number: puzzle.number,
+                    size: puzzle.size,
+                    difficulty: puzzle.difficulty,
+                    config: newConfig,
+                    initialBoard: puzzle.initialBoard,
+                    solutionBoard: puzzle.solutionBoard
+                )
+            }
+        case .storybook:
+            // Combine all difficulties for this size
+            var allPuzzles: [PremadePuzzle] = []
+            for difficulty in PuzzleDifficulty.allCases {
+                let puzzlesForDifficulty = puzzles(for: size, difficulty: difficulty, themeType: themeType)
+                allPuzzles.append(contentsOf: puzzlesForDifficulty)
+            }
+            return allPuzzles
         }
     }
 }

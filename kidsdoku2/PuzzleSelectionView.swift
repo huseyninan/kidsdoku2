@@ -24,6 +24,36 @@ struct PuzzleWithStatus: Identifiable {
     var id: UUID { puzzle.id }
 }
 
+// MARK: - Section Types for grouping puzzles
+
+/// Represents a section for displaying puzzles - either by difficulty or grid size
+enum PuzzleSectionType: Hashable {
+    case difficulty(PuzzleDifficulty)
+    case gridSize(Int)
+    
+    var displayName: String {
+        switch self {
+        case .difficulty(let difficulty):
+            return difficulty.rawValue
+        case .gridSize(let size):
+            return "\(size)×\(size)"
+        }
+    }
+    
+    var sortOrder: Int {
+        switch self {
+        case .difficulty(let difficulty):
+            switch difficulty {
+            case .easy: return 0
+            case .normal: return 1
+            case .hard: return 2
+            }
+        case .gridSize(let size):
+            return size
+        }
+    }
+}
+
 struct PuzzleSelectionView: View {
     let size: Int
     @Binding var path: [KidSudokuRoute]
@@ -33,7 +63,7 @@ struct PuzzleSelectionView: View {
     @State private var showSettings = false
     @State private var showPaywall = false
     @State private var showParentalGate = false
-    @State private var cachedPuzzlesByDifficulty: [(PuzzleDifficulty, [PuzzleWithStatus])] = []
+    @State private var cachedPuzzleSections: [(PuzzleSectionType, [PuzzleWithStatus])] = []
     @State private var isLoading = true
     @State private var isPad = UIDevice.current.userInterfaceIdiom == .pad
     @AppStorage("showEasyDifficulty") private var showEasy = true
@@ -82,12 +112,26 @@ struct PuzzleSelectionView: View {
         ]
     }()
     
+    // Cached names for grid size sections (Christmas theme)
+    private static let gridSizeNames: [Int: String] = {
+        [
+            3: String(localized: "Starter Gifts"),
+            4: String(localized: "Santa's Workshop"),
+            6: String(localized: "North Pole Challenge")
+        ]
+    }()
+    
     // Cached themes for this specific size - computed once, not on every render
     private let themes: [PuzzleDifficulty: DifficultyTheme]
     
     // Current game theme for color access
     private var gameTheme: GameTheme {
         appEnvironment.currentTheme
+    }
+    
+    /// Whether to group puzzles by grid size (Christmas) or difficulty (Storybook)
+    private var groupBySize: Bool {
+        gameTheme.groupPuzzlesBySize
     }
     
     init(size: Int, path: Binding<[KidSudokuRoute]>) {
@@ -118,8 +162,8 @@ struct PuzzleSelectionView: View {
                         .padding(.top, 60)
                     } else {
                         VStack(spacing: 12) {
-                            ForEach(cachedPuzzlesByDifficulty, id: \.0) { difficulty, puzzles in
-                                difficultyCard(difficulty: difficulty, puzzles: puzzles)
+                            ForEach(cachedPuzzleSections, id: \.0) { sectionType, puzzles in
+                                sectionCard(sectionType: sectionType, puzzles: puzzles)
                             }
                         }
                         .padding(.horizontal, 16)
@@ -137,13 +181,18 @@ struct PuzzleSelectionView: View {
         .onChange(of: filterState) { _, _ in
             updateCachedPuzzles()
         }
-        // Update cache when completion data changes for this board size only
+        // Update cache when completion data changes
         .onChange(of: completionManager.completedPuzzles) { oldValue, newValue in
-            // Efficient check: only update if a puzzle for the current size was affected
-            // Uses symmetricDifference to find changes without filtering entire sets
-            let sizePrefix = "\(size)-"
-            let changes = oldValue.symmetricDifference(newValue)
-            let hasRelevantChange = changes.contains { $0.hasPrefix(sizePrefix) }
+            // For size-based grouping, check all sizes; for difficulty-based, check current size only
+            let hasRelevantChange: Bool
+            if groupBySize {
+                // Check if any puzzle completion changed
+                hasRelevantChange = oldValue != newValue
+            } else {
+                let sizePrefix = "\(size)-"
+                let changes = oldValue.symmetricDifference(newValue)
+                hasRelevantChange = changes.contains { $0.hasPrefix(sizePrefix) }
+            }
             
             if hasRelevantChange {
                 updateCachedPuzzles()
@@ -169,12 +218,12 @@ struct PuzzleSelectionView: View {
     /// Loads puzzles asynchronously on a background thread to avoid main thread hitches
     private func loadPuzzlesAsync() async {
         let result = await computeFilteredPuzzles()
-        cachedPuzzlesByDifficulty = result
+        cachedPuzzleSections = result
         isLoading = false
     }
     
     /// Computes filtered puzzles on a background thread
-    private func computeFilteredPuzzles() async -> [(PuzzleDifficulty, [PuzzleWithStatus])] {
+    private func computeFilteredPuzzles() async -> [(PuzzleSectionType, [PuzzleWithStatus])] {
         // Capture values for background processing
         let completedSet = completionManager.completedPuzzles
         let ratingsDict = completionManager.puzzleRatings
@@ -184,15 +233,102 @@ struct PuzzleSelectionView: View {
         let currentShowHard = showHard
         let currentHideFinished = hideFinishedPuzzles
         let currentThemeType = appEnvironment.currentThemeType
+        let currentGroupBySize = gameTheme.groupPuzzlesBySize
         
         return await Task.detached(priority: .userInitiated) {
-            PuzzleDifficulty.allCases.compactMap { difficulty in
-                // Check difficulty visibility first
+            if currentGroupBySize {
+                // Christmas theme: Group by grid size (3x3, 4x4, 6x6)
+                return [3, 4, 6].compactMap { gridSize in
+                    let puzzles = PremadePuzzleStore.shared.puzzles(for: gridSize, themeType: currentThemeType)
+                    guard !puzzles.isEmpty else { return nil }
+                    
+                    var puzzlesWithStatus = puzzles.map { puzzle in
+                        let key = "\(puzzle.size)-\(puzzle.difficulty.rawValue)-\(puzzle.number)"
+                        return PuzzleWithStatus(
+                            puzzle: puzzle,
+                            isCompleted: completedSet.contains(key),
+                            rating: ratingsDict[key]
+                        )
+                    }
+                    
+                    if currentHideFinished {
+                        puzzlesWithStatus = puzzlesWithStatus.filter { !$0.isCompleted }
+                    }
+                    
+                    return puzzlesWithStatus.isEmpty ? nil : (PuzzleSectionType.gridSize(gridSize), puzzlesWithStatus)
+                }
+            } else {
+                // Storybook theme: Group by difficulty (Easy, Normal, Hard)
+                return PuzzleDifficulty.allCases.compactMap { difficulty in
+                    // Check difficulty visibility first
+                    let shouldShow: Bool
+                    switch difficulty {
+                    case .easy: shouldShow = currentShowEasy
+                    case .normal: shouldShow = currentShowNormal
+                    case .hard: shouldShow = currentShowHard
+                    }
+                    guard shouldShow else { return nil }
+                    
+                    let puzzles = PremadePuzzleStore.shared.puzzles(for: currentSize, difficulty: difficulty, themeType: currentThemeType)
+                    guard !puzzles.isEmpty else { return nil }
+                    
+                    var puzzlesWithStatus = puzzles.map { puzzle in
+                        let key = "\(puzzle.size)-\(puzzle.difficulty.rawValue)-\(puzzle.number)"
+                        return PuzzleWithStatus(
+                            puzzle: puzzle,
+                            isCompleted: completedSet.contains(key),
+                            rating: ratingsDict[key]
+                        )
+                    }
+                    
+                    if currentHideFinished {
+                        puzzlesWithStatus = puzzlesWithStatus.filter { !$0.isCompleted }
+                    }
+                    
+                    return puzzlesWithStatus.isEmpty ? nil : (PuzzleSectionType.difficulty(difficulty), puzzlesWithStatus)
+                }
+            }
+        }.value
+    }
+    
+    /// Synchronous update for filter changes (runs on main thread for responsiveness)
+    private func updateCachedPuzzles() {
+        guard !isLoading else { return }
+        // Capture completion data once to avoid repeated property access
+        let completedSet = completionManager.completedPuzzles
+        let ratingsDict = completionManager.puzzleRatings
+        let currentSize = size
+        let currentThemeType = appEnvironment.currentThemeType
+        
+        if groupBySize {
+            // Christmas theme: Group by grid size
+            cachedPuzzleSections = [3, 4, 6].compactMap { gridSize in
+                let puzzles = PremadePuzzleStore.shared.puzzles(for: gridSize, themeType: currentThemeType)
+                guard !puzzles.isEmpty else { return nil }
+                
+                var puzzlesWithStatus = puzzles.map { puzzle in
+                    let key = "\(puzzle.size)-\(puzzle.difficulty.rawValue)-\(puzzle.number)"
+                    return PuzzleWithStatus(
+                        puzzle: puzzle,
+                        isCompleted: completedSet.contains(key),
+                        rating: ratingsDict[key]
+                    )
+                }
+                
+                if hideFinishedPuzzles {
+                    puzzlesWithStatus = puzzlesWithStatus.filter { !$0.isCompleted }
+                }
+                
+                return puzzlesWithStatus.isEmpty ? nil : (PuzzleSectionType.gridSize(gridSize), puzzlesWithStatus)
+            }
+        } else {
+            // Storybook theme: Group by difficulty
+            cachedPuzzleSections = PuzzleDifficulty.allCases.compactMap { difficulty in
                 let shouldShow: Bool
                 switch difficulty {
-                case .easy: shouldShow = currentShowEasy
-                case .normal: shouldShow = currentShowNormal
-                case .hard: shouldShow = currentShowHard
+                case .easy: shouldShow = showEasy
+                case .normal: shouldShow = showNormal
+                case .hard: shouldShow = showHard
                 }
                 guard shouldShow else { return nil }
                 
@@ -208,49 +344,12 @@ struct PuzzleSelectionView: View {
                     )
                 }
                 
-                if currentHideFinished {
+                if hideFinishedPuzzles {
                     puzzlesWithStatus = puzzlesWithStatus.filter { !$0.isCompleted }
                 }
                 
-                return puzzlesWithStatus.isEmpty ? nil : (difficulty, puzzlesWithStatus)
+                return puzzlesWithStatus.isEmpty ? nil : (PuzzleSectionType.difficulty(difficulty), puzzlesWithStatus)
             }
-        }.value
-    }
-    
-    /// Synchronous update for filter changes (runs on main thread for responsiveness)
-    private func updateCachedPuzzles() {
-        guard !isLoading else { return }
-        // Capture completion data once to avoid repeated property access
-        let completedSet = completionManager.completedPuzzles
-        let ratingsDict = completionManager.puzzleRatings
-        let currentSize = size
-        
-        cachedPuzzlesByDifficulty = PuzzleDifficulty.allCases.compactMap { difficulty in
-            let shouldShow: Bool
-            switch difficulty {
-            case .easy: shouldShow = showEasy
-            case .normal: shouldShow = showNormal
-            case .hard: shouldShow = showHard
-            }
-            guard shouldShow else { return nil }
-            
-            let puzzles = PremadePuzzleStore.shared.puzzles(for: currentSize, difficulty: difficulty, themeType: appEnvironment.currentThemeType)
-            guard !puzzles.isEmpty else { return nil }
-            
-            var puzzlesWithStatus = puzzles.map { puzzle in
-                let key = "\(puzzle.size)-\(puzzle.difficulty.rawValue)-\(puzzle.number)"
-                return PuzzleWithStatus(
-                    puzzle: puzzle,
-                    isCompleted: completedSet.contains(key),
-                    rating: ratingsDict[key]
-                )
-            }
-            
-            if hideFinishedPuzzles {
-                puzzlesWithStatus = puzzlesWithStatus.filter { !$0.isCompleted }
-            }
-            
-            return puzzlesWithStatus.isEmpty ? nil : (difficulty, puzzlesWithStatus)
         }
     }
     
@@ -287,12 +386,12 @@ struct PuzzleSelectionView: View {
         .padding(.bottom, 12)
     }
     
-    private func difficultyCard(difficulty: PuzzleDifficulty, puzzles: [PuzzleWithStatus]) -> some View {
-        let theme = themes[difficulty] ?? DifficultyTheme(name: difficulty.rawValue, backgroundColor: .gray)
-        let difficultyColor = difficultyColor(for: difficulty)
+    private func sectionCard(sectionType: PuzzleSectionType, puzzles: [PuzzleWithStatus]) -> some View {
+        let sectionColor = sectionColor(for: sectionType)
+        let sectionTitle = sectionTitle(for: sectionType)
         
         return VStack(spacing: 16) {
-            Text("\(difficulty.rawValue) - \(theme.name)")
+            Text(sectionTitle)
                 .font(.system(size: 24, weight: .bold, design: .rounded))
                 .foregroundStyle(.white)
                 .frame(maxWidth: .infinity)
@@ -322,17 +421,39 @@ struct PuzzleSelectionView: View {
         }
         .background(
             RoundedRectangle(cornerRadius: Theme.Layout.puzzleCardCornerRadius, style: .continuous)
-                .fill(difficultyColor)
+                .fill(sectionColor)
                 .shadow(color: gameTheme.puzzleCardShadow, radius: 4, x: 0, y: 2)
         )
     }
     
-    /// Returns theme-aware difficulty color
-    private func difficultyColor(for difficulty: PuzzleDifficulty) -> Color {
-        switch difficulty {
-        case .easy: return gameTheme.difficultyEasy
-        case .normal: return gameTheme.difficultyNormal
-        case .hard: return gameTheme.difficultyHard
+    /// Returns the title for a section
+    private func sectionTitle(for sectionType: PuzzleSectionType) -> String {
+        switch sectionType {
+        case .difficulty(let difficulty):
+            let theme = themes[difficulty] ?? DifficultyTheme(name: difficulty.rawValue, backgroundColor: .gray)
+            return "\(difficulty.rawValue) - \(theme.name)"
+        case .gridSize(let gridSize):
+            let sizeName = Self.gridSizeNames[gridSize] ?? "\(gridSize)×\(gridSize)"
+            return "\(gridSize)×\(gridSize) - \(sizeName)"
+        }
+    }
+    
+    /// Returns theme-aware section color
+    private func sectionColor(for sectionType: PuzzleSectionType) -> Color {
+        switch sectionType {
+        case .difficulty(let difficulty):
+            switch difficulty {
+            case .easy: return gameTheme.difficultyEasy
+            case .normal: return gameTheme.difficultyNormal
+            case .hard: return gameTheme.difficultyHard
+            }
+        case .gridSize(let gridSize):
+            switch gridSize {
+            case 3: return gameTheme.gridSize3x3Color
+            case 4: return gameTheme.gridSize4x4Color
+            case 6: return gameTheme.gridSize6x6Color
+            default: return gameTheme.difficultyNormal
+            }
         }
     }
     
