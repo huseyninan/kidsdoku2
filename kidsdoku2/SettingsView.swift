@@ -17,6 +17,7 @@ struct SettingsView: View {
     @State private var showResetAlert = false
     @State private var resetType: ResetType?
     @State private var showAbout = false
+    @State private var showBadges = false
     
     enum ResetType {
         case all
@@ -47,6 +48,21 @@ struct SettingsView: View {
                         .padding(.top, 8)
                     
                     VStack(spacing: 20) {
+                        // Badges Section (at top)
+                        SettingsSection(
+                            icon: "rosette",
+                            title: String(localized: "Achievements")
+                        ) {
+                            SettingsButton(
+                                icon: "rosette",
+                                title: String(localized: "Badges"),
+                                subtitle: String(localized: "View your achievements"),
+                                color: Color(red: 0.85, green: 0.55, blue: 0.2)
+                            ) {
+                                showBadges = true
+                            }
+                        }
+                        
                         // Audio & Feedback Section
                         SettingsSection(
                             icon: "speaker.wave.3.fill",
@@ -182,6 +198,9 @@ struct SettingsView: View {
         }
         .sheet(isPresented: $showAbout) {
             AboutView()
+        }
+        .sheet(isPresented: $showBadges) {
+            BadgesView()
         }
     }
     
