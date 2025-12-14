@@ -6,6 +6,7 @@ final class PuzzleSolveStatusManager {
     private let userDefaults = UserDefaults.standard
     private let solvedPuzzlesKey = "solvedPuzzles"
     private let migrationVersionKey = "puzzleIdMigrationVersion"
+    private let userDefaultsKey = "completedPuzzles"
     private let currentMigrationVersion = 1
     
     private init() {
@@ -17,17 +18,13 @@ final class PuzzleSolveStatusManager {
         let savedVersion = userDefaults.integer(forKey: migrationVersionKey)
         guard savedVersion < currentMigrationVersion else { return }
         
-        // Clear all old-format puzzle IDs (they don't have theme prefix)
-        // User will need to re-solve puzzles, but this ensures clean state
-        let oldIds = solvedPuzzleIds
-        let validIds = oldIds.filter { id in
-            // New format: "theme-size-difficulty-number"
-            // Old format: "size-difficulty-number"
-            let components = id.split(separator: "-")
-            return components.count == 4 && (id.hasPrefix("christmas-") || id.hasPrefix("storybook-"))
+        // Migration from version 0: add "storybook-" prefix to solvedPuzzleIds
+        if savedVersion == 0 {
+            if let data = UserDefaults.standard.array(forKey: userDefaultsKey) as? [String] {
+                solvedPuzzleIds = Set(data)
+            }
         }
         
-        solvedPuzzleIds = validIds
         userDefaults.set(currentMigrationVersion, forKey: migrationVersionKey)
     }
     

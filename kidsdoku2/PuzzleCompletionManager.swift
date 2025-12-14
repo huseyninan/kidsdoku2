@@ -31,6 +31,19 @@ class PuzzleCompletionManager: ObservableObject {
         let savedVersion = UserDefaults.standard.integer(forKey: ratingsMigrationVersionKey)
         guard savedVersion < currentMigrationVersion else { return }
         
+        // Migration from version 0: add "storybook-" prefix to puzzleRatings keys
+        if savedVersion == 0 {
+            var migratedRatings: [String: Double] = [:]
+            for (key, value) in puzzleRatings {
+                if !key.hasPrefix("storybook-") && !key.hasPrefix("christmas-") {
+                    migratedRatings["storybook-\(key)".lowercased()] = value
+                } else {
+                    migratedRatings[key] = value
+                }
+            }
+            puzzleRatings = migratedRatings
+        }
+        
         // Filter out old-format rating IDs
         let validRatings = puzzleRatings.filter { key, _ in
             // New format: "theme-size-difficulty-number"
@@ -40,6 +53,19 @@ class PuzzleCompletionManager: ObservableObject {
         
         puzzleRatings = validRatings
         savePuzzleRatings()
+        
+        // Migration from version 0: add "storybook-" prefix to completedPuzzles
+        if savedVersion == 0 {
+            var migratedCompleted: Set<String> = []
+            for id in completedPuzzles {
+                if !id.hasPrefix("storybook-") && !id.hasPrefix("christmas-") {
+                    migratedCompleted.insert("storybook-\(id)".lowercased())
+                } else {
+                    migratedCompleted.insert(id)
+                }
+            }
+            completedPuzzles = migratedCompleted
+        }
         
         // Also clear old completedPuzzles (they use old format keys)
         let validCompleted = completedPuzzles.filter { id in
