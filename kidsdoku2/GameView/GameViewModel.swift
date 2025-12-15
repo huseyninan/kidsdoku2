@@ -103,17 +103,47 @@ final class GameViewModel: ObservableObject {
         return KidSudokuPuzzle(config: config, cells: cells, solution: emptySolution)
     }
     
-    /// Generates puzzle on a background thread and updates the view model when complete
+    /// Generates puzzle on a background thread and updates the view model when complete.
+    /// FIX: Uses [weak self] to prevent retain cycle if view is dismissed during generation.
     private func generatePuzzleAsync(config: KidSudokuConfig) {
-        generationTask = Task.detached(priority: .userInitiated) {
+        generationTask = Task.detached(priority: .userInitiated) { [weak self] in
+            // Check cancellation before expensive work
+            guard !Task.isCancelled else { return }
+            
             let generatedPuzzle = KidSudokuGenerator.generatePuzzle(config: config)
-            await MainActor.run {
-                self.puzzle = generatedPuzzle
-                self.filledCellCount = generatedPuzzle.cells.filter { $0.value != nil }.count
-                self.correctCellCount = generatedPuzzle.cells.filter { $0.value == $0.solution }.count
-                self.isGeneratingPuzzle = false
-                self.cacheSymbolData()
+            
+            // Check cancellation after expensive work
+            guard !Task.isCancelled else { return }
+            
+            await MainActor.run { [weak self] in
+                guard let self else { return }
+                self.applyGeneratedPuzzle(generatedPuzzle)
             }
+        }
+    }
+    
+    /// Applies a generated puzzle to the view model state
+    /// Extracted to reduce code duplication and improve single-pass efficiency
+    private func applyGeneratedPuzzle(_ generatedPuzzle: KidSudokuPuzzle, showMessage: Bool = false) {
+        self.puzzle = generatedPuzzle
+        // PERF: Single pass to count both filled and correct cells
+        var filled = 0
+        var correct = 0
+        for cell in generatedPuzzle.cells {
+            if cell.value != nil {
+                filled += 1
+                if cell.value == cell.solution {
+                    correct += 1
+                }
+            }
+        }
+        self.filledCellCount = filled
+        self.correctCellCount = correct
+        self.isGeneratingPuzzle = false
+        self.cacheSymbolData()
+        if showMessage {
+            self.message = KidSudokuMessage(text: String(localized: "New puzzle ready!"), type: .info)
+            self.startTimer()
         }
     }
     
@@ -156,16 +186,18 @@ final class GameViewModel: ObservableObject {
             isGeneratingPuzzle = true
             cacheSymbolData()
             
-            generationTask = Task.detached(priority: .userInitiated) {
-                let generatedPuzzle = KidSudokuGenerator.generatePuzzle(config: self.config)
-                await MainActor.run {
-                    self.puzzle = generatedPuzzle
-                    self.filledCellCount = generatedPuzzle.cells.filter { $0.value != nil }.count
-                    self.correctCellCount = generatedPuzzle.cells.filter { $0.value == $0.solution }.count
-                    self.isGeneratingPuzzle = false
-                    self.cacheSymbolData()
-                    self.message = KidSudokuMessage(text: String(localized: "New puzzle ready!"), type: .info)
-                    self.startTimer()
+            // FIX: Capture config as value type, use [weak self] to prevent retain cycle
+            let configCopy = self.config
+            generationTask = Task.detached(priority: .userInitiated) { [weak self] in
+                guard !Task.isCancelled else { return }
+                
+                let generatedPuzzle = KidSudokuGenerator.generatePuzzle(config: configCopy)
+                
+                guard !Task.isCancelled else { return }
+                
+                await MainActor.run { [weak self] in
+                    guard let self else { return }
+                    self.applyGeneratedPuzzle(generatedPuzzle, showMessage: true)
                 }
             }
         }
@@ -486,7 +518,7 @@ final class GameViewModel: ObservableObject {
     }
     
     func stopTimer() {
-        guard isTimerRunning || timerCancellable != nil else { return }
+        guard isTimerRunning else { return }
         isTimerRunning = false
         timerCancellable?.cancel()
         timerCancellable = nil
@@ -512,14 +544,9 @@ final class GameViewModel: ObservableObject {
     }
     
     deinit {
-        // Cancel timer subscription to prevent any further callbacks
-        // Note: AnyCancellable.cancel() is thread-safe and can be called from deinit
+        // Cancel subscriptions - thread-safe, no need to nil out in deinit
         timerCancellable?.cancel()
-        timerCancellable = nil
-        
-        // Cancel any ongoing puzzle generation task
         generationTask?.cancel()
-        generationTask = nil
     }
 }
 
