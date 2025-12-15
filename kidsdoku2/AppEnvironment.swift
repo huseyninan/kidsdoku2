@@ -23,6 +23,17 @@ class AppEnvironment: ObservableObject {
     @AppStorage("show4x4Grid") var show4x4Grid: Bool = true
     @AppStorage("show6x6Grid") var show6x6Grid: Bool = true
     
+    /// Current game theme
+    @AppStorage("selectedTheme") private var selectedThemeRaw: String = GameThemeType.christmas.rawValue
+    
+    /// Published property for the current theme type
+    @Published var currentThemeType: GameThemeType = .christmas
+    
+    /// Get the current theme
+    var currentTheme: GameTheme {
+        currentThemeType.theme
+    }
+    
     /// Reference to the sound manager singleton
     let soundManager = SoundManager.shared
     
@@ -30,9 +41,20 @@ class AppEnvironment: ObservableObject {
     let hapticManager = HapticManager.shared
     
     init() {
+        // Load saved theme
+        if let savedTheme = GameThemeType(rawValue: selectedThemeRaw) {
+            currentThemeType = savedTheme
+        }
+        
         Task {
             await checkSubscriptionStatus()
         }
+    }
+    
+    /// Set the current theme
+    func setTheme(_ theme: GameThemeType) {
+        currentThemeType = theme
+        selectedThemeRaw = theme.rawValue
     }
     
     /// Checks the user's subscription status with RevenueCat

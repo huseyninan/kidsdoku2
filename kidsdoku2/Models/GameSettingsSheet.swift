@@ -18,10 +18,15 @@ struct GameSettingsSheet: View {
     
     private static let twoColumnGrid = [GridItem(.flexible()), GridItem(.flexible())]
     
-    init(selectedSymbolGroup: Binding<SymbolGroup>, showNumbers: Binding<Bool>) {
+    init(selectedSymbolGroup: Binding<SymbolGroup>, showNumbers: Binding<Bool>, themeType: GameThemeType) {
         self._selectedSymbolGroup = selectedSymbolGroup
         self._showNumbers = showNumbers
-        self.availableSymbolGroups = SymbolGroup.puzzleCases
+        switch themeType {
+        case .storybook:
+            self.availableSymbolGroups = SymbolGroup.puzzleCases
+        case .christmas:
+            self.availableSymbolGroups = SymbolGroup.christmasCases
+        }
     }
     
     var body: some View {
@@ -336,7 +341,8 @@ private struct StorybookToggleStyle: ToggleStyle {
 #Preview {
     GameSettingsSheet(
         selectedSymbolGroup: .constant(.animals),
-        showNumbers: .constant(false)
+        showNumbers: .constant(false),
+        themeType: .storybook
     )
     .environmentObject(AppEnvironment())
 }

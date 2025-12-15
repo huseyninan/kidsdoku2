@@ -107,21 +107,57 @@ struct MainMenuView: View {
 
     @ViewBuilder
     private var questButtonsSection: some View {
-        if questOptions.isEmpty {
-            EmptyView()
-        } else {
-            VStack(spacing: Theme.Layout.questButtonSpacing) {
+        VStack(spacing: Theme.Layout.questButtonSpacing) {
+            // Christmas Quest Button
+            christmasQuestButton
+            
+            // Regular quest options
+            if !questOptions.isEmpty {
                 ForEach(questOptions) { option in
                     questButton(
                         title: option.title,
                         subtitle: option.subtitle
                     ) {
+                        appEnvironment.setTheme(.storybook)
                         let size = option.size
                         path.append(.puzzleSelection(size: size))
                     }
                 }
             }
         }
+    }
+    
+    private var christmasQuestButton: some View {
+        Button(action: {
+            appEnvironment.setTheme(.christmas)
+            path.append(.puzzleSelection(size: 4))
+        }) {
+            ZStack {
+                // Background image
+                Image("chrismas_banner")
+                    .resizable()
+                    .scaledToFit()
+                
+                // Content overlay
+                HStack(spacing: 16) {
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text(String(localized: "Christmas Quest"))
+                            .font(.system(size: 26, weight: .bold, design: .rounded))
+                            .foregroundStyle(.white)
+                        
+                        Text(String(localized: "Holiday Magic"))
+                            .font(.system(size: 16, weight: .medium, design: .rounded))
+                            .foregroundStyle(Color(red: 1.0, green: 0.9, blue: 0.75))
+                    }
+                    .padding(.bottom, 22)
+                    .padding(.leading, 22)
+                    
+                    Spacer()
+                }
+                .padding()
+            }
+        }
+        .buttonStyle(ChristmasQuestButtonStyle())
     }
     
     private var footerSection: some View {
