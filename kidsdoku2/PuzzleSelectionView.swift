@@ -182,7 +182,7 @@ struct PuzzleSelectionView: View {
             updateCachedPuzzles()
         }
         // Update cache when solve status changes
-        .onChange(of: PuzzleSolveStatusManager.shared.getSolvedPuzzleIds()) { oldValue, newValue in
+        .onChange(of: PuzzleCompletionManager.shared.getSolvedPuzzleIds()) { oldValue, newValue in
             // For size-based grouping, check all sizes; for difficulty-based, check current size only
             let hasRelevantChange: Bool
             if groupBySize {

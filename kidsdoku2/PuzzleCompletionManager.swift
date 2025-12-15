@@ -16,6 +16,7 @@ class PuzzleCompletionManager: ObservableObject {
     @Published private(set) var puzzleRatings: [String: Double] = [:]
     
     private let userDefaultsKey = "completedPuzzles"
+    private let solvedPuzzlesKey = "solvedPuzzles"
     private let ratingsKey = "puzzleRatings"
     private let ratingsMigrationVersionKey = "ratingsIdMigrationVersion"
     private let currentMigrationVersion = 1
@@ -24,6 +25,7 @@ class PuzzleCompletionManager: ObservableObject {
         loadCompletedPuzzles()
         loadPuzzleRatings()
         migrateOldRatingIds()
+        migrateSolvedPuzzles()
     }
     
     /// Migrates old rating IDs (without theme prefix) to new format or removes them
@@ -130,6 +132,70 @@ class PuzzleCompletionManager: ObservableObject {
 
     private func savePuzzleRatings() {
         UserDefaults.standard.set(puzzleRatings, forKey: ratingsKey)
+    }
+    
+    // MARK: - Migration from PuzzleSolveStatusManager
+    
+    /// Migrate data from old PuzzleSolveStatusManager storage
+    private func migrateSolvedPuzzles() {
+        // Check if there's data in the old "solvedPuzzles" key that we haven't migrated
+        if let data = UserDefaults.standard.data(forKey: solvedPuzzlesKey),
+           let decoded = try? JSONDecoder().decode(Set<String>.self, from: data) {
+            // Merge old solved puzzles into completedPuzzles
+            let merged = completedPuzzles.union(decoded)
+            if merged != completedPuzzles {
+                completedPuzzles = merged
+                saveCompletedPuzzles()
+            }
+            // Remove old key after migration
+            UserDefaults.standard.removeObject(forKey: solvedPuzzlesKey)
+        }
+    }
+    
+    // MARK: - Solve Status (merged from PuzzleSolveStatusManager)
+    
+    func isSolved(puzzleId: String) -> Bool {
+        return completedPuzzles.contains(puzzleId)
+    }
+    
+    func markAsSolved(puzzleId: String) {
+        completedPuzzles.insert(puzzleId)
+        saveCompletedPuzzles()
+    }
+    
+    func markAsUnsolved(puzzleId: String) {
+        completedPuzzles.remove(puzzleId)
+        saveCompletedPuzzles()
+    }
+    
+    func getSolvedPuzzleIds() -> Set<String> {
+        return completedPuzzles
+    }
+    
+    func getSolvedCount(for size: Int, difficulty: PuzzleDifficulty, theme: GameThemeType? = nil) -> Int {
+        if let theme = theme {
+            let prefix = "\(theme.rawValue)-\(size)-\(difficulty.rawValue.lowercased())-"
+            return completedPuzzles.filter { $0.hasPrefix(prefix) }.count
+        } else {
+            // Count across all themes
+            let pattern = "-\(size)-\(difficulty.rawValue.lowercased())-"
+            return completedPuzzles.filter { $0.contains(pattern) }.count
+        }
+    }
+    
+    func getSolvedCount(for size: Int, theme: GameThemeType? = nil) -> Int {
+        if let theme = theme {
+            let prefix = "\(theme.rawValue)-\(size)-"
+            return completedPuzzles.filter { $0.hasPrefix(prefix) }.count
+        } else {
+            // Count across all themes
+            let pattern = "-\(size)-"
+            return completedPuzzles.filter { $0.contains(pattern) }.count
+        }
+    }
+    
+    func getTotalSolvedCount() -> Int {
+        return completedPuzzles.count
     }
 }
 

@@ -254,15 +254,15 @@ struct PremadePuzzle: Hashable, Identifiable {
     }
     
     var isSolved: Bool {
-        return PuzzleSolveStatusManager.shared.isSolved(puzzleId: id)
+        return PuzzleCompletionManager.shared.isSolved(puzzleId: id)
     }
     
     func markAsSolved() {
-        PuzzleSolveStatusManager.shared.markAsSolved(puzzleId: id)
+        PuzzleCompletionManager.shared.markAsSolved(puzzleId: id)
     }
     
     func markAsUnsolved() {
-        PuzzleSolveStatusManager.shared.markAsUnsolved(puzzleId: id)
+        PuzzleCompletionManager.shared.markAsUnsolved(puzzleId: id)
     }
 }
 
