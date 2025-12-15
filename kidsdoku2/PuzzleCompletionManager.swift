@@ -9,8 +9,6 @@ import Combine
 import Foundation
 
 /// Manages puzzle completion tracking using UserDefaults
-/// Thread-safe singleton that ensures all mutations happen on the main thread
-@MainActor
 class PuzzleCompletionManager: ObservableObject {
     static let shared = PuzzleCompletionManager()
     
@@ -82,9 +80,9 @@ class PuzzleCompletionManager: ObservableObject {
     }
     
     /// Mark a puzzle as completed
-    /// FIX: Now uses puzzle.id directly for consistent key format with ratings
     func markCompleted(puzzle: PremadePuzzle) {
-        completedPuzzles.insert(puzzle.id)
+        let key = puzzleKey(size: puzzle.size, difficulty: puzzle.difficulty, number: puzzle.number)
+        completedPuzzles.insert(key)
         saveCompletedPuzzles()
     }
     
@@ -100,9 +98,9 @@ class PuzzleCompletionManager: ObservableObject {
     }
     
     /// Check if a puzzle is completed
-    /// FIX: Now uses puzzle.id directly for consistent key format with ratings
     func isCompleted(puzzle: PremadePuzzle) -> Bool {
-        return completedPuzzles.contains(puzzle.id)
+        let key = puzzleKey(size: puzzle.size, difficulty: puzzle.difficulty, number: puzzle.number)
+        return completedPuzzles.contains(key)
     }
     
     /// Reset all completion data
@@ -114,19 +112,18 @@ class PuzzleCompletionManager: ObservableObject {
     }
     
     /// Reset completion data for a specific size
-    /// FIX: Updated filter to match theme-prefixed ID format (e.g., "storybook-4-Easy-1")
     func resetSize(_ size: Int) {
-        completedPuzzles = completedPuzzles.filter { id in
-            !id.contains("-\(size)-")
-        }
-        puzzleRatings = puzzleRatings.filter { key, _ in
-            !key.contains("-\(size)-")
-        }
+        completedPuzzles = completedPuzzles.filter { !$0.hasPrefix("\(size)-") }
+        puzzleRatings = puzzleRatings.filter { !$0.key.hasPrefix("\(size)-") }
         saveCompletedPuzzles()
         savePuzzleRatings()
     }
     
     // MARK: - Private Helpers
+    
+    private func puzzleKey(size: Int, difficulty: PuzzleDifficulty, number: Int) -> String {
+        return "\(size)-\(difficulty.rawValue)-\(number)"
+    }
     
     private func loadCompletedPuzzles() {
         if let data = UserDefaults.standard.array(forKey: userDefaultsKey) as? [String] {
