@@ -29,14 +29,28 @@ private struct Snowflake: Identifiable {
     }
 }
 
+// MARK: - Configuration Constants
+
+private enum SnowfallConfig {
+    static let snowflakeCount = 50
+    static let frameRate: Double = 30
+    static let frameDuration: TimeInterval = 1.0 / frameRate
+    static let offScreenBuffer: CGFloat = 20
+    static let sizeRange: ClosedRange<CGFloat> = 4...12
+    static let opacityRange: ClosedRange<Double> = 0.4...0.9
+    static let speedRange: ClosedRange<Double> = 30...80
+    static let wobbleAmountRange: ClosedRange<CGFloat> = 10...30
+    static let wobbleSpeedRange: ClosedRange<Double> = 1...3
+    static let rotationSpeedRange: ClosedRange<Double> = 0.3...1.5
+}
+
 // MARK: - Snowfall View
 
 struct SnowfallView: View {
     @State private var snowflakes: [Snowflake] = []
     @State private var animationTime: Double = 0
-    
-    private let snowflakeCount = 50
-    private let timer = Timer.publish(every: 1/30, on: .main, in: .common).autoconnect()
+    @State private var isAnimating = false
+    @State private var timerCancellable: AnyCancellable?
     
     var body: some View {
         GeometryReader { geometry in
@@ -59,13 +73,33 @@ struct SnowfallView: View {
                 }
             }
             .onAppear {
-                initializeSnowflakes(in: geometry.size)
+                startAnimation(in: geometry.size)
             }
-            .onReceive(timer) { _ in
-                updateSnowflakes(in: geometry.size)
+            .onDisappear {
+                stopAnimation()
             }
         }
         .allowsHitTesting(false)
+    }
+    
+    // MARK: - Animation Lifecycle
+    
+    private func startAnimation(in size: CGSize) {
+        guard !isAnimating else { return }
+        isAnimating = true
+        initializeSnowflakes(in: size)
+        
+        timerCancellable = Timer.publish(every: SnowfallConfig.frameDuration, on: .main, in: .common)
+            .autoconnect()
+            .sink { [size] _ in
+                updateSnowflakes(in: size)
+            }
+    }
+    
+    private func stopAnimation() {
+        isAnimating = false
+        timerCancellable?.cancel()
+        timerCancellable = nil
     }
     
     // MARK: - Snowflake Drawing
@@ -172,34 +206,34 @@ struct SnowfallView: View {
     // MARK: - Animation Logic
     
     private func initializeSnowflakes(in size: CGSize) {
-        snowflakes = (0..<snowflakeCount).map { _ in
+        snowflakes = (0..<SnowfallConfig.snowflakeCount).map { _ in
             createSnowflake(in: size, startAtTop: false)
         }
     }
     
     private func createSnowflake(in size: CGSize, startAtTop: Bool) -> Snowflake {
-        let flakeSize = CGFloat.random(in: 4...12)
+        let flakeSize = CGFloat.random(in: SnowfallConfig.sizeRange)
         return Snowflake(
             x: CGFloat.random(in: 0...size.width),
-            y: startAtTop ? -20 : CGFloat.random(in: -20...size.height),
+            y: startAtTop ? -SnowfallConfig.offScreenBuffer : CGFloat.random(in: -SnowfallConfig.offScreenBuffer...size.height),
             size: flakeSize,
-            opacity: Double.random(in: 0.4...0.9),
-            speed: Double.random(in: 30...80),
-            wobbleAmount: CGFloat.random(in: 10...30),
-            wobbleSpeed: Double.random(in: 1...3),
-            rotationSpeed: Double.random(in: 0.3...1.5),
+            opacity: Double.random(in: SnowfallConfig.opacityRange),
+            speed: Double.random(in: SnowfallConfig.speedRange),
+            wobbleAmount: CGFloat.random(in: SnowfallConfig.wobbleAmountRange),
+            wobbleSpeed: Double.random(in: SnowfallConfig.wobbleSpeedRange),
+            rotationSpeed: Double.random(in: SnowfallConfig.rotationSpeedRange),
             type: Snowflake.SnowflakeType.allCases.randomElement() ?? .circle
         )
     }
     
     private func updateSnowflakes(in size: CGSize) {
-        animationTime += 1/30
+        animationTime += SnowfallConfig.frameDuration
         
         for i in snowflakes.indices {
-            snowflakes[i].y += CGFloat(snowflakes[i].speed / 30)
+            snowflakes[i].y += CGFloat(snowflakes[i].speed * SnowfallConfig.frameDuration)
             
             // Reset snowflake when it goes off screen
-            if snowflakes[i].y > size.height + 20 {
+            if snowflakes[i].y > size.height + SnowfallConfig.offScreenBuffer {
                 snowflakes[i] = createSnowflake(in: size, startAtTop: true)
             }
         }
