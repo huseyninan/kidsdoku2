@@ -367,12 +367,14 @@ struct PuzzleSelectionView: View {
             
             Spacer()
             
-            Button {
-                showSettings = true
-            } label: {
-                Image(systemName: "gearshape.fill")
-                    .font(.system(size: 28))
-                    .foregroundStyle(gameTheme.puzzleSettingsIcon)
+            if !groupBySize {
+                Button {
+                    showSettings = true
+                } label: {
+                    Image(systemName: "gearshape.fill")
+                        .font(.system(size: 28))
+                        .foregroundStyle(gameTheme.puzzleSettingsIcon)
+                }
             }
         }
         .padding(.horizontal, 20)
