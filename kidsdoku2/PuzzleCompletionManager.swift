@@ -102,18 +102,14 @@ class PuzzleCompletionManager: ObservableObject {
     
     /// Reset completion data for a specific size
     func resetSize(_ size: Int) {
-        completedPuzzles = completedPuzzles.filter { !$0.hasPrefix("\(size)-") }
-        puzzleRatings = puzzleRatings.filter { !$0.key.hasPrefix("\(size)-") }
+        let pattern = "-\(size)-"
+        completedPuzzles = completedPuzzles.filter { !$0.contains(pattern) }
+        puzzleRatings = puzzleRatings.filter { !$0.key.contains(pattern) }
         saveCompletedPuzzles()
         savePuzzleRatings()
     }
     
     // MARK: - Private Helpers
-    
-    private func puzzleKey(size: Int, difficulty: PuzzleDifficulty, number: Int) -> String {
-        return "\(size)-\(difficulty.rawValue)-\(number)"
-    }
-    
     private func loadCompletedPuzzles() {
         if let data = UserDefaults.standard.array(forKey: userDefaultsKey) as? [String] {
             completedPuzzles = Set(data)
