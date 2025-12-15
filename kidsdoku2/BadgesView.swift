@@ -89,7 +89,7 @@ struct BadgeDefinitions {
                     id: "first_puzzle",
                     name: String(localized: "First Steps"),
                     description: String(localized: "Complete your first puzzle"),
-                    icon: "footprints.fill",
+                    icon: "figure.walk",
                     color: Color(red: 0.55, green: 0.78, blue: 0.6),
                     gradientColors: [Color(red: 0.6, green: 0.85, blue: 0.65), Color(red: 0.4, green: 0.7, blue: 0.5)],
                     requirement: .puzzlesCompleted(count: 1),
@@ -319,22 +319,101 @@ struct BadgeDefinitions {
         ),
     ]
     
-    static var allBadges: [Badge] {
-        sections.flatMap { $0.badges }
+    // Cached to avoid recomputation on every access
+    static let allBadges: [Badge] = sections.flatMap { $0.badges }
+}
+
+// MARK: - Badge Progress Data (computed once per view update)
+struct BadgeProgressData {
+    let progressByBadgeId: [String: Double]
+    let earnedCount: Int
+    
+    init(completionManager: PuzzleCompletionManager) {
+        let completedPuzzles = completionManager.completedPuzzles
+        let ratings = completionManager.puzzleRatings
+        let completedCount = completedPuzzles.count
+        
+        // Pre-compute expensive aggregates once
+        let perfectCount = ratings.values.filter { $0 >= 3.0 }.count
+        let totalStars = ratings.values.reduce(0, +)
+        let christmasCompleted = Set(
+            completedPuzzles.filter { $0.contains("christmas-") }
+        ).union(
+            ratings.keys.filter { $0.hasPrefix("christmas-") }
+        ).count
+        
+        // Pre-compute grid size counts
+        var gridSizeCounts: [Int: Int] = [:]
+        for puzzle in completedPuzzles {
+            if let dashIndex = puzzle.firstIndex(of: "-"),
+               let size = Int(puzzle[..<dashIndex]) {
+                gridSizeCounts[size, default: 0] += 1
+            }
+        }
+        
+        var progress: [String: Double] = [:]
+        var earned = 0
+        
+        for badge in BadgeDefinitions.allBadges {
+            let value: Double
+            switch badge.requirement {
+            case .puzzlesCompleted(let count):
+                value = min(1.0, Double(completedCount) / Double(count))
+            case .perfectGames(let count):
+                value = min(1.0, Double(perfectCount) / Double(count))
+            case .gridSize(let size, let count):
+                let sizeCompleted = gridSizeCounts[size] ?? 0
+                value = min(1.0, Double(sizeCompleted) / Double(count))
+            case .totalStars(let count):
+                value = min(1.0, totalStars / Double(count))
+            case .noHints(let count):
+                value = min(1.0, Double(completedCount) / Double(count))
+            case .noMistakes(let count):
+                value = min(1.0, Double(completedCount) / Double(count))
+            case .christmasTheme(let count):
+                value = min(1.0, Double(christmasCompleted) / Double(count))
+            case .streak:
+                value = 0.0
+            }
+            progress[badge.id] = value
+            if value >= 1.0 { earned += 1 }
+        }
+        
+        self.progressByBadgeId = progress
+        self.earnedCount = earned
+    }
+    
+    func progress(for badge: Badge) -> Double {
+        progressByBadgeId[badge.id] ?? 0.0
+    }
+    
+    func isEarned(_ badge: Badge) -> Bool {
+        progress(for: badge) >= 1.0
     }
 }
 
 // MARK: - Badges View
 struct BadgesView: View {
     @Environment(\.dismiss) var dismiss
-    @ObservedObject var completionManager = PuzzleCompletionManager.shared
+    
+    // Access singleton directly - no need for @ObservedObject wrapper on singleton
+    // If you need reactivity, inject via @EnvironmentObject from parent
+    private var completionManager: PuzzleCompletionManager { PuzzleCompletionManager.shared }
     
     private let columns = [
         GridItem(.flexible(), spacing: 16),
         GridItem(.flexible(), spacing: 16)
     ]
     
+    // Compute all progress data once per view update
+    private var progressData: BadgeProgressData {
+        BadgeProgressData(completionManager: completionManager)
+    }
+    
     var body: some View {
+        // Capture progressData once to avoid recomputation
+        let data = progressData
+        
         NavigationView {
             ZStack {
                 LinearGradient(
@@ -351,7 +430,7 @@ struct BadgesView: View {
                     VStack(spacing: 24) {
                         // Header with stats
                         BadgesHeaderView(
-                            earnedCount: earnedBadgesCount,
+                            earnedCount: data.earnedCount,
                             totalCount: BadgeDefinitions.allBadges.count
                         )
                         
@@ -360,8 +439,7 @@ struct BadgesView: View {
                             BadgeSectionView(
                                 section: section,
                                 columns: columns,
-                                isBadgeEarned: isBadgeEarned,
-                                badgeProgress: badgeProgress
+                                progressData: data
                             )
                         }
                         .padding(.bottom, 24)
@@ -380,65 +458,16 @@ struct BadgesView: View {
             }
         }
     }
-    
-    private var earnedBadgesCount: Int {
-        BadgeDefinitions.allBadges.filter { isBadgeEarned($0) }.count
-    }
-    
-    private func isBadgeEarned(_ badge: Badge) -> Bool {
-        let progress = badgeProgress(badge)
-        return progress >= 1.0
-    }
-    
-    private func badgeProgress(_ badge: Badge) -> Double {
-        let completedCount = completionManager.completedPuzzles.count
-        let ratings = completionManager.puzzleRatings
-        
-        switch badge.requirement {
-        case .puzzlesCompleted(let count):
-            return min(1.0, Double(completedCount) / Double(count))
-            
-        case .perfectGames(let count):
-            let perfectCount = ratings.values.filter { $0 >= 3.0 }.count
-            return min(1.0, Double(perfectCount) / Double(count))
-            
-        case .gridSize(let size, let count):
-            let sizeCompleted = completionManager.completedPuzzles.filter { $0.hasPrefix("\(size)-") }.count
-            return min(1.0, Double(sizeCompleted) / Double(count))
-            
-        case .totalStars(let count):
-            let totalStars = ratings.values.reduce(0, +)
-            return min(1.0, totalStars / Double(count))
-            
-        case .noHints(let count):
-            return min(1.0, Double(completedCount) / Double(count))
-            
-        case .noMistakes(let count):
-            return min(1.0, Double(completedCount) / Double(count))
-            
-        case .christmasTheme(let count):
-            let uniqueChristmas = Set(
-                completionManager.completedPuzzles.filter { $0.contains("christmas-") }
-            ).union(
-                ratings.keys.filter { $0.hasPrefix("christmas-") }
-            ).count
-            return min(1.0, Double(uniqueChristmas) / Double(count))
-            
-        case .streak:
-            return 0.0
-        }
-    }
 }
 
 // MARK: - Badge Section View
 struct BadgeSectionView: View {
     let section: BadgeSection
     let columns: [GridItem]
-    let isBadgeEarned: (Badge) -> Bool
-    let badgeProgress: (Badge) -> Double
+    let progressData: BadgeProgressData
     
     private var earned: Int {
-        section.badges.filter { isBadgeEarned($0) }.count
+        section.badges.filter { progressData.isEarned($0) }.count
     }
     
     var body: some View {
@@ -504,8 +533,8 @@ struct BadgeSectionView: View {
                 ForEach(section.badges) { badge in
                     BadgeCardView(
                         badge: badge,
-                        isEarned: isBadgeEarned(badge),
-                        progress: badgeProgress(badge)
+                        isEarned: progressData.isEarned(badge),
+                        progress: progressData.progress(for: badge)
                     )
                 }
             }
@@ -556,8 +585,6 @@ struct BadgeCardView: View {
     let isEarned: Bool
     let progress: Double
     
-    @State private var animateGlow = false
-    
     private var rarityColor: Color {
         switch badge.rarity {
         case .common: return Color(red: 0.6, green: 0.6, blue: 0.6)
@@ -577,7 +604,7 @@ struct BadgeCardView: View {
                         .fill(badge.color.opacity(0.3))
                         .frame(width: 80, height: 80)
                         .blur(radius: 8)
-                        .scaleEffect(animateGlow ? 1.1 : 0.95)
+                        .scaleEffect(1.0)
                 }
                 
                 // Badge background
@@ -706,13 +733,6 @@ struct BadgeCardView: View {
                     lineWidth: isEarned ? 2 : 1
                 )
         )
-        .onAppear {
-            if isEarned {
-                withAnimation(.easeInOut(duration: 2.0).repeatForever(autoreverses: true)) {
-                    animateGlow = true
-                }
-            }
-        }
     }
 }
 
