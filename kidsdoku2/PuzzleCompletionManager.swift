@@ -79,13 +79,6 @@ class PuzzleCompletionManager: ObservableObject {
         UserDefaults.standard.set(currentMigrationVersion, forKey: ratingsMigrationVersionKey)
     }
     
-    /// Mark a puzzle as completed
-    func markCompleted(puzzle: PremadePuzzle) {
-        let key = puzzleKey(size: puzzle.size, difficulty: puzzle.difficulty, number: puzzle.number)
-        completedPuzzles.insert(key)
-        saveCompletedPuzzles()
-    }
-    
     /// Store the earned rating for a puzzle
     func setRating(_ rating: Double, for puzzle: PremadePuzzle) {
         puzzleRatings[puzzle.id] = rating
@@ -95,12 +88,6 @@ class PuzzleCompletionManager: ObservableObject {
     /// Retrieve the saved rating for a puzzle, if any
     func rating(for puzzle: PremadePuzzle) -> Double? {
         return puzzleRatings[puzzle.id]
-    }
-    
-    /// Check if a puzzle is completed
-    func isCompleted(puzzle: PremadePuzzle) -> Bool {
-        let key = puzzleKey(size: puzzle.size, difficulty: puzzle.difficulty, number: puzzle.number)
-        return completedPuzzles.contains(key)
     }
     
     /// Reset all completion data
