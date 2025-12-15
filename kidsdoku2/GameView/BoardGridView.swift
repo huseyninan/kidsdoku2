@@ -45,10 +45,8 @@ struct BoardGridView: View {
 
     private func cellView(cell: KidSudokuCell, cellSize: CGFloat) -> some View {
         let isSelected = selected == cell.position
-        let isMatchingHighlighted = {
-            guard let highlightedValue = highlightedValue, let cellValue = cell.value else { return false }
-            return cellValue == highlightedValue
-        }()
+        // FIXED: Simplified from immediately-invoked closure to direct conditional
+        let isMatchingHighlighted = highlightedValue != nil && cell.value == highlightedValue
 
         return Button {
             onTap(cell)
@@ -95,20 +93,12 @@ struct BoardGridView: View {
 
     private func symbol(for cell: KidSudokuCell) -> String {
         guard let value = cell.value else { return "" }
-        let symbol = config.symbols[value]
-        return symbol
+        // FIXED: Added bounds check to prevent crash if value >= symbols.count
+        guard value < config.symbols.count else { return "" }
+        return config.symbols[value]
     }
 
-    private var cellFontSize: CGFloat {
-        switch config.size {
-        case 3:
-            return 52
-        case 4:
-            return 44
-        default:
-            return 36
-        }
-    }
+    // NOTE: cellFontSize was removed as it appears unused in this file
 
     // subgrid lines
     private func drawSubgridLines(context: inout GraphicsContext, size: CGSize) {
@@ -151,12 +141,23 @@ struct ThemedGlowingHighlight: View {
     @Environment(\.gameTheme) private var theme
 
     @State private var animate = false
-    @State private var isVisible = false
+    // FIXED: Replaced DispatchQueue-based animation with Task for proper cancellation
+    @State private var animationTask: Task<Void, Never>?
+
+    // IMPROVEMENT: Extracted magic numbers to named constants for clarity
+    private enum Layout {
+        static let cornerRadiusRatio: CGFloat = 0.28
+        static let mainFrameRatio: CGFloat = 0.82
+        static let strokeFrameRatio: CGFloat = 0.92
+        static let innerFrameRatio: CGFloat = 0.8
+        static let glowFrameRatio: CGFloat = 0.54
+        static let animationDuration: Double = 1.4
+    }
 
     var body: some View {
-        let cornerRadius = size * 0.28
+        let cornerRadius = size * Layout.cornerRadiusRatio
 
-        return ZStack {
+        ZStack {
             RoundedRectangle(cornerRadius: cornerRadius)
                 .fill(
                     LinearGradient(
@@ -168,13 +169,13 @@ struct ThemedGlowingHighlight: View {
                         endPoint: .bottomTrailing
                     )
                 )
-                .frame(width: size * 0.82, height: size * 0.82)
+                .frame(width: size * Layout.mainFrameRatio, height: size * Layout.mainFrameRatio)
                 .shadow(color: theme.highlightGlowColor.opacity(0.35), radius: 0.1)
                 .shadow(color: theme.highlightGlowColor.opacity(0.6), radius: 0.82)
 
             RoundedRectangle(cornerRadius: cornerRadius)
                 .stroke(Color.white.opacity(0.18), lineWidth: size * 0.05)
-                .frame(width: size * 0.92, height: size * 0.92)
+                .frame(width: size * Layout.strokeFrameRatio, height: size * Layout.strokeFrameRatio)
                 .blur(radius: size * 0.02)
 
             RoundedRectangle(cornerRadius: cornerRadius * 0.92)
@@ -190,28 +191,28 @@ struct ThemedGlowingHighlight: View {
                         endRadius: size * 0.45
                     )
                 )
-                .frame(width: size * 0.82, height: size * 0.82)
+                .frame(width: size * Layout.mainFrameRatio, height: size * Layout.mainFrameRatio)
 
             RoundedRectangle(cornerRadius: cornerRadius)
                 .stroke(Color.white.opacity(0.55), lineWidth: size * 0.03)
-                .frame(width: size * 0.8, height: size * 0.8)
+                .frame(width: size * Layout.innerFrameRatio, height: size * Layout.innerFrameRatio)
                 .blendMode(.screen)
                 .opacity(animate ? 0.95 : 0.55)
 
             RoundedRectangle(cornerRadius: cornerRadius)
                 .stroke(theme.highlightGlowColor.opacity(animate ? 0.65 : 0.25), lineWidth: size * 0.14)
-                .frame(width: size * 0.54, height: size * 0.54)
+                .frame(width: size * Layout.glowFrameRatio, height: size * Layout.glowFrameRatio)
                 .blur(radius: size * 0.1)
                 .opacity(animate ? 1 : 0.7)
         }
         .scaleEffect(animate ? 1.06 : 0.94)
         .onAppear {
-            isVisible = true
             startAnimation()
         }
         .onDisappear {
-            // Stop animation immediately without triggering new animation
-            isVisible = false
+            // FIXED: Cancel the task to prevent zombie animations and memory leaks
+            animationTask?.cancel()
+            animationTask = nil
             var transaction = Transaction()
             transaction.disablesAnimations = true
             withTransaction(transaction) {
@@ -220,20 +221,21 @@ struct ThemedGlowingHighlight: View {
         }
     }
     
+    // FIXED: Replaced DispatchQueue.asyncAfter with Task-based animation loop
+    // This ensures proper cancellation when the view disappears
     private func startAnimation() {
-        guard isVisible else { return }
-        withAnimation(.easeInOut(duration: 1.4)) {
-            animate = true
-        }
-        // Schedule the reverse animation
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1.4) {
-            guard isVisible else { return }
-            withAnimation(.easeInOut(duration: 1.4)) {
-                animate = false
-            }
-            // Schedule the next cycle
-            DispatchQueue.main.asyncAfter(deadline: .now() + 1.4) {
-                startAnimation()
+        animationTask = Task { @MainActor in
+            while !Task.isCancelled {
+                withAnimation(.easeInOut(duration: Layout.animationDuration)) {
+                    animate = true
+                }
+                try? await Task.sleep(nanoseconds: UInt64(Layout.animationDuration * 1_000_000_000))
+                guard !Task.isCancelled else { break }
+                
+                withAnimation(.easeInOut(duration: Layout.animationDuration)) {
+                    animate = false
+                }
+                try? await Task.sleep(nanoseconds: UInt64(Layout.animationDuration * 1_000_000_000))
             }
         }
     }
