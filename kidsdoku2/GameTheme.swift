@@ -24,12 +24,16 @@ enum GameThemeType: String, CaseIterable, Identifiable {
         }
     }
     
+    // Cached theme instances to avoid repeated allocations
+    private static let storybookTheme = StorybookTheme()
+    private static let christmasTheme = ChristmasTheme()
+    
     var theme: GameTheme {
         switch self {
         case .storybook:
-            return StorybookTheme()
+            return Self.storybookTheme
         case .christmas:
-            return ChristmasTheme()
+            return Self.christmasTheme
         }
     }
 }
