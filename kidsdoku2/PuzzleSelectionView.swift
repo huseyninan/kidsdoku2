@@ -348,7 +348,7 @@ struct PuzzleSelectionView: View {
     }
     
     private func handlePuzzleTap(_ puzzle: PremadePuzzle) {
-        let isLocked = puzzle.number > 3 && !appEnvironment.isPremium
+        let isLocked = puzzle.number > gameTheme.freePuzzlesPerSection && !appEnvironment.isPremium
         if isLocked {
             showParentalGate = true
         } else {
@@ -404,7 +404,8 @@ struct PuzzleSelectionView: View {
                         isPremium: appEnvironment.isPremium,
                         isCompleted: puzzleWithStatus.isCompleted,
                         rating: puzzleWithStatus.rating,
-                        theme: gameTheme
+                        theme: gameTheme,
+                        freePuzzlesPerSection: gameTheme.freePuzzlesPerSection
                     )
                     .onTapGesture {
                         handlePuzzleTap(puzzleWithStatus.puzzle)
@@ -559,9 +560,10 @@ private struct PuzzleButtonView: View {
     let isCompleted: Bool
     let rating: Double?
     let theme: GameTheme
+    let freePuzzlesPerSection: Int
     
     private var isLocked: Bool {
-        puzzle.number > 3 && !isPremium
+        puzzle.number > freePuzzlesPerSection && !isPremium
     }
     
     var body: some View {

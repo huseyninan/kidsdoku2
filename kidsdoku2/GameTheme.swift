@@ -147,6 +147,9 @@ protocol GameTheme {
     
     // Section grouping mode
     var groupPuzzlesBySize: Bool { get }
+    
+    // Number of free puzzles per section
+    var freePuzzlesPerSection: Int { get }
 }
 
 // MARK: - Default Implementation
@@ -157,6 +160,9 @@ extension GameTheme {
     
     // Default: group by difficulty (Storybook behavior)
     var groupPuzzlesBySize: Bool { false }
+    
+    // Default: 3 free puzzles per section (Storybook behavior)
+    var freePuzzlesPerSection: Int { 3 }
     
     // Default grid size colors (used when groupPuzzlesBySize is true)
     var gridSize3x3Color: Color { Color(red: 0.45, green: 0.55, blue: 0.45) }
@@ -398,6 +404,7 @@ struct ChristmasTheme: GameTheme {
     
     // Grid Size Section Colors - Festive Christmas palette
     let groupPuzzlesBySize = true
+    let freePuzzlesPerSection = 1
     let gridSize3x3Color = Color(red: 0.2, green: 0.5, blue: 0.35) // Christmas green
     let gridSize4x4Color = Color(red: 0.7, green: 0.2, blue: 0.2) // Christmas red
     let gridSize6x6Color = Color(red: 0.6, green: 0.45, blue: 0.2) // Christmas gold
