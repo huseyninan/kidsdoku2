@@ -292,8 +292,6 @@ struct PuzzleSelectionView: View {
     /// Synchronous update for filter changes (runs on main thread for responsiveness)
     private func updateCachedPuzzles() {
         guard !isLoading else { return }
-        // Capture completion data once to avoid repeated property access
-        let completedSet = completionManager.completedPuzzles
         let ratingsDict = completionManager.puzzleRatings
         let currentSize = size
         let currentThemeType = appEnvironment.currentThemeType
@@ -305,11 +303,10 @@ struct PuzzleSelectionView: View {
                 guard !puzzles.isEmpty else { return nil }
                 
                 var puzzlesWithStatus = puzzles.map { puzzle in
-                    let key = "\(puzzle.size)-\(puzzle.difficulty.rawValue)-\(puzzle.number)"
                     return PuzzleWithStatus(
                         puzzle: puzzle,
-                        isCompleted: completedSet.contains(key),
-                        rating: ratingsDict[key]
+                        isCompleted: puzzle.isSolved,
+                        rating: ratingsDict[puzzle.id]
                     )
                 }
                 
@@ -334,11 +331,10 @@ struct PuzzleSelectionView: View {
                 guard !puzzles.isEmpty else { return nil }
                 
                 var puzzlesWithStatus = puzzles.map { puzzle in
-                    let key = "\(puzzle.size)-\(puzzle.difficulty.rawValue)-\(puzzle.number)"
                     return PuzzleWithStatus(
                         puzzle: puzzle,
-                        isCompleted: completedSet.contains(key),
-                        rating: ratingsDict[key]
+                        isCompleted: puzzle.isSolved,
+                        rating: ratingsDict[puzzle.id]
                     )
                 }
                 
