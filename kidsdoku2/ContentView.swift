@@ -9,6 +9,8 @@ import SwiftUI
 
 struct ContentView: View {
     @State private var path: [KidSudokuRoute] = []
+    @Binding var deepLinkProduct: String?
+    @EnvironmentObject var appEnvironment: AppEnvironment
 
     var body: some View {
         NavigationStack(path: $path) {
@@ -29,10 +31,28 @@ struct ContentView: View {
                         SettingsView()
                     }
                 }
+                .onChange(of: deepLinkProduct) { _, newValue in
+                    handleDeepLink(newValue)
+                }
+                .onAppear {
+                    handleDeepLink(deepLinkProduct)
+                }
         }
+    }
+    
+    private func handleDeepLink(_ product: String?) {
+        guard let product = product else { return }
+        
+        if product == "christmas" {
+            appEnvironment.setTheme(.christmas)
+            path = [.puzzleSelection(size: 4)]
+        }
+        
+        deepLinkProduct = nil
     }
 }
 
 #Preview {
-    ContentView()
+    ContentView(deepLinkProduct: .constant(nil))
+        .environmentObject(AppEnvironment())
 }
