@@ -6,13 +6,31 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		E2623D9C2EC9C0B800B29CC0 /* RevenueCat in Frameworks */ = {isa = PBXBuildFile; productRef = E2623D9B2EC9C0B800B29CC0 /* RevenueCat */; };
+		E2623D9E2EC9C0B800B29CC0 /* RevenueCatUI in Frameworks */ = {isa = PBXBuildFile; productRef = E2623D9D2EC9C0B800B29CC0 /* RevenueCatUI */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXFileReference section */
-		E2543EC22EB3D3500014D580 /* kidsdoku2.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = kidsdoku2.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		E2543EC22EB3D3500014D580 /* kidsdoku2 - Dev.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "kidsdoku2 - Dev.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
+
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		E258B4722EC2650B00512B5B /* Exceptions for "kidsdoku2" folder in "kidsdoku2" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = E2543EC12EB3D3500014D580 /* kidsdoku2 */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		E2543EC42EB3D3500014D580 /* kidsdoku2 */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				E258B4722EC2650B00512B5B /* Exceptions for "kidsdoku2" folder in "kidsdoku2" target */,
+			);
 			path = kidsdoku2;
 			sourceTree = "<group>";
 		};
@@ -23,6 +41,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				E2623D9E2EC9C0B800B29CC0 /* RevenueCatUI in Frameworks */,
+				E2623D9C2EC9C0B800B29CC0 /* RevenueCat in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -40,7 +60,7 @@
 		E2543EC32EB3D3500014D580 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				E2543EC22EB3D3500014D580 /* kidsdoku2.app */,
+				E2543EC22EB3D3500014D580 /* kidsdoku2 - Dev.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -65,9 +85,11 @@
 			);
 			name = kidsdoku2;
 			packageProductDependencies = (
+				E2623D9B2EC9C0B800B29CC0 /* RevenueCat */,
+				E2623D9D2EC9C0B800B29CC0 /* RevenueCatUI */,
 			);
 			productName = kidsdoku2;
-			productReference = E2543EC22EB3D3500014D580 /* kidsdoku2.app */;
+			productReference = E2543EC22EB3D3500014D580 /* kidsdoku2 - Dev.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -91,9 +113,16 @@
 			knownRegions = (
 				en,
 				Base,
+				tr,
+				es,
+				ru,
+				it,
 			);
 			mainGroup = E2543EB92EB3D3500014D580;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				E2623D9A2EC9C0B800B29CC0 /* XCRemoteSwiftPackageReference "purchases-ios" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = E2543EC32EB3D3500014D580 /* Products */;
 			projectDirPath = "";
@@ -185,6 +214,7 @@
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = iphoneos;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 			};
 			name = Debug;
@@ -242,6 +272,7 @@
 				MTL_FAST_MATH = YES;
 				SDKROOT = iphoneos;
 				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_EMIT_LOC_STRINGS = YES;
 				VALIDATE_PRODUCT = YES;
 			};
 			name = Release;
@@ -249,25 +280,29 @@
 		E2543ECE2EB3D3510014D580 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIconDev;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 5;
 				DEVELOPMENT_TEAM = Y586KYPQWL;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = kidsdoku2/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = Kidsdoku;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.kids-games";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
-				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UILaunchStoryboardName = Splash;
+				INFOPLIST_KEY_UIRequiresFullScreen = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.6;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = kidsdoku.hinan.kidsdoku2;
-				PRODUCT_NAME = "$(TARGET_NAME)";
+				MARKETING_VERSION = 1.0.2;
+				PRODUCT_BUNDLE_IDENTIFIER = kidsdoku.hinan.kidsdoku.dev;
+				PRODUCT_NAME = "$(TARGET_NAME) - Dev";
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
 				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
@@ -284,21 +319,25 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 5;
 				DEVELOPMENT_TEAM = Y586KYPQWL;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = kidsdoku2/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = Kidsdoku;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.kids-games";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
-				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UILaunchStoryboardName = Splash;
+				INFOPLIST_KEY_UIRequiresFullScreen = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.6;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = kidsdoku.hinan.kidsdoku2;
+				MARKETING_VERSION = 1.0.2;
+				PRODUCT_BUNDLE_IDENTIFIER = kidsdoku.hinan.kidsdoku;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
@@ -332,6 +371,30 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		E2623D9A2EC9C0B800B29CC0 /* XCRemoteSwiftPackageReference "purchases-ios" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/RevenueCat/purchases-ios.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 5.48.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		E2623D9B2EC9C0B800B29CC0 /* RevenueCat */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = E2623D9A2EC9C0B800B29CC0 /* XCRemoteSwiftPackageReference "purchases-ios" */;
+			productName = RevenueCat;
+		};
+		E2623D9D2EC9C0B800B29CC0 /* RevenueCatUI */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = E2623D9A2EC9C0B800B29CC0 /* XCRemoteSwiftPackageReference "purchases-ios" */;
+			productName = RevenueCatUI;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = E2543EBA2EB3D3500014D580 /* Project object */;
 }

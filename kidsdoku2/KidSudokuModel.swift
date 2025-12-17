@@ -1,27 +1,125 @@
 import Foundation
 
+import SwiftUI
+
+enum SymbolGroup: Int, CaseIterable, Hashable {
+    case animals = 1
+    case birds2
+    case animals3
+    case weather
+    case sea
+    case birds
+    case animals2
+    case birds3
+    case birds4
+    case animals4
+    case numbers
+    case animalItems
+    case christmas1
+    case christmas2
+    case christmas3
+    case christmas4
+
+    var symbols: [String] {
+            switch self {
+            case .animals:
+                return ["animal1", "animal1", "animal2", "animal4", "animal8", "animal10", "animal15"]
+            case .animals2:
+                return ["animal3", "animal3", "animal6", "animal12", "animal14", "animal15", "animal10"]
+            case .birds2:
+                return ["bird_2_11", "bird_2_11", "bird_2_12", "bird_2_13", "bird_2_14", "bird_2_15", "bird_2_10"]
+            case .birds3:
+                return ["bird_2_1", "bird_2_1", "bird_2_2", "bird_2_3", "bird_2_4", "bird_2_5", "bird_2_6"]
+            case .animals3:
+                return ["animal_2_6", "animal_2_6", "animal_2_7", "animal_2_8", "animal_2_9", "animal_2_10", "animal_2_11"]
+            case .animals4:
+                return ["animal_2_1", "animal_2_1", "animal_2_3", "animal_2_5", "animal_2_4", "animal_2_12", "animal_2_13"]
+            case .weather:
+                return ["sea6", "sea6", "sea8", "sea10", "sea12", "sea14", "sea1"]
+            case .sea:
+                return ["sea7", "sea7", "sea11", "sea3", "sea5", "sea9", "sea13"]
+            case .birds:
+                return ["bird1", "bird1", "bird4", "bird6", "bird7", "bird9", "bird13"]
+            case .birds4:
+                return ["bird2", "bird2", "bird3", "bird5", "bird14", "bird15", "bird11"]
+            case .numbers:
+                return ["number1", "number1", "number2", "number3", "number4", "number5", "number6"]
+            case .animalItems:
+                return ["animal_with_item_1", "animal_with_item_1", "animal_with_item_2", "animal_with_item_3", "animal_with_item_4", "animal_with_item_5", "animal_with_item_6"]
+            case .christmas1:
+                return ["christmas_1", "christmas_1", "christmas_2", "christmas_6", "christmas_4", "christmas_5", "christmas_3"]
+            case .christmas2:
+                return ["christmas_8", "christmas_8", "christmas_7", "christmas_9", "christmas_10", "christmas_11", "christmas_12"]
+            case .christmas3:
+                return ["christmas_13", "christmas_13", "christmas_9", "christmas_12", "christmas_4", "christmas_5", "christmas_3"]
+            case .christmas4:
+                return ["christmas_2", "christmas_2", "christmas_5", "christmas_9", "christmas_10", "christmas_8", "christmas_11"]
+            }
+        }
+    
+    var id: Int {
+        return rawValue
+    }
+    
+    var paletteTitle: String {
+        switch self {
+        case .animals, .animals2, .animals3, .animals4, .animalItems:
+            return String(localized: "Safari Camp")
+        case .sea, .weather:
+            return String(localized: "Coral Reef")
+        case .birds, .birds2, .birds3, .birds4:
+            return String(localized: "Bird's Nest")
+        case .numbers:
+            return String(localized: "Numbers")
+        case .christmas1, .christmas2, .christmas3, .christmas4:
+            return String(localized: "Christmas Box")
+        }
+    }
+    
+    static var puzzleCases: [SymbolGroup] {
+        return [.animalItems, .animals, .animals2, .animals3, .animals4, .birds, .birds2, .birds3, .birds4, .sea, .weather]
+    }
+    
+    static var christmasCases: [SymbolGroup] {
+        return [.christmas1, .christmas3, .christmas4, .christmas2]
+    }
+}
+
 struct KidSudokuConfig: Hashable {
     let size: Int
     let subgridRows: Int
     let subgridCols: Int
-    let symbols: [String]
+    let symbolGroup: SymbolGroup
+    
+    var symbols: [String] {
+        return Array(symbolGroup.symbols)
+    }
+
+    static let threeByThree = KidSudokuConfig(
+        size: 3,
+        subgridRows: 1,
+        subgridCols: 3,
+        symbolGroup: .animals
+    )
 
     static let fourByFour = KidSudokuConfig(
         size: 4,
         subgridRows: 2,
         subgridCols: 2,
-        symbols: ["🐶", "🐱", "🐻", "🐼"]
+        symbolGroup: .birds2
     )
 
     static let sixBySix = KidSudokuConfig(
         size: 6,
         subgridRows: 2,
         subgridCols: 3,
-        symbols: ["🍎", "🍊", "🍓", "🍉", "🍇", "🍌"]
+        symbolGroup: .birds2
     )
 
     static func configuration(for size: Int) -> KidSudokuConfig? {
         switch size {
+        case 3:
+            return .threeByThree
         case 4:
             return .fourByFour
         case 6:
@@ -32,12 +130,12 @@ struct KidSudokuConfig: Hashable {
     }
 }
 
-struct KidSudokuPosition: Hashable {
+struct KidSudokuPosition: Hashable, Equatable {
     let row: Int
     let col: Int
 }
 
-struct KidSudokuCell: Identifiable, Hashable {
+struct KidSudokuCell: Identifiable, Equatable {
     let id: Int
     let position: KidSudokuPosition
     var value: Int?
@@ -51,25 +149,9 @@ struct KidSudokuCell: Identifiable, Hashable {
         self.solution = solution
         self.isFixed = isFixed
     }
-    
-    static func == (lhs: KidSudokuCell, rhs: KidSudokuCell) -> Bool {
-        lhs.id == rhs.id &&
-        lhs.position == rhs.position &&
-        lhs.value == rhs.value &&
-        lhs.solution == rhs.solution &&
-        lhs.isFixed == rhs.isFixed
-    }
-    
-    func hash(into hasher: inout Hasher) {
-        hasher.combine(id)
-        hasher.combine(position)
-        hasher.combine(value)
-        hasher.combine(solution)
-        hasher.combine(isFixed)
-    }
 }
 
-struct KidSudokuPuzzle: Hashable {
+struct KidSudokuPuzzle {
     let config: KidSudokuConfig
     private(set) var cells: [KidSudokuCell]
     let solution: [[Int]]
@@ -79,6 +161,30 @@ struct KidSudokuPuzzle: Hashable {
         self.cells = cells
         self.solution = solution
     }
+    
+    init(from premadePuzzle: PremadePuzzle) {
+        self.config = premadePuzzle.config
+        self.solution = premadePuzzle.solutionBoard
+        
+        var cells: [KidSudokuCell] = []
+        for row in 0..<premadePuzzle.size {
+            for col in 0..<premadePuzzle.size {
+                let value = premadePuzzle.initialBoard[row][col]
+                let solutionValue = premadePuzzle.solutionBoard[row][col]
+                let isFixed = value != nil
+                let cell = KidSudokuCell(
+                    row: row,
+                    col: col,
+                    value: value,
+                    solution: solutionValue,
+                    isFixed: isFixed,
+                    boardSize: premadePuzzle.size
+                )
+                cells.append(cell)
+            }
+        }
+        self.cells = cells
+    }
 
     func cell(at position: KidSudokuPosition) -> KidSudokuCell {
         cells[position.row * config.size + position.col]
@@ -87,18 +193,6 @@ struct KidSudokuPuzzle: Hashable {
     mutating func updateCell(at position: KidSudokuPosition, with value: Int?) {
         let index = position.row * config.size + position.col
         cells[index].value = value
-    }
-    
-    static func == (lhs: KidSudokuPuzzle, rhs: KidSudokuPuzzle) -> Bool {
-        lhs.config == rhs.config && 
-        lhs.cells.map(\.id) == rhs.cells.map(\.id) &&
-        lhs.solution == rhs.solution
-    }
-    
-    func hash(into hasher: inout Hasher) {
-        hasher.combine(config)
-        hasher.combine(cells.map(\.id))
-        hasher.combine(solution)
     }
 }
 
@@ -112,12 +206,64 @@ struct KidSudokuMessage: Identifiable {
     let id = UUID()
     let text: String
     let type: KidSudokuMessageType
+    let symbolImageName: String?
+    
+    init(text: String, type: KidSudokuMessageType, symbolImageName: String? = nil) {
+        self.text = text
+        self.type = type
+        self.symbolImageName = symbolImageName
+    }
 }
 
 enum KidSudokuRoute: Hashable {
     case game(size: Int)
     case puzzleSelection(size: Int)
-    case puzzle(config: KidSudokuConfig, puzzleData: PuzzleData)
+    case premadePuzzle(puzzle: PremadePuzzle)
+    case settings
+}
+
+enum PuzzleDifficulty: String, CaseIterable {
+    case easy = "Easy"
+    case normal = "Normal" 
+    case hard = "Hard"
+    
+    var color: Color {
+        switch self {
+        case .easy: return .green
+        case .normal: return .orange
+        case .hard: return .red
+        }
+    }
+}
+
+struct PremadePuzzle: Hashable, Identifiable {
+    let id: String
+    let number: Int
+    let size: Int
+    let difficulty: PuzzleDifficulty
+    let config: KidSudokuConfig
+    let initialBoard: [[Int?]]
+    let solutionBoard: [[Int]]
+    
+    var displayName: String {
+        return String(localized: "Puzzle \(number)")
+    }
+    
+    var displayEmoji: String {
+        return config.symbolGroup.symbols.first ?? ""
+    }
+    
+    var isSolved: Bool {
+        return PuzzleCompletionManager.shared.isSolved(puzzleId: id)
+    }
+    
+    func markAsSolved() {
+        PuzzleCompletionManager.shared.markAsSolved(puzzleId: id)
+    }
+    
+    func markAsUnsolved() {
+        PuzzleCompletionManager.shared.markAsUnsolved(puzzleId: id)
+    }
 }
 
 enum KidSudokuGenerator {
@@ -217,6 +363,8 @@ enum KidSudokuGenerator {
         let targetGivens: Int
 
         switch size {
+        case 3:
+            targetGivens = 4
         case 4:
             targetGivens = 8
         case 6:
