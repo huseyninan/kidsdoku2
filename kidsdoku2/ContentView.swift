@@ -11,9 +11,13 @@ struct ContentView: View {
     @State private var path: [KidSudokuRoute] = []
     @Binding var deepLinkProduct: String?
     @EnvironmentObject var appEnvironment: AppEnvironment
+    @AppStorage("hasSeenOnboarding") private var hasSeenOnboarding = false
 
     var body: some View {
-        NavigationStack(path: $path) {
+        if !hasSeenOnboarding {
+            OnboardingView(hasSeenOnboarding: $hasSeenOnboarding)
+        } else {
+            NavigationStack(path: $path) {
             MainMenuView(path: $path)
                 .navigationDestination(for: KidSudokuRoute.self) { route in
                     switch route {
@@ -37,6 +41,7 @@ struct ContentView: View {
                 .onAppear {
                     handleDeepLink(deepLinkProduct)
                 }
+            }
         }
     }
     
