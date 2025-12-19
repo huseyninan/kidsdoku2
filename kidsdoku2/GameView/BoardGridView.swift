@@ -6,6 +6,10 @@ struct BoardGridView: View {
     let selected: KidSudokuPosition?
     let highlightedValue: Int?
     let showNumbers: Bool
+    let completedCellPositions: Set<KidSudokuPosition>
+    let completedRows: Set<Int>
+    let completedColumns: Set<Int>
+    let completedSubgrids: Set<Int>
     let onTap: (KidSudokuCell) -> Void
     
     @Environment(\.gameTheme) private var theme
@@ -26,7 +30,8 @@ struct BoardGridView: View {
                             ForEach(0..<config.size, id: \.self) { col in
                                 let index = row * config.size + col
                                 let cell = cells[index]
-                                cellView(cell: cell, cellSize: cellSize)
+                                let isCompleted = completedCellPositions.contains(cell.position)
+                                cellView(cell: cell, cellSize: cellSize, isCompleted: isCompleted)
                             }
                         }
                     }
@@ -38,12 +43,23 @@ struct BoardGridView: View {
                 }
                 .frame(width: side, height: side)
                 .allowsHitTesting(false)
+                
+                // Completion border overlay
+                CompletionBorderOverlay(
+                    config: config,
+                    completedRows: completedRows,
+                    completedColumns: completedColumns,
+                    completedSubgrids: completedSubgrids,
+                    boardSize: side
+                )
+                .frame(width: side, height: side)
+                .allowsHitTesting(false)
             }
             .frame(width: side, height: side)
         }
     }
 
-    private func cellView(cell: KidSudokuCell, cellSize: CGFloat) -> some View {
+    private func cellView(cell: KidSudokuCell, cellSize: CGFloat, isCompleted: Bool) -> some View {
         let isSelected = selected == cell.position
         // FIXED: Simplified from immediately-invoked closure to direct conditional
         let isMatchingHighlighted = highlightedValue != nil && cell.value == highlightedValue
@@ -58,6 +74,11 @@ struct BoardGridView: View {
                 if isMatchingHighlighted {
                     ThemedGlowingHighlight(size: cellSize)
                 }
+                
+                // Completion celebration effect
+                if isCompleted {
+                    CompletionCelebrationEffect(size: cellSize)
+                }
 
                 let symbolName = symbol(for: cell)
                 if let value = cell.value {
@@ -70,6 +91,8 @@ struct BoardGridView: View {
                         isSelected: isSelected || isMatchingHighlighted
                     )
                     .transition(.scale)
+                    .scaleEffect(isCompleted ? 1.15 : 1.0)
+                    .animation(.spring(response: 0.3, dampingFraction: 0.5), value: isCompleted)
                 }
             }
         }
@@ -238,5 +261,256 @@ struct ThemedGlowingHighlight: View {
                 try? await Task.sleep(nanoseconds: UInt64(Layout.animationDuration * 1_000_000_000))
             }
         }
+    }
+}
+
+/// Celebration effect shown when a row, column, or subgrid is completed
+struct CompletionCelebrationEffect: View {
+    let size: CGFloat
+    @Environment(\.gameTheme) private var theme
+    
+    @State private var animate = false
+    @State private var showStars = false
+    
+    var body: some View {
+        ZStack {
+            // Golden glow background
+            RoundedRectangle(cornerRadius: size * 0.2)
+                .fill(
+                    RadialGradient(
+                        colors: [
+                            Color.yellow.opacity(0.6),
+                            Color.orange.opacity(0.4),
+                            Color.clear
+                        ],
+                        center: .center,
+                        startRadius: 0,
+                        endRadius: size * 0.6
+                    )
+                )
+                .frame(width: size, height: size)
+                .scaleEffect(animate ? 1.2 : 0.8)
+                .opacity(animate ? 0.8 : 0.4)
+            
+            // Sparkle stars
+            ForEach(0..<3, id: \.self) { index in
+                Image(systemName: "sparkle")
+                    .font(.system(size: size * 0.2))
+                    .foregroundStyle(
+                        LinearGradient(
+                            colors: [.yellow, .orange],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
+                    )
+                    .offset(
+                        x: starOffset(for: index).x * (animate ? 1 : 0.5),
+                        y: starOffset(for: index).y * (animate ? 1 : 0.5)
+                    )
+                    .scaleEffect(showStars ? 1 : 0)
+                    .opacity(showStars ? 1 : 0)
+                    .rotationEffect(.degrees(animate ? 360 : 0))
+            }
+            
+            // Celebration ring
+            Circle()
+                .stroke(
+                    LinearGradient(
+                        colors: [
+                            Color.yellow.opacity(0.8),
+                            Color.orange.opacity(0.6)
+                        ],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    ),
+                    lineWidth: 3
+                )
+                .frame(width: size * 0.7, height: size * 0.7)
+                .scaleEffect(animate ? 1.3 : 0.9)
+                .opacity(animate ? 0 : 0.8)
+        }
+        .onAppear {
+            withAnimation(.easeOut(duration: 0.4)) {
+                animate = true
+            }
+            withAnimation(.spring(response: 0.3, dampingFraction: 0.6).delay(0.1)) {
+                showStars = true
+            }
+        }
+    }
+    
+    private func starOffset(for index: Int) -> CGPoint {
+        let angles: [Double] = [-30, 90, 210]
+        let angle = angles[index] * .pi / 180
+        let radius = Double(size) * 0.35
+        return CGPoint(
+            x: Darwin.cos(angle) * radius,
+            y: Darwin.sin(angle) * radius
+        )
+    }
+}
+
+/// Animated border overlay for completed rows, columns, and subgrids
+struct CompletionBorderOverlay: View {
+    let config: KidSudokuConfig
+    let completedRows: Set<Int>
+    let completedColumns: Set<Int>
+    let completedSubgrids: Set<Int>
+    let boardSize: CGFloat
+    
+    @State private var animateGlow = false
+    @State private var dashPhase: CGFloat = 0
+    
+    private var cellSize: CGFloat {
+        boardSize / CGFloat(config.size)
+    }
+    
+    private var hasCompletions: Bool {
+        !completedRows.isEmpty || !completedColumns.isEmpty || !completedSubgrids.isEmpty
+    }
+    
+    var body: some View {
+        ZStack {
+            // Row borders
+            ForEach(Array(completedRows), id: \.self) { row in
+                AnimatedBorderRect(
+                    rect: CGRect(
+                        x: 0,
+                        y: CGFloat(row) * cellSize,
+                        width: boardSize,
+                        height: cellSize
+                    ),
+                    cornerRadius: 8,
+                    animateGlow: animateGlow,
+                    dashPhase: dashPhase
+                )
+            }
+            
+            // Column borders
+            ForEach(Array(completedColumns), id: \.self) { col in
+                AnimatedBorderRect(
+                    rect: CGRect(
+                        x: CGFloat(col) * cellSize,
+                        y: 0,
+                        width: cellSize,
+                        height: boardSize
+                    ),
+                    cornerRadius: 8,
+                    animateGlow: animateGlow,
+                    dashPhase: dashPhase
+                )
+            }
+            
+            // Subgrid borders
+            ForEach(Array(completedSubgrids), id: \.self) { subgridIndex in
+                let subgridRect = rectForSubgrid(index: subgridIndex)
+                AnimatedBorderRect(
+                    rect: subgridRect,
+                    cornerRadius: 12,
+                    animateGlow: animateGlow,
+                    dashPhase: dashPhase
+                )
+            }
+        }
+        .onChange(of: hasCompletions) { _, newValue in
+            if newValue {
+                withAnimation(.easeInOut(duration: 0.3)) {
+                    animateGlow = true
+                }
+                withAnimation(.linear(duration: 1.5).repeatForever(autoreverses: false)) {
+                    dashPhase = 20
+                }
+            } else {
+                animateGlow = false
+                dashPhase = 0
+            }
+        }
+        .onAppear {
+            if hasCompletions {
+                withAnimation(.easeInOut(duration: 0.3)) {
+                    animateGlow = true
+                }
+                withAnimation(.linear(duration: 1.5).repeatForever(autoreverses: false)) {
+                    dashPhase = 20
+                }
+            }
+        }
+    }
+    
+    private func rectForSubgrid(index: Int) -> CGRect {
+        let subgridsPerRow = config.size / config.subgridCols
+        let subgridRow = index / subgridsPerRow
+        let subgridCol = index % subgridsPerRow
+        
+        let x = CGFloat(subgridCol * config.subgridCols) * cellSize
+        let y = CGFloat(subgridRow * config.subgridRows) * cellSize
+        let width = CGFloat(config.subgridCols) * cellSize
+        let height = CGFloat(config.subgridRows) * cellSize
+        
+        return CGRect(x: x, y: y, width: width, height: height)
+    }
+}
+
+/// Individual animated border rectangle
+struct AnimatedBorderRect: View {
+    let rect: CGRect
+    let cornerRadius: CGFloat
+    let animateGlow: Bool
+    let dashPhase: CGFloat
+    
+    var body: some View {
+        ZStack {
+            // Outer glow
+            RoundedRectangle(cornerRadius: cornerRadius + 2)
+                .stroke(
+                    LinearGradient(
+                        colors: [
+                            Color.yellow.opacity(0.8),
+                            Color.orange.opacity(0.6),
+                            Color.yellow.opacity(0.8)
+                        ],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    ),
+                    lineWidth: animateGlow ? 6 : 2
+                )
+                .blur(radius: animateGlow ? 4 : 1)
+                .frame(width: rect.width + 4, height: rect.height + 4)
+                .position(x: rect.midX, y: rect.midY)
+            
+            // Main animated border with marching ants effect
+            RoundedRectangle(cornerRadius: cornerRadius)
+                .stroke(
+                    LinearGradient(
+                        colors: [
+                            Color.yellow,
+                            Color.orange,
+                            Color.yellow
+                        ],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    ),
+                    style: StrokeStyle(
+                        lineWidth: 3,
+                        lineCap: .round,
+                        lineJoin: .round,
+                        dash: [10, 5],
+                        dashPhase: dashPhase
+                    )
+                )
+                .frame(width: rect.width, height: rect.height)
+                .position(x: rect.midX, y: rect.midY)
+            
+            // Inner highlight
+            RoundedRectangle(cornerRadius: cornerRadius - 2)
+                .stroke(
+                    Color.white.opacity(animateGlow ? 0.6 : 0.2),
+                    lineWidth: 1.5
+                )
+                .frame(width: rect.width - 6, height: rect.height - 6)
+                .position(x: rect.midX, y: rect.midY)
+        }
+        .opacity(animateGlow ? 1 : 0)
+        .scaleEffect(animateGlow ? 1 : 0.95)
     }
 }

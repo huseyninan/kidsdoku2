@@ -22,9 +22,18 @@ final class SoundManager: ObservableObject {
         case incorrectPlacement = "incorrect_placement"
         case victory = "victory_sound"
         case hint = "hint"
+        case lineComplete = "line_complete"
         
         var fileName: String {
             return self.rawValue
+        }
+        
+        /// Fallback sound if the primary file is not found
+        var fallbackSound: SoundEffect? {
+            switch self {
+            case .lineComplete: return .correctPlacement
+            default: return nil
+            }
         }
     }
     
@@ -44,7 +53,7 @@ final class SoundManager: ObservableObject {
     }
     
     private func preloadSounds() {
-        for sound in [SoundEffect.correctPlacement, .incorrectPlacement, .victory, .hint] {
+        for sound in [SoundEffect.correctPlacement, .incorrectPlacement, .victory, .hint, .lineComplete] {
             guard let url = findSoundURL(for: sound) else {
                 print("⚠️ Sound file not found: \(sound.fileName)")
                 continue
@@ -70,6 +79,14 @@ final class SoundManager: ObservableObject {
         for ext in extensions {
             if let url = Bundle.main.url(forResource: sound.fileName, withExtension: ext) {
                 return url
+            }
+        }
+        // Try fallback sound if primary not found
+        if let fallback = sound.fallbackSound {
+            for ext in extensions {
+                if let url = Bundle.main.url(forResource: fallback.fileName, withExtension: ext) {
+                    return url
+                }
             }
         }
         return nil

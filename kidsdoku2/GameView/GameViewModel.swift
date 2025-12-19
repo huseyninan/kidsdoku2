@@ -22,6 +22,10 @@ final class GameViewModel: ObservableObject {
     @Published private(set) var currentConfig: KidSudokuConfig
     @Published private(set) var filledCellCount: Int = 0
     @Published private(set) var isGeneratingPuzzle = false
+    @Published private(set) var completedCellPositions: Set<KidSudokuPosition> = []
+    @Published private(set) var completedRows: Set<Int> = []
+    @Published private(set) var completedColumns: Set<Int> = []
+    @Published private(set) var completedSubgrids: Set<Int> = []
     private var correctCellCount: Int = 0
     private(set) var validSymbolIndices: [Int] = []
     @Published private(set) var paletteSymbols: [(index: Int, symbol: String)] = []
@@ -231,6 +235,7 @@ final class GameViewModel: ObservableObject {
                 highlightedValue = paletteSymbol
                 let isCompleted = checkForCompletion()
                 if !isCompleted {
+                    checkForLineCompletion(at: cell.position)
                     soundManager.play(.correctPlacement, volume: 0.6)
                 }
             } else {
@@ -316,6 +321,7 @@ final class GameViewModel: ObservableObject {
             message = nil
             let isCompleted = checkForCompletion()
             if !isCompleted {
+                checkForLineCompletion(at: position)
                 soundManager.play(.correctPlacement, volume: 0.6)
             }
         } else {
@@ -360,6 +366,97 @@ final class GameViewModel: ObservableObject {
         }
         
         return showCelebration
+    }
+    
+    /// Checks if placing a value completed any row, column, or subgrid and triggers celebration animation
+    private func checkForLineCompletion(at position: KidSudokuPosition) {
+        var newlyCompletedPositions: Set<KidSudokuPosition> = []
+        var newCompletedRows: Set<Int> = []
+        var newCompletedColumns: Set<Int> = []
+        var newCompletedSubgrids: Set<Int> = []
+        let size = config.size
+        let cells = puzzleCells
+        
+        // Check row completion
+        let rowStart = position.row * size
+        var rowComplete = true
+        for col in 0..<size {
+            let cell = cells[rowStart + col]
+            if cell.value != cell.solution {
+                rowComplete = false
+                break
+            }
+        }
+        if rowComplete {
+            newCompletedRows.insert(position.row)
+            for col in 0..<size {
+                newlyCompletedPositions.insert(KidSudokuPosition(row: position.row, col: col))
+            }
+        }
+        
+        // Check column completion
+        var colComplete = true
+        for row in 0..<size {
+            let cell = cells[row * size + position.col]
+            if cell.value != cell.solution {
+                colComplete = false
+                break
+            }
+        }
+        if colComplete {
+            newCompletedColumns.insert(position.col)
+            for row in 0..<size {
+                newlyCompletedPositions.insert(KidSudokuPosition(row: row, col: position.col))
+            }
+        }
+        
+        // Check subgrid completion
+        let subgridRowStart = (position.row / config.subgridRows) * config.subgridRows
+        let subgridColStart = (position.col / config.subgridCols) * config.subgridCols
+        var subgridComplete = true
+        
+        for row in subgridRowStart..<(subgridRowStart + config.subgridRows) {
+            for col in subgridColStart..<(subgridColStart + config.subgridCols) {
+                let cell = cells[row * size + col]
+                if cell.value != cell.solution {
+                    subgridComplete = false
+                    break
+                }
+            }
+            if !subgridComplete { break }
+        }
+        if subgridComplete {
+            // Calculate subgrid index
+            let subgridIndex = (subgridRowStart / config.subgridRows) * (size / config.subgridCols) + (subgridColStart / config.subgridCols)
+            newCompletedSubgrids.insert(subgridIndex)
+            for row in subgridRowStart..<(subgridRowStart + config.subgridRows) {
+                for col in subgridColStart..<(subgridColStart + config.subgridCols) {
+                    newlyCompletedPositions.insert(KidSudokuPosition(row: row, col: col))
+                }
+            }
+        }
+        
+        // Trigger animation if any line was completed
+        if !newlyCompletedPositions.isEmpty {
+            withAnimation(.spring(response: 0.4, dampingFraction: 0.6)) {
+                completedCellPositions = newlyCompletedPositions
+                completedRows = newCompletedRows
+                completedColumns = newCompletedColumns
+                completedSubgrids = newCompletedSubgrids
+            }
+            soundManager.play(.lineComplete, volume: 0.5)
+            
+            // Clear animation after delay
+            Task { @MainActor in
+                try? await Task.sleep(nanoseconds: 1_200_000_000)
+                withAnimation(.easeOut(duration: 0.3)) {
+                    completedCellPositions = []
+                    completedRows = []
+                    completedColumns = []
+                    completedSubgrids = []
+                }
+            }
+        }
     }
 
     private func isValid(_ value: Int, at position: KidSudokuPosition) -> Bool {
@@ -455,6 +552,7 @@ final class GameViewModel: ObservableObject {
             // Check if this completes the puzzle
             let isCompleted = checkForCompletion()
             if !isCompleted {
+                checkForLineCompletion(at: randomCell.position)
                 soundManager.play(.hint, volume: 0.6)
             }
         }

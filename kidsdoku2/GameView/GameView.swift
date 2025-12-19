@@ -164,6 +164,10 @@ struct GameView: View {
                 selected: viewModel.selectedPosition,
                 highlightedValue: viewModel.highlightedValue,
                 showNumbers: viewModel.showNumbers,
+                completedCellPositions: viewModel.completedCellPositions,
+                completedRows: viewModel.completedRows,
+                completedColumns: viewModel.completedColumns,
+                completedSubgrids: viewModel.completedSubgrids,
                 onTap: { cell in
                     withAnimation(.easeInOut(duration: 0.15)) {
                         viewModel.didTapCell(cell)
