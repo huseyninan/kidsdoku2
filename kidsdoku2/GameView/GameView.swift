@@ -168,6 +168,7 @@ struct GameView: View {
                 completedRows: viewModel.completedRows,
                 completedColumns: viewModel.completedColumns,
                 completedSubgrids: viewModel.completedSubgrids,
+                isPuzzleComplete: viewModel.isPuzzleCompleteAnimation,
                 onTap: { cell in
                     withAnimation(.easeInOut(duration: 0.15)) {
                         viewModel.didTapCell(cell)

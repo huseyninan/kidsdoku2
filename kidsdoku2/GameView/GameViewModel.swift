@@ -26,6 +26,7 @@ final class GameViewModel: ObservableObject {
     @Published private(set) var completedRows: Set<Int> = []
     @Published private(set) var completedColumns: Set<Int> = []
     @Published private(set) var completedSubgrids: Set<Int> = []
+    @Published private(set) var isPuzzleCompleteAnimation = false
     private var correctCellCount: Int = 0
     private(set) var validSymbolIndices: [Int] = []
     @Published private(set) var paletteSymbols: [(index: Int, symbol: String)] = []
@@ -354,8 +355,19 @@ final class GameViewModel: ObservableObject {
         guard correctCellCount == totalCellCount else {
             return false
         }
-        showCelebration = true
         stopTimer()
+        
+        // Animate all grid borders for completion
+        withAnimation(.spring(response: 0.4, dampingFraction: 0.6)) {
+            isPuzzleCompleteAnimation = true
+        }
+        
+        // Show celebration popup with 1 second delay
+        Task { @MainActor in
+            try? await Task.sleep(nanoseconds: 1_000_000_000)
+            showCelebration = true
+            isPuzzleCompleteAnimation = false
+        }
         message = KidSudokuMessage(text: String(localized: "Amazing! Puzzle complete!"), type: .success)
         soundManager.play(.victory, volume: 0.7)
         
@@ -365,7 +377,7 @@ final class GameViewModel: ObservableObject {
             PuzzleCompletionManager.shared.setRating(calculateStars(), for: premadePuzzle)
         }
         
-        return showCelebration
+        return true
     }
     
     /// Checks if placing a value completed any row, column, or subgrid and triggers celebration animation

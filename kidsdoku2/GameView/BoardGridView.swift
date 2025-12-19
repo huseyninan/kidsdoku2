@@ -10,6 +10,7 @@ struct BoardGridView: View {
     let completedRows: Set<Int>
     let completedColumns: Set<Int>
     let completedSubgrids: Set<Int>
+    let isPuzzleComplete: Bool
     let onTap: (KidSudokuCell) -> Void
     
     @Environment(\.gameTheme) private var theme
@@ -54,6 +55,12 @@ struct BoardGridView: View {
                 )
                 .frame(width: side, height: side)
                 .allowsHitTesting(false)
+                
+                // Full grid completion animation
+                if isPuzzleComplete {
+                    PuzzleCompleteBorderAnimation(boardSize: side)
+                        .allowsHitTesting(false)
+                }
             }
             .frame(width: side, height: side)
         }
@@ -512,5 +519,122 @@ struct AnimatedBorderRect: View {
         }
         .opacity(animateGlow ? 1 : 0)
         .scaleEffect(animateGlow ? 1 : 0.95)
+    }
+}
+
+/// Full grid border animation when puzzle is completely solved
+struct PuzzleCompleteBorderAnimation: View {
+    let boardSize: CGFloat
+    
+    @State private var animate = false
+    @State private var pulseScale: CGFloat = 1.0
+    @State private var rotationAngle: Double = 0
+    @State private var dashPhase: CGFloat = 0
+    
+    var body: some View {
+        ZStack {
+            // Outer rainbow glow
+            RoundedRectangle(cornerRadius: 28)
+                .stroke(
+                    AngularGradient(
+                        colors: [
+                            .yellow, .orange, .pink, .purple, .blue, .cyan, .green, .yellow
+                        ],
+                        center: .center,
+                        angle: .degrees(rotationAngle)
+                    ),
+                    lineWidth: animate ? 8 : 4
+                )
+                .blur(radius: animate ? 8 : 4)
+                .frame(width: boardSize + 16, height: boardSize + 16)
+                .scaleEffect(pulseScale)
+            
+            // Secondary glow ring
+            RoundedRectangle(cornerRadius: 26)
+                .stroke(
+                    LinearGradient(
+                        colors: [
+                            Color.yellow.opacity(0.9),
+                            Color.orange.opacity(0.7),
+                            Color.yellow.opacity(0.9)
+                        ],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    ),
+                    lineWidth: 5
+                )
+                .blur(radius: 3)
+                .frame(width: boardSize + 8, height: boardSize + 8)
+            
+            // Main animated border
+            RoundedRectangle(cornerRadius: 24)
+                .stroke(
+                    AngularGradient(
+                        colors: [
+                            .yellow, .orange, .yellow, .white, .yellow
+                        ],
+                        center: .center,
+                        angle: .degrees(rotationAngle)
+                    ),
+                    style: StrokeStyle(
+                        lineWidth: 4,
+                        lineCap: .round,
+                        lineJoin: .round,
+                        dash: [15, 8],
+                        dashPhase: dashPhase
+                    )
+                )
+                .frame(width: boardSize, height: boardSize)
+            
+            // Inner white highlight
+            RoundedRectangle(cornerRadius: 22)
+                .stroke(
+                    Color.white.opacity(animate ? 0.7 : 0.3),
+                    lineWidth: 2
+                )
+                .frame(width: boardSize - 8, height: boardSize - 8)
+            
+            // Corner sparkles
+            ForEach(0..<4, id: \.self) { corner in
+                Image(systemName: "sparkle")
+                    .font(.system(size: 24, weight: .bold))
+                    .foregroundStyle(
+                        LinearGradient(
+                            colors: [.yellow, .white],
+                            startPoint: .top,
+                            endPoint: .bottom
+                        )
+                    )
+                    .offset(cornerOffset(for: corner))
+                    .scaleEffect(animate ? 1.2 : 0.8)
+                    .opacity(animate ? 1 : 0.6)
+                    .rotationEffect(.degrees(animate ? 180 : 0))
+            }
+        }
+        .onAppear {
+            withAnimation(.easeOut(duration: 0.4)) {
+                animate = true
+            }
+            withAnimation(.linear(duration: 3).repeatForever(autoreverses: false)) {
+                rotationAngle = 360
+            }
+            withAnimation(.linear(duration: 1).repeatForever(autoreverses: false)) {
+                dashPhase = 23
+            }
+            withAnimation(.easeInOut(duration: 0.6).repeatForever(autoreverses: true)) {
+                pulseScale = 1.05
+            }
+        }
+    }
+    
+    private func cornerOffset(for corner: Int) -> CGSize {
+        let offset = boardSize / 2 + 12
+        switch corner {
+        case 0: return CGSize(width: -offset, height: -offset)
+        case 1: return CGSize(width: offset, height: -offset)
+        case 2: return CGSize(width: -offset, height: offset)
+        case 3: return CGSize(width: offset, height: offset)
+        default: return .zero
+        }
     }
 }
