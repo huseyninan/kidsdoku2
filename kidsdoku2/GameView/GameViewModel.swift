@@ -39,6 +39,7 @@ final class GameViewModel: ObservableObject {
     private var timerCancellable: AnyCancellable?
     private var isTimerRunning = false
     private var generationTask: Task<Void, Never>?
+    private var hasShownPaletteSelectionMessage = false
     
     var selectedSymbolGroup: SymbolGroup {
         SymbolGroup(rawValue: selectedSymbolGroupRawValue) ?? config.symbolGroup
@@ -222,6 +223,15 @@ final class GameViewModel: ObservableObject {
             highlightedValue = cell.value
             selectedPaletteSymbol = cell.value
             selectedPosition = nil
+            
+            // Show message to guide user to select an empty cell
+            if !hasShownPaletteSelectionMessage {
+                message = KidSudokuMessage(
+                    text: String(localized: "Select an empty cell in the grid to place"),
+                    type: .info
+                )
+                hasShownPaletteSelectionMessage = true
+            }
             return
         }
         
@@ -254,7 +264,24 @@ final class GameViewModel: ObservableObject {
             return
         }
         
-        // Otherwise, select the cell and highlight its value
+        // If the cell has a value (user-filled), highlight it in the palette
+        if let value = cell.value {
+            highlightedValue = value
+            selectedPaletteSymbol = value
+            selectedPosition = cell.position
+            
+            // Show message to guide user to select an empty cell
+            if !hasShownPaletteSelectionMessage {
+                message = KidSudokuMessage(
+                    text: String(localized: "Tap an empty square to plant it!"),
+                    type: .info
+                )
+                hasShownPaletteSelectionMessage = true
+            }
+            return
+        }
+        
+        // Otherwise, select the empty cell and highlight its value
         selectedPosition = cell.position
         highlightedValue = cell.value
         selectedPaletteSymbol = cell.value
@@ -290,8 +317,19 @@ final class GameViewModel: ObservableObject {
     func selectPaletteSymbol(_ symbolIndex: Int) {
         selectedPaletteSymbol = symbolIndex
         highlightedValue = symbolIndex
+        
+        // Show message when first selecting from palette
+        if !hasShownPaletteSelectionMessage {
+            message = KidSudokuMessage(
+                text: String(localized: "Select an empty cell in the grid to place"),
+                type: .info
+            )
+            hasShownPaletteSelectionMessage = true
+        } else {
+            message = nil
+        }
+        
         selectedPosition = nil
-        message = nil
     }
 
     func placeSymbol(at symbolIndex: Int) {
