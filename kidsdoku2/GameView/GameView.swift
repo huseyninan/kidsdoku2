@@ -9,6 +9,7 @@ struct GameView: View {
     @EnvironmentObject private var appEnvironment: AppEnvironment
     
     @State private var showSettings: Bool = false
+    @State private var showPaletteHighlight: Bool = true
 
     init(config: KidSudokuConfig) {
         self.config = config
@@ -172,6 +173,11 @@ struct GameView: View {
                 onTap: { cell in
                     withAnimation(.easeInOut(duration: 0.15)) {
                         viewModel.didTapCell(cell)
+                        
+                        // Dismiss highlight when grid is tapped
+                        if showPaletteHighlight {
+                            showPaletteHighlight = false
+                        }
                     }
                     hapticManager.trigger(.selection)
                 }
@@ -193,9 +199,46 @@ struct GameView: View {
                     .foregroundStyle(theme.paletteSubtitleColor)
             }
             
-            HStack(spacing: 8) {
-                ForEach(viewModel.paletteSymbols, id: \.index) { item in
-                    paletteButton(symbolIndex: item.index, symbol: item.symbol)
+            ZStack(alignment: .bottom) {
+                HStack(spacing: 8) {
+                    ForEach(viewModel.paletteSymbols, id: \.index) { item in
+                        paletteButton(symbolIndex: item.index, symbol: item.symbol)
+                    }
+                }
+                
+                // Arrow pointing to palette when first opened
+                if showPaletteHighlight {
+                    VStack(spacing: 4) {
+                        Text("Start here!")
+                            .font(.system(size: 14, weight: .bold, design: .rounded))
+                            .foregroundStyle(.white)
+                            .padding(.horizontal, 12)
+                            .padding(.vertical, 6)
+                            .background(
+                                Capsule()
+                                    .fill(
+                                        LinearGradient(
+                                            colors: [Color.blue, Color.cyan],
+                                            startPoint: .leading,
+                                            endPoint: .trailing
+                                        )
+                                    )
+                                    .shadow(color: .blue.opacity(0.5), radius: 8, x: 0, y: 4)
+                            )
+                        
+                        Image(systemName: "arrow.down")
+                            .font(.system(size: 24, weight: .bold))
+                            .foregroundStyle(
+                                LinearGradient(
+                                    colors: [Color.blue, Color.cyan],
+                                    startPoint: .top,
+                                    endPoint: .bottom
+                                )
+                            )
+                            .shadow(color: .blue.opacity(0.5), radius: 4, x: 0, y: 2)
+                    }
+                    .offset(y: -80)
+                    .transition(.move(edge: .top).combined(with: .opacity))
                 }
             }
         }
@@ -211,6 +254,11 @@ struct GameView: View {
         return Button {
             withAnimation(.spring(response: 0.35, dampingFraction: 0.6)) {
                 viewModel.selectPaletteSymbol(symbolIndex)
+                
+                // Dismiss highlight when palette is tapped
+                if showPaletteHighlight {
+                    showPaletteHighlight = false
+                }
             }
             hapticManager.trigger(.selection)
         } label: {
