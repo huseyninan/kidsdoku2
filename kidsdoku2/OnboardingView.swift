@@ -99,7 +99,7 @@ struct OnboardingView: View {
                         completeOnboarding()
                     }
                     .font(.subheadline.bold()) // Better readability
-                    .foregroundColor(.white)   // White often contrasts better on full screen generic images, or use a background capsule
+                    .foregroundColor(Color(red: 40/255, green: 30/255, blue: 20/255))
                     .padding(.horizontal, 16)
                     .padding(.vertical, 8)
                     .background(.ultraThinMaterial, in: Capsule()) // Ensures visibility on any background
@@ -216,19 +216,17 @@ struct OnboardingPageView: View {
                 Text(page.title)
                     .font(.system(size: 28, weight: .bold)) // Consider converting to relative size for Dynamic Type
                     .multilineTextAlignment(.center)
-                    .foregroundColor(.white) // White usually looks better on full screen photos
-                    .shadow(color: .black.opacity(0.5), radius: 2, x: 0, y: 1) // Shadow for readability
+                    .foregroundColor(Color(red: 40/255, green: 30/255, blue: 20/255))
                     .padding(.horizontal, 32)
                 
                 // Subtitle
                 Text(page.subtitle)
                     .font(.body)
                     .multilineTextAlignment(.center)
-                    .foregroundColor(.white.opacity(0.9))
+                    .foregroundColor(Color(red: 40/255, green: 30/255, blue: 20/255))
                     .padding(.horizontal, 40)
                     .padding(.bottom, 80)
                     .lineSpacing(4)
-                    .shadow(color: .black.opacity(0.5), radius: 2, x: 0, y: 1)
                     
                 // Spacer for the bottom controls area
                 Spacer()
