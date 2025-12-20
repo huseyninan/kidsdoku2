@@ -27,62 +27,58 @@ struct GameView: View {
             let theme = appEnvironment.currentTheme
             
             ZStack {
-                // Background image - uses theme
-                Image(theme.backgroundImageName)
-                    .resizable(resizingMode: .stretch)
-                    .ignoresSafeArea()
-                
-                // Snowfall effect for Christmas theme
-                if theme.showSnowfall {
-                    SnowfallView()
-                        .ignoresSafeArea()
-                }
-                
-                // Animated running fox at the bottom of the screen (if theme supports it)
-                if theme.showRunningFox {
-                    VStack {
-                        Spacer()
-                        RunningFoxView()
-                            .frame(height: 200)
-                            .allowsHitTesting(false)
-                    }
-                }
+                // Background
+                GameBackgroundView(theme: theme)
                 
                 VStack(spacing: 8) {
-                    header(theme: theme)
+                    GameHeaderView(
+                        viewModel: viewModel,
+                        theme: theme,
+                        showSettings: $showSettings,
+                        progressRatio: progressRatio
+                    )
                     
-                    boardSection(size: boardSize)
-                            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
+                    ZStack(alignment: .top) {
+                        GameBoardSection(
+                            viewModel: viewModel,
+                            boardSize: boardSize,
+                            showPaletteHighlight: $showPaletteHighlight
+                        )
+                        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
+                        
+                        // Message banner positioned at top of grid area
+                        if let message = viewModel.message {
+                            GameMessageBanner(message: message, theme: theme)
+                                .padding(.top, 8)
+                                .transition(.move(edge: .top).combined(with: .opacity))
+                                .zIndex(100)
+                        }
+                    }
                     
-                    paletteSection(theme: theme)
+                    GamePaletteSection(
+                        viewModel: viewModel,
+                        theme: theme,
+                        showPaletteHighlight: $showPaletteHighlight
+                    )
                     
-                    actionButtons(theme: theme)
+                    GameActionButtons(
+                        viewModel: viewModel,
+                        theme: theme
+                    )
                 }
                 .padding(.horizontal, 10)
                 .padding(.top, 8)
                 .padding(.bottom, max(proxy.safeAreaInsets.bottom, 12))
                 .frame(width: proxy.size.width, height: proxy.size.height, alignment: .top)
                 
+                // Overlays
                 if viewModel.showCelebration {
                     CelebrationOverlay(
                         rating: viewModel.calculateStars(),
                         mistakeCount: viewModel.mistakeCount,
                         hintCount: viewModel.hintCount,
-                        onDismiss: {
-                            dismiss()
-                        }
+                        onDismiss: { dismiss() }
                     )
-                }
-                
-                // Message banner overlay
-                if let message = viewModel.message {
-                    VStack {
-                        messageBanner(message, theme: theme)
-                            .padding(.top, 60)
-                        Spacer()
-                    }
-                    .animation(.spring(response: 0.3, dampingFraction: 0.7), value: viewModel.message?.text)
-                    .allowsHitTesting(false)
                 }
             }
             .gameTheme(theme)
@@ -108,21 +104,74 @@ struct GameView: View {
             viewModel.stopTimer()
         }
         .onChange(of: scenePhase) { _, newPhase in
-            // Pause timer when app goes to background, resume when active
-            switch newPhase {
-            case .active:
-                if !viewModel.showCelebration {
-                    viewModel.startTimer()
-                }
-            case .inactive, .background:
-                viewModel.stopTimer()
-            @unknown default:
-                break
-            }
+            handleScenePhaseChange(newPhase)
         }
     }
 
-    private func header(theme: GameTheme) -> some View {
+
+    private var progressRatio: Double {
+        let total = Double(viewModel.totalCellCount)
+        let filled = Double(viewModel.filledCellCount)
+        return total > 0 ? min(1.0, max(0.0, filled / total)) : 0
+    }
+
+    private func computeBoardSize(from proxy: GeometryProxy) -> CGFloat {
+        DeviceSizing.computeBoardSize(
+            availableWidth: proxy.size.width,
+            availableHeight: proxy.size.height,
+            bottomSafeArea: proxy.safeAreaInsets.bottom
+        )
+    }
+
+    private func handleScenePhaseChange(_ newPhase: ScenePhase) {
+        switch newPhase {
+        case .active:
+            if !viewModel.showCelebration {
+                viewModel.startTimer()
+            }
+        case .inactive, .background:
+            viewModel.stopTimer()
+        @unknown default:
+            break
+        }
+    }
+}
+
+// MARK: - Subviews
+
+struct GameBackgroundView: View {
+    let theme: GameTheme
+    
+    var body: some View {
+        ZStack {
+            Image(theme.backgroundImageName)
+                .resizable(resizingMode: .stretch)
+                .ignoresSafeArea()
+            
+            if theme.showSnowfall {
+                SnowfallView().ignoresSafeArea()
+            }
+            
+            if theme.showRunningFox {
+                VStack {
+                    Spacer()
+                    RunningFoxView()
+                        .frame(height: 200)
+                        .allowsHitTesting(false)
+                }
+            }
+        }
+    }
+}
+
+struct GameHeaderView: View {
+    @ObservedObject var viewModel: GameViewModel
+    let theme: GameTheme
+    @Binding var showSettings: Bool
+    let progressRatio: Double
+    private let hapticManager = HapticManager.shared
+    
+    var body: some View {
         HStack(spacing: DeviceSizing.headerSpacing) {
             StorybookBadge(text: viewModel.navigationTitle)
                 .scaleEffect(DeviceSizing.badgeScale)
@@ -130,10 +179,11 @@ struct GameView: View {
             Spacer(minLength: 0)
             
             StorybookProgressBar(progress: progressRatio)
-                .frame(height: DeviceSizing.progressBarHeight, alignment: .center)
+                .frame(height: DeviceSizing.progressBarHeight)
                 .frame(maxWidth: DeviceSizing.progressBarMaxWidth)
             
-            GameTimerView(viewModel: viewModel)
+            StorybookInfoChip(icon: "clock", text: viewModel.formattedTime)
+                .scaleEffect(DeviceSizing.badgeScale)
             
             Button(action: {
                 showSettings = true
@@ -141,10 +191,7 @@ struct GameView: View {
             }) {
                 StorybookIconCircle(
                     systemName: "slider.horizontal.3",
-                    gradient: [
-                        theme.settingsButtonGradientStart,
-                        theme.settingsButtonGradientEnd
-                    ]
+                    gradient: [theme.settingsButtonGradientStart, theme.settingsButtonGradientEnd]
                 )
                 .scaleEffect(DeviceSizing.settingsButtonScale)
             }
@@ -154,10 +201,17 @@ struct GameView: View {
         .padding(.horizontal, DeviceSizing.headerHorizontalPadding)
         .background(StorybookHeaderCard())
     }
+}
 
-    private func boardSection(size: CGFloat) -> some View {
+struct GameBoardSection: View {
+    @ObservedObject var viewModel: GameViewModel
+    let boardSize: CGFloat
+    @Binding var showPaletteHighlight: Bool
+    private let hapticManager = HapticManager.shared
+    
+    var body: some View {
         ZStack {
-            StorybookBoardMat(size: size)
+            StorybookBoardMat(size: boardSize)
             
             BoardGridView(
                 config: viewModel.currentConfig,
@@ -173,8 +227,6 @@ struct GameView: View {
                 onTap: { cell in
                     withAnimation(.easeInOut(duration: 0.15)) {
                         viewModel.didTapCell(cell)
-                        
-                        // Dismiss highlight when grid is tapped
                         if showPaletteHighlight {
                             showPaletteHighlight = false
                         }
@@ -182,12 +234,18 @@ struct GameView: View {
                     hapticManager.trigger(.selection)
                 }
             )
-            .frame(width: size, height: size)
+            .frame(width: boardSize, height: boardSize)
         }
         .frame(maxWidth: .infinity)
     }
+}
 
-    private func paletteSection(theme: GameTheme) -> some View {
+struct GamePaletteSection: View {
+    @ObservedObject var viewModel: GameViewModel
+    let theme: GameTheme
+    @Binding var showPaletteHighlight: Bool
+    
+    var body: some View {
         VStack(spacing: 8) {
             HStack {
                 Text(viewModel.currentConfig.symbolGroup.paletteTitle)
@@ -202,43 +260,25 @@ struct GameView: View {
             ZStack(alignment: .bottom) {
                 HStack(spacing: 8) {
                     ForEach(viewModel.paletteSymbols, id: \.index) { item in
-                        paletteButton(symbolIndex: item.index, symbol: item.symbol)
+                        GamePaletteButton(
+                            item: item,
+                            isSelected: viewModel.selectedPaletteSymbol == item.index,
+                            showNumbers: viewModel.showNumbers,
+                            onTap: {
+                                withAnimation(.spring(response: 0.35, dampingFraction: 0.6)) {
+                                    viewModel.selectPaletteSymbol(item.index)
+                                    if showPaletteHighlight {
+                                        showPaletteHighlight = false
+                                    }
+                                }
+                            }
+                        )
                     }
                 }
                 
-                // Arrow pointing to palette when first opened
                 if showPaletteHighlight {
-                    VStack(spacing: 4) {
-                        Text("Start here!")
-                            .font(.system(size: 14, weight: .bold, design: .rounded))
-                            .foregroundStyle(.white)
-                            .padding(.horizontal, 12)
-                            .padding(.vertical, 6)
-                            .background(
-                                Capsule()
-                                    .fill(
-                                        LinearGradient(
-                                            colors: [Color.blue, Color.cyan],
-                                            startPoint: .leading,
-                                            endPoint: .trailing
-                                        )
-                                    )
-                                    .shadow(color: .blue.opacity(0.5), radius: 8, x: 0, y: 4)
-                            )
-                        
-                        Image(systemName: "arrow.down")
-                            .font(.system(size: 24, weight: .bold))
-                            .foregroundStyle(
-                                LinearGradient(
-                                    colors: [Color.blue, Color.cyan],
-                                    startPoint: .top,
-                                    endPoint: .bottom
-                                )
-                            )
-                            .shadow(color: .blue.opacity(0.5), radius: 4, x: 0, y: 2)
-                    }
-                    .offset(y: -80)
-                    .transition(.move(edge: .top).combined(with: .opacity))
+                    PaletteHighlightTip()
+                        .transition(.move(edge: .top).combined(with: .opacity))
                 }
             }
         }
@@ -247,25 +287,24 @@ struct GameView: View {
         .padding(.horizontal, 10)
         .background(StorybookPaletteMat())
     }
+}
 
-    private func paletteButton(symbolIndex: Int, symbol: String) -> some View {
-        let isSelected = viewModel.selectedPaletteSymbol == symbolIndex
-        
-        return Button {
-            withAnimation(.spring(response: 0.35, dampingFraction: 0.6)) {
-                viewModel.selectPaletteSymbol(symbolIndex)
-                
-                // Dismiss highlight when palette is tapped
-                if showPaletteHighlight {
-                    showPaletteHighlight = false
-                }
-            }
+struct GamePaletteButton: View {
+    let item: (index: Int, symbol: String)
+    let isSelected: Bool
+    let showNumbers: Bool
+    let onTap: () -> Void
+    private let hapticManager = HapticManager.shared
+    
+    var body: some View {
+        Button {
+            onTap()
             hapticManager.trigger(.selection)
         } label: {
             SymbolTokenView(
-                symbolIndex: symbolIndex,
-                symbolName: symbol,
-                showNumbers: viewModel.showNumbers,
+                symbolIndex: item.index,
+                symbolName: item.symbol,
+                showNumbers: showNumbers,
                 size: DeviceSizing.paletteButtonSize,
                 context: .palette,
                 isSelected: isSelected
@@ -275,21 +314,45 @@ struct GameView: View {
         }
         .buttonStyle(.plain)
     }
+}
 
-    private func actionButtons(theme: GameTheme) -> some View {
+struct PaletteHighlightTip: View {
+    var body: some View {
+        VStack(spacing: 4) {
+            Text("Start here!")
+                .font(.system(size: 14, weight: .bold, design: .rounded))
+                .foregroundStyle(.white)
+                .padding(.horizontal, 12)
+                .padding(.vertical, 6)
+                .background(
+                    Capsule()
+                        .fill(LinearGradient(colors: [.blue, .cyan], startPoint: .leading, endPoint: .trailing))
+                        .shadow(color: .blue.opacity(0.5), radius: 8, x: 0, y: 4)
+                )
+            
+            Image(systemName: "arrow.down")
+                .font(.system(size: 24, weight: .bold))
+                .foregroundStyle(LinearGradient(colors: [.blue, .cyan], startPoint: .top, endPoint: .bottom))
+                .shadow(color: .blue.opacity(0.5), radius: 4, x: 0, y: 2)
+        }
+        .offset(y: -80)
+    }
+}
+
+struct GameActionButtons: View {
+    @ObservedObject var viewModel: GameViewModel
+    let theme: GameTheme
+    private let hapticManager = HapticManager.shared
+    
+    var body: some View {
         HStack(spacing: 12) {
             StorybookActionButton(
                 title: String(localized: "Undo"),
                 icon: "arrow.uturn.backward",
                 isEnabled: viewModel.canUndo,
-                gradient: [
-                    theme.undoGradientStart,
-                    theme.undoGradientEnd
-                ],
+                gradient: [theme.undoGradientStart, theme.undoGradientEnd],
                 action: {
-                    withAnimation(.easeInOut(duration: 0.2)) {
-                        viewModel.undo()
-                    }
+                    withAnimation(.easeInOut(duration: 0.2)) { viewModel.undo() }
                     hapticManager.trigger(.light)
                 }
             )
@@ -298,14 +361,9 @@ struct GameView: View {
                 title: String(localized: "Erase"),
                 icon: "xmark.circle",
                 isEnabled: true,
-                gradient: [
-                    theme.eraseGradientStart,
-                    theme.eraseGradientEnd
-                ],
+                gradient: [theme.eraseGradientStart, theme.eraseGradientEnd],
                 action: {
-                    withAnimation(.easeInOut(duration: 0.2)) {
-                        viewModel.removeValue()
-                    }
+                    withAnimation(.easeInOut(duration: 0.2)) { viewModel.removeValue() }
                     hapticManager.trigger(.light)
                 }
             )
@@ -314,43 +372,32 @@ struct GameView: View {
                 title: String(localized: "Hint"),
                 icon: "lightbulb",
                 isEnabled: true,
-                gradient: [
-                    theme.hintGradientStart,
-                    theme.hintGradientEnd
-                ],
+                gradient: [theme.hintGradientStart, theme.hintGradientEnd],
                 action: {
-                    withAnimation(.easeInOut(duration: 0.2)) {
-                        viewModel.provideHint()
-                    }
+                    withAnimation(.easeInOut(duration: 0.2)) { viewModel.provideHint() }
                     hapticManager.trigger(.medium)
                 }
             )
         }
         .disabled(viewModel.showCelebration)
         .onChange(of: viewModel.showCelebration) { _, newValue in
-            if newValue {
-                hapticManager.trigger(.success)
-            }
+            if newValue { hapticManager.trigger(.success) }
         }
     }
+}
 
-    private func messageBanner(_ message: KidSudokuMessage, theme: GameTheme) -> some View {
+struct GameMessageBanner: View {
+    let message: KidSudokuMessage
+    let theme: GameTheme
+    
+    var body: some View {
         let accentColor = color(for: message.type, theme: theme)
         
-        return HStack(alignment: .center, spacing: 10) {
+        HStack(alignment: .center, spacing: 10) {
             if let symbolImageName = message.symbolImageName {
                 ZStack {
                     RoundedRectangle(cornerRadius: 14, style: .continuous)
-                        .fill(
-                            LinearGradient(
-                                colors: [
-                                    theme.messageBannerSymbolBackgroundStart,
-                                    theme.messageBannerSymbolBackgroundEnd
-                                ],
-                                startPoint: .topLeading,
-                                endPoint: .bottomTrailing
-                            )
-                        )
+                        .fill(LinearGradient(colors: [theme.messageBannerSymbolBackgroundStart, theme.messageBannerSymbolBackgroundEnd], startPoint: .topLeading, endPoint: .bottomTrailing))
                     Image(symbolImageName)
                         .resizable()
                         .scaledToFit()
@@ -368,60 +415,23 @@ struct GameView: View {
         .padding(.vertical, 12)
         .background(
             RoundedRectangle(cornerRadius: 24, style: .continuous)
-                .fill(
-                    LinearGradient(
-                        colors: [
-                            theme.messageBannerBackgroundStart,
-                            accentColor.opacity(0.7)
-                        ],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    )
-                )
+                .fill(LinearGradient(colors: [theme.messageBannerBackgroundStart, accentColor.opacity(0.7)], startPoint: .topLeading, endPoint: .bottomTrailing))
         )
         .overlay(
             RoundedRectangle(cornerRadius: 24, style: .continuous)
-                .stroke(
-                    LinearGradient(
-                        colors: [
-                            Color.white.opacity(0.9),
-                            accentColor.opacity(0.8)
-                        ],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    ),
-                    lineWidth: 1.2
-                )
+                .stroke(LinearGradient(colors: [.white.opacity(0.9), accentColor.opacity(0.8)], startPoint: .topLeading, endPoint: .bottomTrailing), lineWidth: 1.2)
         )
         .shadow(color: accentColor.opacity(0.35), radius: 14, x: 0, y: 8)
         .shadow(color: Color.black.opacity(0.15), radius: 4, x: 0, y: 1)
         .padding(.horizontal, 16)
-        .transition(.move(edge: .top).combined(with: .opacity))
     }
-
+    
     private func color(for type: KidSudokuMessageType, theme: GameTheme) -> Color {
         switch type {
-        case .info:
-            return theme.messageInfoColor
-        case .success:
-            return theme.messageSuccessColor
-        case .warning:
-            return theme.messageWarningColor
+        case .info: return theme.messageInfoColor
+        case .success: return theme.messageSuccessColor
+        case .warning: return theme.messageWarningColor
         }
-    }
-
-    private var progressRatio: Double {
-        let total = Double(viewModel.totalCellCount)
-        let filled = Double(viewModel.filledCellCount)
-        return min(1.0, max(0.0, filled / total))
-    }
-
-    private func computeBoardSize(from proxy: GeometryProxy) -> CGFloat {
-        DeviceSizing.computeBoardSize(
-            availableWidth: proxy.size.width,
-            availableHeight: proxy.size.height,
-            bottomSafeArea: proxy.safeAreaInsets.bottom
-        )
     }
 }
 
