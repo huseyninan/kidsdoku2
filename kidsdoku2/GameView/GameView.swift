@@ -9,7 +9,7 @@ struct GameView: View {
     @EnvironmentObject private var appEnvironment: AppEnvironment
     
     @State private var showSettings: Bool = false
-    @State private var showPaletteHighlight: Bool = true
+    @State private var highlightManager = PaletteHighlightManager()
 
     init(config: KidSudokuConfig) {
         self.config = config
@@ -30,7 +30,7 @@ struct GameView: View {
                 // Background
                 GameBackgroundView(theme: theme)
                 
-                VStack(spacing: 8) {
+                VStack(spacing: GameConstants.Layout.mainVStackSpacing) {
                     GameHeaderView(
                         navigationTitle: viewModel.navigationTitle,
                         theme: theme,
@@ -43,23 +43,23 @@ struct GameView: View {
                         GameBoardSection(
                             viewModel: viewModel,
                             boardSize: boardSize,
-                            showPaletteHighlight: $showPaletteHighlight
+                            highlightManager: highlightManager
                         )
                         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
                         
                         // Message banner positioned at top of grid area
                         if let message = viewModel.message {
                             GameMessageBanner(message: message, theme: theme)
-                                .padding(.top, 8)
+                                .padding(.top, GameConstants.Layout.messageBannerTopPadding)
                                 .transition(.move(edge: .top).combined(with: .opacity))
-                                .zIndex(100)
+                                .zIndex(GameConstants.ZIndex.messageBanner)
                         }
                     }
                     
                     GamePaletteSection(
                         viewModel: viewModel,
                         theme: theme,
-                        showPaletteHighlight: $showPaletteHighlight
+                        highlightManager: highlightManager
                     )
                     
                     GameActionButtons(
@@ -67,9 +67,9 @@ struct GameView: View {
                         theme: theme
                     )
                 }
-                .padding(.horizontal, 10)
-                .padding(.top, 8)
-                .padding(.bottom, max(proxy.safeAreaInsets.bottom, 12))
+                .padding(.horizontal, GameConstants.Layout.mainHorizontalPadding)
+                .padding(.top, GameConstants.Layout.mainTopPadding)
+                .padding(.bottom, max(proxy.safeAreaInsets.bottom, GameConstants.Layout.mainBottomPaddingMin))
                 .frame(width: proxy.size.width, height: proxy.size.height, alignment: .top)
                 
                 // Overlays
@@ -157,7 +157,7 @@ struct GameBackgroundView: View {
                 VStack {
                     Spacer()
                     RunningFoxView()
-                        .frame(height: 200)
+                        .frame(height: GameConstants.Dimensions.runningFoxHeight)
                         .allowsHitTesting(false)
                 }
             }
@@ -178,7 +178,7 @@ struct GameHeaderView: View {
             StorybookBadge(text: navigationTitle)
                 .scaleEffect(DeviceSizing.badgeScale)
             
-            Spacer(minLength: 0)
+            Spacer(minLength: GameConstants.Position.minSpacerLength)
             
             StorybookProgressBar(progress: progressRatio)
                 .frame(height: DeviceSizing.progressBarHeight)
@@ -207,7 +207,7 @@ struct GameHeaderView: View {
 struct GameBoardSection: View {
     @ObservedObject var viewModel: GameViewModel
     let boardSize: CGFloat
-    @Binding var showPaletteHighlight: Bool
+    let highlightManager: PaletteHighlightManager
     private let hapticManager = HapticManager.shared
     
     var body: some View {
@@ -226,11 +226,9 @@ struct GameBoardSection: View {
                 completedSubgrids: viewModel.completedSubgrids,
                 isPuzzleComplete: viewModel.isPuzzleCompleteAnimation,
                 onTap: { cell in
-                    withAnimation(.easeInOut(duration: 0.15)) {
+                    withAnimation(.easeInOut(duration: GameConstants.Animation.cellTapDuration)) {
                         viewModel.didTapCell(cell)
-                        if showPaletteHighlight {
-                            showPaletteHighlight = false
-                        }
+                        highlightManager.hideHighlight()
                     }
                     hapticManager.trigger(.selection)
                 }
@@ -244,48 +242,43 @@ struct GameBoardSection: View {
 struct GamePaletteSection: View {
     @ObservedObject var viewModel: GameViewModel
     let theme: GameTheme
-    @Binding var showPaletteHighlight: Bool
+    let highlightManager: PaletteHighlightManager
     
     var body: some View {
-        VStack(spacing: 8) {
+        VStack(spacing: GameConstants.Layout.paletteButtonSpacing) {
             HStack {
                 Text(viewModel.currentConfig.symbolGroup.paletteTitle)
-                    .font(.system(size: 16, weight: .heavy, design: .rounded))
+                    .font(.system(size: GameConstants.Typography.paletteTitleSize, weight: .heavy, design: .rounded))
                     .foregroundStyle(theme.paletteTitleColor)
                 Spacer()
                 Text(viewModel.showNumbers ? "Tap a number below" : "Tap a friend below")
-                    .font(.system(size: 12, weight: .semibold, design: .rounded))
+                    .font(.system(size: GameConstants.Typography.paletteSubtitleSize, weight: .semibold, design: .rounded))
                     .foregroundStyle(theme.paletteSubtitleColor)
             }
             
             ZStack(alignment: .bottom) {
-                HStack(spacing: 8) {
+                HStack(spacing: GameConstants.Layout.paletteButtonSpacing) {
                     ForEach(viewModel.paletteSymbols, id: \.index) { item in
                         GamePaletteButton(
                             item: item,
                             isSelected: viewModel.selectedPaletteSymbol == item.index,
                             showNumbers: viewModel.showNumbers,
                             onTap: {
-                                withAnimation(.spring(response: 0.35, dampingFraction: 0.6)) {
+                                withAnimation(.spring(response: GameConstants.Animation.paletteSpringResponse, dampingFraction: GameConstants.Animation.paletteSpringDamping)) {
                                     viewModel.selectPaletteSymbol(item.index)
-                                    if showPaletteHighlight {
-                                        showPaletteHighlight = false
-                                    }
+                                    highlightManager.hideHighlight()
                                 }
                             }
                         )
                     }
                 }
                 
-                if showPaletteHighlight {
-                    PaletteHighlightTip()
-                        .transition(.move(edge: .top).combined(with: .opacity))
-                }
+                PaletteHighlightComponent(highlightManager: highlightManager)
             }
         }
         .frame(maxWidth: .infinity)
-        .padding(.vertical, 8)
-        .padding(.horizontal, 10)
+        .padding(.vertical, GameConstants.Layout.paletteVerticalPadding)
+        .padding(.horizontal, GameConstants.Layout.paletteHorizontalPadding)
         .background(StorybookPaletteMat())
     }
 }
@@ -310,8 +303,8 @@ struct GamePaletteButton: View {
                 context: .palette,
                 isSelected: isSelected
             )
-            .shadow(color: Color.black.opacity(0.08), radius: 4, x: 0, y: 3)
-            .scaleEffect(isSelected ? 1.08 : 1.0)
+            .shadow(color: Color.black.opacity(GameConstants.Shadow.paletteButtonOpacity), radius: GameConstants.Shadow.paletteButtonRadius, x: GameConstants.Shadow.paletteButtonOffset.width, y: GameConstants.Shadow.paletteButtonOffset.height)
+            .scaleEffect(isSelected ? GameConstants.Scale.paletteButtonSelected : GameConstants.Scale.paletteButtonNormal)
         }
         .buttonStyle(.plain)
     }
@@ -319,24 +312,24 @@ struct GamePaletteButton: View {
 
 struct PaletteHighlightTip: View {
     var body: some View {
-        VStack(spacing: 4) {
+        VStack(spacing: GameConstants.Padding.paletteItemSpacing) {
             Text("Start here!")
-                .font(.system(size: 14, weight: .bold, design: .rounded))
+                .font(.system(size: GameConstants.Typography.highlightTipSize, weight: .bold, design: .rounded))
                 .foregroundStyle(.white)
-                .padding(.horizontal, 12)
-                .padding(.vertical, 6)
+                .padding(.horizontal, GameConstants.Padding.highlightTipHorizontal)
+                .padding(.vertical, GameConstants.Padding.highlightTipVertical)
                 .background(
                     Capsule()
                         .fill(LinearGradient(colors: [.blue, .cyan], startPoint: .leading, endPoint: .trailing))
-                        .shadow(color: .blue.opacity(0.5), radius: 8, x: 0, y: 4)
+                        .shadow(color: .blue.opacity(GameConstants.Shadow.highlightTipOpacity), radius: GameConstants.Shadow.highlightTipRadius, x: GameConstants.Shadow.highlightTipOffset.width, y: GameConstants.Shadow.highlightTipOffset.height)
                 )
             
             Image(systemName: "arrow.down")
-                .font(.system(size: 24, weight: .bold))
+                .font(.system(size: GameConstants.Typography.highlightArrowSize, weight: .bold))
                 .foregroundStyle(LinearGradient(colors: [.blue, .cyan], startPoint: .top, endPoint: .bottom))
-                .shadow(color: .blue.opacity(0.5), radius: 4, x: 0, y: 2)
+                .shadow(color: .blue.opacity(GameConstants.Opacity.blueHighlight), radius: GameConstants.Shadow.highlightArrowRadius, x: GameConstants.Shadow.highlightArrowOffset.width, y: GameConstants.Shadow.highlightArrowOffset.height)
         }
-        .offset(y: -80)
+        .offset(y: GameConstants.Position.highlightTipOffset)
     }
 }
 
@@ -346,14 +339,14 @@ struct GameActionButtons: View {
     private let hapticManager = HapticManager.shared
     
     var body: some View {
-        HStack(spacing: 12) {
+        HStack(spacing: GameConstants.Layout.actionButtonSpacing) {
             StorybookActionButton(
                 title: String(localized: "Undo"),
                 icon: "arrow.uturn.backward",
                 isEnabled: viewModel.canUndo,
                 gradient: [theme.undoGradientStart, theme.undoGradientEnd],
                 action: {
-                    withAnimation(.easeInOut(duration: 0.2)) { viewModel.undo() }
+                    withAnimation(.easeInOut(duration: GameConstants.Animation.actionButtonDuration)) { viewModel.undo() }
                     hapticManager.trigger(.light)
                 }
             )
@@ -364,7 +357,7 @@ struct GameActionButtons: View {
                 isEnabled: true,
                 gradient: [theme.eraseGradientStart, theme.eraseGradientEnd],
                 action: {
-                    withAnimation(.easeInOut(duration: 0.2)) { viewModel.removeValue() }
+                    withAnimation(.easeInOut(duration: GameConstants.Animation.actionButtonDuration)) { viewModel.removeValue() }
                     hapticManager.trigger(.light)
                 }
             )
@@ -375,7 +368,7 @@ struct GameActionButtons: View {
                 isEnabled: true,
                 gradient: [theme.hintGradientStart, theme.hintGradientEnd],
                 action: {
-                    withAnimation(.easeInOut(duration: 0.2)) { viewModel.provideHint() }
+                    withAnimation(.easeInOut(duration: GameConstants.Animation.actionButtonDuration)) { viewModel.provideHint() }
                     hapticManager.trigger(.medium)
                 }
             )
@@ -394,37 +387,37 @@ struct GameMessageBanner: View {
     var body: some View {
         let accentColor = color(for: message.type, theme: theme)
         
-        HStack(alignment: .center, spacing: 10) {
+        HStack(alignment: .center, spacing: GameConstants.Layout.actionButtonSpacing) {
             if let symbolImageName = message.symbolImageName {
                 ZStack {
-                    RoundedRectangle(cornerRadius: 14, style: .continuous)
+                    RoundedRectangle(cornerRadius: GameConstants.Dimensions.messageBannerSymbolCornerRadius, style: .continuous)
                         .fill(LinearGradient(colors: [theme.messageBannerSymbolBackgroundStart, theme.messageBannerSymbolBackgroundEnd], startPoint: .topLeading, endPoint: .bottomTrailing))
                     Image(symbolImageName)
                         .resizable()
                         .scaledToFit()
-                        .padding(5)
+                        .padding(GameConstants.Dimensions.messageBannerSymbolPadding)
                 }
-                .frame(width: 36, height: 36)
+                .frame(width: GameConstants.Dimensions.messageBannerIconSize, height: GameConstants.Dimensions.messageBannerIconSize)
                 .shadow(color: accentColor.opacity(0.3), radius: 6, x: 0, y: 3)
             }
             Text(message.text)
-                .font(.system(size: 16, weight: .semibold, design: .rounded))
+                .font(.system(size: GameConstants.Typography.messageBannerTextSize, weight: .semibold, design: .rounded))
                 .foregroundStyle(theme.messageBannerTextColor)
                 .multilineTextAlignment(.leading)
         }
-        .padding(.horizontal, 18)
-        .padding(.vertical, 12)
+        .padding(.horizontal, GameConstants.Padding.messageBannerHorizontal)
+        .padding(.vertical, GameConstants.Padding.messageBannerVertical)
         .background(
-            RoundedRectangle(cornerRadius: 24, style: .continuous)
-                .fill(LinearGradient(colors: [theme.messageBannerBackgroundStart, accentColor.opacity(0.7)], startPoint: .topLeading, endPoint: .bottomTrailing))
+            RoundedRectangle(cornerRadius: GameConstants.Dimensions.messageBannerCornerRadius, style: .continuous)
+                .fill(LinearGradient(colors: [theme.messageBannerBackgroundStart, accentColor.opacity(GameConstants.Opacity.messageBannerAccent)], startPoint: .topLeading, endPoint: .bottomTrailing))
         )
         .overlay(
-            RoundedRectangle(cornerRadius: 24, style: .continuous)
-                .stroke(LinearGradient(colors: [.white.opacity(0.9), accentColor.opacity(0.8)], startPoint: .topLeading, endPoint: .bottomTrailing), lineWidth: 1.2)
+            RoundedRectangle(cornerRadius: GameConstants.Dimensions.messageBannerCornerRadius, style: .continuous)
+                .stroke(LinearGradient(colors: [.white.opacity(GameConstants.Opacity.messageBannerBorder), accentColor.opacity(GameConstants.Opacity.messageBannerBorderAccent)], startPoint: .topLeading, endPoint: .bottomTrailing), lineWidth: GameConstants.Dimensions.messageBannerStrokeWidth)
         )
-        .shadow(color: accentColor.opacity(0.35), radius: 14, x: 0, y: 8)
-        .shadow(color: Color.black.opacity(0.15), radius: 4, x: 0, y: 1)
-        .padding(.horizontal, 16)
+        .shadow(color: accentColor.opacity(GameConstants.Opacity.messageBannerMainShadow), radius: GameConstants.Shadow.messageBannerMainRadius, x: GameConstants.Shadow.messageBannerMainOffset.width, y: GameConstants.Shadow.messageBannerMainOffset.height)
+        .shadow(color: Color.black.opacity(GameConstants.Opacity.messageBannerAccent), radius: GameConstants.Shadow.messageBannerSecondaryRadius, x: GameConstants.Shadow.messageBannerSecondaryOffset.width, y: GameConstants.Shadow.messageBannerSecondaryOffset.height)
+        .padding(.horizontal, GameConstants.Layout.messageBannerHorizontalPadding)
     }
     
     private func color(for type: KidSudokuMessageType, theme: GameTheme) -> Color {
