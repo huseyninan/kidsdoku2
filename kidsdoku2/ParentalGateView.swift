@@ -76,22 +76,36 @@ struct ParentalGateView: View {
                             .font(.system(size: 36, weight: .bold, design: .rounded))
                             .foregroundStyle(Color(red: 0.7, green: 0.35, blue: 0.3))
                         
-                        TextField("", text: $userAnswer)
-                            .keyboardType(.numberPad)
-                            .font(.system(size: 28, weight: .bold, design: .rounded))
-                            .foregroundStyle(Color(red: 0.4, green: 0.25, blue: 0.15))
-                            .multilineTextAlignment(.center)
-                            .frame(width: 120, height: 56)
-                            .background(
-                                RoundedRectangle(cornerRadius: 12, style: .continuous)
-                                    .fill(Color.white)
-                                    .shadow(color: .black.opacity(0.1), radius: 4, x: 0, y: 2)
-                            )
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 12, style: .continuous)
-                                    .stroke(showError ? Color.red : Color.clear, lineWidth: 2)
-                            )
-                            .focused($isInputFocused)
+                        HStack(spacing: 16) {
+                            TextField("", text: $userAnswer)
+                                .keyboardType(.numberPad)
+                                .font(.system(size: 28, weight: .bold, design: .rounded))
+                                .foregroundStyle(Color(red: 0.4, green: 0.25, blue: 0.15))
+                                .multilineTextAlignment(.center)
+                                .frame(width: 120, height: 56)
+                                .background(
+                                    RoundedRectangle(cornerRadius: 12, style: .continuous)
+                                        .fill(Color.white)
+                                        .shadow(color: .black.opacity(0.1), radius: 4, x: 0, y: 2)
+                                )
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 12, style: .continuous)
+                                        .stroke(showError ? Color.red : Color.clear, lineWidth: 2)
+                                )
+                                .focused($isInputFocused)
+                            
+                            Button(action: checkAnswer) {
+                                Text(String(localized: "Continue"))
+                                    .font(.system(size: 16, weight: .bold, design: .rounded))
+                                    .foregroundStyle(.white)
+                                    .padding(.horizontal, 20)
+                                    .padding(.vertical, 16)
+                                    .background(
+                                        RoundedRectangle(cornerRadius: 12, style: .continuous)
+                                            .fill(Color(red: 0.7, green: 0.35, blue: 0.3))
+                                    )
+                            }
+                        }
                         
                         if showError {
                             Text(String(localized: "Incorrect answer. Please try again."))
@@ -108,20 +122,6 @@ struct ParentalGateView: View {
                             .fill(Color.white.opacity(0.7))
                             .shadow(color: .black.opacity(0.08), radius: 8, x: 0, y: 4)
                     )
-                    .padding(.horizontal, 32)
-                    
-                    // Submit button
-                    Button(action: checkAnswer) {
-                        Text(String(localized: "Continue"))
-                            .font(.system(size: 18, weight: .bold, design: .rounded))
-                            .foregroundStyle(.white)
-                            .frame(maxWidth: .infinity)
-                            .padding(.vertical, 16)
-                            .background(
-                                RoundedRectangle(cornerRadius: 14, style: .continuous)
-                                    .fill(Color(red: 0.7, green: 0.35, blue: 0.3))
-                            )
-                    }
                     .padding(.horizontal, 32)
                     
                     Spacer()
