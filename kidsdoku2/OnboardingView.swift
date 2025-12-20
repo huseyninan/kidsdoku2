@@ -45,33 +45,33 @@ struct OnboardingView: View {
     private let pages: [OnboardingPage] = [
         OnboardingPage(
             image: "onboarding_1",
-            title: "Hey there, Puzzle Champion! 🎉",
-            subtitle: "Welcome to KidsDoku. I'm here to show you how easy and fun Sudoku can be.",
-            buttonText: "Let's Go!"
+            title: String(localized: "Hey there, Puzzle Champion! 🎉"),
+            subtitle: String(localized: "Welcome to KidsDoku. I'm here to show you how easy and fun Sudoku can be."),
+            buttonText: String(localized: "Let's Go!")
         ),
         OnboardingPage(
             image: "onboarding_2",
-            title: "Simple & Fun to Play ✨",
-            subtitle: "No math required! Just tap to place the right characters on the grid to solve the puzzle.",
-            buttonText: "Show Me How"
+            title: String(localized: "Simple & Fun to Play ✨"),
+            subtitle: String(localized: "No math required! Just tap to place the right characters on the grid to solve the puzzle."),
+            buttonText: String(localized: "Show Me How")
         ),
         OnboardingPage(
             image: "onboarding_3",
-            title: "Easy Symbols, Optionally Numbers! ✨",
-            subtitle: "Learn faster by using pictures! Start with foxes and frogs, then switch to numbers when you feel like a pro.",
-            buttonText: "Cool! What's Next?"
+            title: String(localized: "Easy Symbols, Optionally Numbers! ✨"),
+            subtitle: String(localized: "Learn faster by using pictures! Start with foxes and frogs, then switch to numbers when you feel like a pro."),
+            buttonText: String(localized: "Cool! What's Next?")
         ),
         OnboardingPage(
             image: "onboarding_4",
-            title: "Watch Your Skills Grow! 🏆",
-            subtitle: "Every puzzle makes you smarter. Track your wins and see how fast you improve!",
-            buttonText: "Amazing!"
+            title: String(localized: "Watch Your Skills Grow! 🏆"),
+            subtitle: String(localized: "Every puzzle makes you smarter. Track your wins and see how fast you improve!"),
+            buttonText: String(localized: "Amazing!")
         ),
         OnboardingPage(
             image: "onboarding_5",
-            title: "Ready, Set, Go! 🚀",
-            subtitle: "Join thousands of kids already having fun with puzzles. Your adventure starts now!",
-            buttonText: "START NOW! 🐾"
+            title: String(localized: "Ready, Set, Go! 🚀"),
+            subtitle: String(localized: "Join thousands of kids already having fun with puzzles. Your adventure starts now!"),
+            buttonText: String(localized: "START NOW! 🐾")
         )
     ]
     
