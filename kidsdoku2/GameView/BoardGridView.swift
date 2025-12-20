@@ -32,7 +32,16 @@ struct BoardGridView: View {
                                 let index = row * config.size + col
                                 let cell = cells[index]
                                 let isCompleted = completedCellPositions.contains(cell.position)
-                                cellView(cell: cell, cellSize: cellSize, isCompleted: isCompleted)
+                                BoardCellView(
+                                    cell: cell,
+                                    config: config,
+                                    cellSize: cellSize,
+                                    isSelected: selected == cell.position,
+                                    isHighlighted: highlightedValue != nil && cell.value == highlightedValue,
+                                    isCompleted: isCompleted,
+                                    showNumbers: showNumbers,
+                                    onTap: onTap
+                                )
                             }
                         }
                     }
@@ -66,69 +75,6 @@ struct BoardGridView: View {
         }
     }
 
-    private func cellView(cell: KidSudokuCell, cellSize: CGFloat, isCompleted: Bool) -> some View {
-        let isSelected = selected == cell.position
-        // FIXED: Simplified from immediately-invoked closure to direct conditional
-        let isMatchingHighlighted = highlightedValue != nil && cell.value == highlightedValue
-
-        return Button {
-            onTap(cell)
-        } label: {
-            ZStack {
-                Rectangle()
-                    .fill(cellBackground(for: cell, isSelected: isSelected))
-
-                if isMatchingHighlighted {
-                    ThemedGlowingHighlight(size: cellSize)
-                }
-                
-                // Completion celebration effect
-                if isCompleted {
-                    CompletionCelebrationEffect(size: cellSize)
-                }
-
-                let symbolName = symbol(for: cell)
-                if let value = cell.value {
-                    SymbolTokenView(
-                        symbolIndex: value,
-                        symbolName: symbolName,
-                        showNumbers: showNumbers,
-                        size: cellSize * 0.82,
-                        context: .grid,
-                        isSelected: isSelected || isMatchingHighlighted
-                    )
-                    .transition(.scale)
-                    .scaleEffect(isCompleted ? 1.15 : 1.0)
-                    .animation(.spring(response: 0.3, dampingFraction: 0.5), value: isCompleted)
-                }
-            }
-        }
-        .buttonStyle(.plain)
-        .frame(width: cellSize, height: cellSize)
-        .overlay(
-            Rectangle()
-                .stroke(theme.cellBorderColor, lineWidth: 1)
-        )
-    }
-
-    private func cellBackground(for cell: KidSudokuCell, isSelected: Bool) -> Color {
-        if cell.isFixed {
-            return theme.fixedCellColor
-        }
-        if isSelected {
-            return theme.selectedCellColor
-        }
-        return theme.emptyCellColor
-    }
-
-    private func symbol(for cell: KidSudokuCell) -> String {
-        guard let value = cell.value else { return "" }
-        // FIXED: Added bounds check to prevent crash if value >= symbols.count
-        guard value < config.symbols.count else { return "" }
-        return config.symbols[value]
-    }
-
-    // NOTE: cellFontSize was removed as it appears unused in this file
 
     // subgrid lines
     private func drawSubgridLines(context: inout GraphicsContext, size: CGSize) {
@@ -163,6 +109,86 @@ struct BoardGridView: View {
                 context.stroke(path, with: .color(lineColor), style: StrokeStyle(lineWidth: 3, dash: [6, 4]))
             }
         }
+    }
+}
+
+// MARK: - Extracted Cell View (Performance)
+struct BoardCellView: View {
+    let cell: KidSudokuCell
+    let config: KidSudokuConfig
+    let cellSize: CGFloat
+    let isSelected: Bool
+    let isHighlighted: Bool
+    let isCompleted: Bool
+    let showNumbers: Bool
+    let onTap: (KidSudokuCell) -> Void
+    
+    @Environment(\.gameTheme) private var theme
+    
+    private enum Layout {
+        static let symbolSizeRatio: CGFloat = 0.82
+        static let completionScaleEffect: CGFloat = 1.15
+        static let springResponse: Double = 0.3
+        static let springDamping: Double = 0.5
+        static let borderLineWidth: CGFloat = 1
+    }
+    
+    var body: some View {
+        Button {
+            onTap(cell)
+        } label: {
+            ZStack {
+                Rectangle()
+                    .fill(backgroundColor)
+                
+                if isHighlighted {
+                    ThemedGlowingHighlight(size: cellSize)
+                }
+                
+                if isCompleted {
+                    CompletionCelebrationEffect(size: cellSize)
+                }
+
+                if let value = cell.value {
+                    SymbolTokenView(
+                        symbolIndex: value,
+                        symbolName: symbol(for: value),
+                        showNumbers: showNumbers,
+                        size: cellSize * Layout.symbolSizeRatio,
+                        context: .grid,
+                        isSelected: isSelected || isHighlighted
+                    )
+                    .transition(.scale)
+                    .scaleEffect(isCompleted ? Layout.completionScaleEffect : 1.0)
+                    .animation(.spring(response: Layout.springResponse, dampingFraction: Layout.springDamping), value: isCompleted)
+                }
+            }
+        }
+        .buttonStyle(.plain)
+        .frame(width: cellSize, height: cellSize)
+        .overlay(
+            Rectangle()
+                .stroke(theme.cellBorderColor, lineWidth: Layout.borderLineWidth)
+        )
+        .accessibilityLabel(Text("Cell at row \(cell.position.row + 1), column \(cell.position.col + 1)"))
+        .accessibilityValue(Text(cell.value.map { symbol(for: $0) } ?? "Empty"))
+        .accessibilityAddTraits(isSelected ? [.isSelected] : [])
+    }
+    
+    private var backgroundColor: Color {
+        if cell.isFixed {
+            return theme.fixedCellColor
+        }
+        if isSelected {
+            return theme.selectedCellColor
+        }
+        return theme.emptyCellColor
+    }
+    
+    private func symbol(for value: Int) -> String {
+        // Safety check for array bounds
+        guard value >= 0 && value < config.symbols.count else { return "?" }
+        return config.symbols[value]
     }
 }
 
