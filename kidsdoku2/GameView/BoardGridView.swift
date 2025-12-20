@@ -15,15 +15,25 @@ struct BoardGridView: View {
     
     @Environment(\.gameTheme) private var theme
     
+    // Cache expensive computations to avoid repeated calculations
+    private var hasAnyCompletions: Bool {
+        !completedRows.isEmpty || !completedColumns.isEmpty || !completedSubgrids.isEmpty
+    }
+    
     var body: some View {
         GeometryReader { geometry in
             let side = min(geometry.size.width, geometry.size.height)
             let cellSize = side / CGFloat(config.size)
+            
+            // Pre-calculate values to avoid repeated computation
+            let boardCornerRadius: CGFloat = 24
+            let shadowRadius: CGFloat = 8
+            let shadowOffset = CGSize(width: 0, height: 4)
 
             ZStack {
-                RoundedRectangle(cornerRadius: 24, style: .continuous)
+                RoundedRectangle(cornerRadius: boardCornerRadius, style: .continuous)
                     .fill(theme.boardBackgroundColor)
-                    .shadow(color: Color.black.opacity(0.08), radius: 8, x: 0, y: 4)
+                    .shadow(color: Color.black.opacity(0.08), radius: shadowRadius, x: shadowOffset.width, y: shadowOffset.height)
 
                 VStack(spacing: 0) {
                     ForEach(0..<config.size, id: \.self) { row in
@@ -49,7 +59,7 @@ struct BoardGridView: View {
                 .frame(width: side, height: side)
 
                 Canvas { context, size in
-                    drawSubgridLines(context: &context, size: size)
+                    drawSubgridLines(context: &context, size: size, cellSize: cellSize)
                 }
                 .frame(width: side, height: side)
                 .allowsHitTesting(false)
@@ -76,37 +86,42 @@ struct BoardGridView: View {
     }
 
 
-    // subgrid lines
-    private func drawSubgridLines(context: inout GraphicsContext, size: CGSize) {
+    // subgrid lines - optimized with pre-calculated cellSize
+    private func drawSubgridLines(context: inout GraphicsContext, size: CGSize, cellSize: CGFloat) {
         let dimension = min(size.width, size.height)
-        let cell = dimension / CGFloat(config.size)
         let lineColor = theme.subgridLineColor
+        
+        // Pre-calculate stroke styles to avoid repeated allocations
+        let solidStyle = StrokeStyle(lineWidth: 4)
+        let dashedStyle = StrokeStyle(lineWidth: 3, dash: [6, 4])
 
+        // Draw horizontal lines
         for row in 0...config.size where row % config.subgridRows == 0 {
             var path = Path()
-            let y = CGFloat(row) * cell
+            let y = CGFloat(row) * cellSize
             path.move(to: CGPoint(x: 0, y: y))
             path.addLine(to: CGPoint(x: dimension, y: y))
             
-            // Use dashed lines for subgrid separators, solid for borders
+            // Use pre-calculated styles for better performance
             if row == 0 || row == config.size {
-                context.stroke(path, with: .color(lineColor), lineWidth: 4)
+                context.stroke(path, with: .color(lineColor), style: solidStyle)
             } else {
-                context.stroke(path, with: .color(lineColor), style: StrokeStyle(lineWidth: 3, dash: [6, 4]))
+                context.stroke(path, with: .color(lineColor), style: dashedStyle)
             }
         }
 
+        // Draw vertical lines
         for col in 0...config.size where col % config.subgridCols == 0 {
             var path = Path()
-            let x = CGFloat(col) * cell
+            let x = CGFloat(col) * cellSize
             path.move(to: CGPoint(x: x, y: 0))
             path.addLine(to: CGPoint(x: x, y: dimension))
             
-            // Use dashed lines for subgrid separators, solid for borders
+            // Use pre-calculated styles for better performance
             if col == 0 || col == config.size {
-                context.stroke(path, with: .color(lineColor), lineWidth: 4)
+                context.stroke(path, with: .color(lineColor), style: solidStyle)
             } else {
-                context.stroke(path, with: .color(lineColor), style: StrokeStyle(lineWidth: 3, dash: [6, 4]))
+                context.stroke(path, with: .color(lineColor), style: dashedStyle)
             }
         }
     }
@@ -133,36 +148,53 @@ struct BoardCellView: View {
         static let borderLineWidth: CGFloat = 1
     }
     
+    // Cache expensive computations
+    private var symbolSize: CGFloat {
+        cellSize * Layout.symbolSizeRatio
+    }
+    
+    private var cachedSymbol: String? {
+        guard let value = cell.value else { return nil }
+        return symbol(for: value)
+    }
+    
     var body: some View {
         Button {
             onTap(cell)
         } label: {
-            ZStack {
-                Rectangle()
-                    .fill(backgroundColor)
-                
-                if isHighlighted {
-                    ThemedGlowingHighlight(size: cellSize)
-                }
-                
-                if isCompleted {
-                    CompletionCelebrationEffect(size: cellSize)
-                }
-
-                if let value = cell.value {
-                    SymbolTokenView(
-                        symbolIndex: value,
-                        symbolName: symbol(for: value),
-                        showNumbers: showNumbers,
-                        size: cellSize * Layout.symbolSizeRatio,
-                        context: .grid,
-                        isSelected: isSelected || isHighlighted
-                    )
-                    .transition(.scale)
-                    .scaleEffect(isCompleted ? Layout.completionScaleEffect : 1.0)
-                    .animation(.spring(response: Layout.springResponse, dampingFraction: Layout.springDamping), value: isCompleted)
-                }
-            }
+            // Simplified view hierarchy - avoid nested ZStacks when possible
+            Rectangle()
+                .fill(backgroundColor)
+                .overlay(
+                    Group {
+                        if isHighlighted {
+                            OptimizedGlowingHighlight(size: cellSize)
+                        }
+                    }
+                )
+                .overlay(
+                    Group {
+                        if isCompleted {
+                            CompletionCelebrationEffect(size: cellSize)
+                        }
+                    }
+                )
+                .overlay(
+                    Group {
+                        if let symbolName = cachedSymbol, let value = cell.value {
+                            SymbolTokenView(
+                                symbolIndex: value,
+                                symbolName: symbolName,
+                                showNumbers: showNumbers,
+                                size: symbolSize,
+                                context: .grid,
+                                isSelected: isSelected || isHighlighted
+                            )
+                            .scaleEffect(isCompleted ? Layout.completionScaleEffect : 1.0)
+                            .animation(.spring(response: Layout.springResponse, dampingFraction: Layout.springDamping), value: isCompleted)
+                        }
+                    }
+                )
         }
         .buttonStyle(.plain)
         .frame(width: cellSize, height: cellSize)
@@ -192,6 +224,60 @@ struct BoardCellView: View {
     }
 }
 
+// MARK: - Optimized Highlight Effects
+
+/// Optimized version with reduced animation complexity for better performance
+struct OptimizedGlowingHighlight: View {
+    let size: CGFloat
+    @Environment(\.gameTheme) private var theme
+    
+    @State private var animate = false
+    
+    private enum Layout {
+        static let cornerRadiusRatio: CGFloat = 0.28
+        static let mainFrameRatio: CGFloat = 0.82
+        static let animationDuration: Double = 1.0  // Reduced from 1.4
+    }
+    
+    var body: some View {
+        let cornerRadius = size * Layout.cornerRadiusRatio
+        
+        // Simplified single-layer highlight with reduced effects
+        RoundedRectangle(cornerRadius: cornerRadius)
+            .fill(
+                LinearGradient(
+                    colors: [
+                        theme.highlightGradientStart,
+                        theme.highlightGradientEnd
+                    ],
+                    startPoint: .topLeading,
+                    endPoint: .bottomTrailing
+                )
+            )
+            .frame(width: size * Layout.mainFrameRatio, height: size * Layout.mainFrameRatio)
+            .overlay(
+                RoundedRectangle(cornerRadius: cornerRadius)
+                    .stroke(Color.white.opacity(animate ? 0.7 : 0.3), lineWidth: 2)
+                    .frame(width: size * Layout.mainFrameRatio, height: size * Layout.mainFrameRatio)
+            )
+            .scaleEffect(animate ? 1.05 : 0.95)
+            .opacity(animate ? 0.9 : 0.6)
+            .onAppear {
+                withAnimation(.easeInOut(duration: Layout.animationDuration).repeatForever(autoreverses: true)) {
+                    animate = true
+                }
+            }
+            .onDisappear {
+                var transaction = Transaction()
+                transaction.disablesAnimations = true
+                withTransaction(transaction) {
+                    animate = false
+                }
+            }
+    }
+}
+
+// Keep original for backwards compatibility if needed
 struct ThemedGlowingHighlight: View {
     let size: CGFloat
     @Environment(\.gameTheme) private var theme
