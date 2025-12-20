@@ -57,34 +57,7 @@ struct GameSettingsSheet: View {
                                 icon: "eye.fill",
                                 title: String(localized: "Display Mode")
                             ) {
-                            GameSettingsToggle(
-                                icon: showNumbers ? "textformat.123" : "photo.fill",
-                                title: showNumbers ? String(localized: "Numbers Mode") : String(localized: "Picture Mode"),
-                                subtitle: showNumbers ? String(localized: "Show numbers instead of pictures") : String(localized: "Show pictures instead of numbers"),
-                                isOn: $showNumbers
-                            )
-                            }
-                            
-                            // Symbol Group Section (only shown when not in numbers mode)
-                            if !showNumbers {
-                                GameSettingsSection(
-                                    icon: "photo.on.rectangle.angled",
-                                    title: String(localized: "Picture Theme")
-                                ) {
-                                    LazyVGrid(columns: Self.twoColumnGrid, spacing: 12) {
-                                        ForEach(availableSymbolGroups, id: \.id) { group in
-                                SymbolGroupCard(
-                                    symbolGroup: group,
-                                    isSelected: selectedSymbolGroup == group,
-                                    onSelect: {
-                                        withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
-                                            selectedSymbolGroup = group
-                                        }
-                                    }
-                                )
-                                        }
-                                    }
-                                }
+                                DisplayModeSegmentedPicker(showNumbers: $showNumbers)
                             }
                             
                             // Audio & Feedback Section
@@ -128,6 +101,146 @@ struct GameSettingsSheet: View {
                     .foregroundStyle(Color(red: 0.4, green: 0.25, blue: 0.15))
                 }
             }
+        }
+    }
+}
+
+private struct DisplayModeSegmentedPicker: View {
+    @Binding var showNumbers: Bool
+    
+    var body: some View {
+        HStack(spacing: 12) {
+            // Picture Mode Button
+            Button {
+                withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
+                    showNumbers = false
+                }
+            } label: {
+                VStack(spacing: 8) {
+                    Image(systemName: "photo.fill")
+                        .font(.system(size: 26, weight: .semibold))
+                        .foregroundStyle(
+                            !showNumbers 
+                            ? Color.white
+                            : Color(red: 0.5, green: 0.35, blue: 0.25)
+                        )
+                    
+                    Text("Picture Mode")
+                        .font(.system(size: 15, weight: .semibold, design: .rounded))
+                        .foregroundStyle(
+                            !showNumbers 
+                            ? Color.white
+                            : Color(red: 0.5, green: 0.35, blue: 0.25)
+                        )
+                }
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 16)
+                .background(
+                    RoundedRectangle(cornerRadius: 12, style: .continuous)
+                        .fill(
+                            !showNumbers
+                            ? LinearGradient(
+                                colors: [
+                                    Color(red: 0.6, green: 0.4, blue: 0.3),
+                                    Color(red: 0.5, green: 0.3, blue: 0.2)
+                                ],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            )
+                            : LinearGradient(
+                                colors: [
+                                    Color.white.opacity(0.5),
+                                    Color.white.opacity(0.3)
+                                ],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            )
+                        )
+                )
+                .overlay(
+                    RoundedRectangle(cornerRadius: 12, style: .continuous)
+                        .stroke(
+                            !showNumbers 
+                            ? Color(red: 0.7, green: 0.5, blue: 0.4).opacity(0.3)
+                            : Color.clear,
+                            lineWidth: 2
+                        )
+                )
+                .shadow(
+                    color: Color.black.opacity(!showNumbers ? 0.15 : 0.05),
+                    radius: !showNumbers ? 8 : 4,
+                    x: 0,
+                    y: !showNumbers ? 4 : 2
+                )
+                .scaleEffect(!showNumbers ? 1.02 : 1.0)
+            }
+            .buttonStyle(.plain)
+            
+            // Numbers Mode Button
+            Button {
+                withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
+                    showNumbers = true
+                }
+            } label: {
+                VStack(spacing: 8) {
+                    Image(systemName: "textformat.123")
+                        .font(.system(size: 26, weight: .semibold))
+                        .foregroundStyle(
+                            showNumbers 
+                            ? Color.white
+                            : Color(red: 0.5, green: 0.35, blue: 0.25)
+                        )
+                    
+                    Text("Numbers Mode")
+                        .font(.system(size: 15, weight: .semibold, design: .rounded))
+                        .foregroundStyle(
+                            showNumbers 
+                            ? Color.white
+                            : Color(red: 0.5, green: 0.35, blue: 0.25)
+                        )
+                }
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 16)
+                .background(
+                    RoundedRectangle(cornerRadius: 12, style: .continuous)
+                        .fill(
+                            showNumbers
+                            ? LinearGradient(
+                                colors: [
+                                    Color(red: 0.6, green: 0.4, blue: 0.3),
+                                    Color(red: 0.5, green: 0.3, blue: 0.2)
+                                ],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            )
+                            : LinearGradient(
+                                colors: [
+                                    Color.white.opacity(0.5),
+                                    Color.white.opacity(0.3)
+                                ],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            )
+                        )
+                )
+                .overlay(
+                    RoundedRectangle(cornerRadius: 12, style: .continuous)
+                        .stroke(
+                            showNumbers 
+                            ? Color(red: 0.7, green: 0.5, blue: 0.4).opacity(0.3)
+                            : Color.clear,
+                            lineWidth: 2
+                        )
+                )
+                .shadow(
+                    color: Color.black.opacity(showNumbers ? 0.15 : 0.05),
+                    radius: showNumbers ? 8 : 4,
+                    x: 0,
+                    y: showNumbers ? 4 : 2
+                )
+                .scaleEffect(showNumbers ? 1.02 : 1.0)
+            }
+            .buttonStyle(.plain)
         }
     }
 }
