@@ -197,10 +197,8 @@ struct ThemedGlowingHighlight: View {
     @Environment(\.gameTheme) private var theme
 
     @State private var animate = false
-    // FIXED: Replaced DispatchQueue-based animation with Task for proper cancellation
     @State private var animationTask: Task<Void, Never>?
 
-    // IMPROVEMENT: Extracted magic numbers to named constants for clarity
     private enum Layout {
         static let cornerRadiusRatio: CGFloat = 0.28
         static let mainFrameRatio: CGFloat = 0.82
@@ -266,7 +264,6 @@ struct ThemedGlowingHighlight: View {
             startAnimation()
         }
         .onDisappear {
-            // FIXED: Cancel the task to prevent zombie animations and memory leaks
             animationTask?.cancel()
             animationTask = nil
             var transaction = Transaction()
@@ -277,8 +274,6 @@ struct ThemedGlowingHighlight: View {
         }
     }
     
-    // FIXED: Replaced DispatchQueue.asyncAfter with Task-based animation loop
-    // This ensures proper cancellation when the view disappears
     private func startAnimation() {
         animationTask = Task { @MainActor in
             while !Task.isCancelled {
