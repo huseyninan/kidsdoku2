@@ -32,10 +32,11 @@ struct GameView: View {
                 
                 VStack(spacing: 8) {
                     GameHeaderView(
-                        viewModel: viewModel,
+                        navigationTitle: viewModel.navigationTitle,
                         theme: theme,
                         showSettings: $showSettings,
-                        progressRatio: progressRatio
+                        progressRatio: progressRatio,
+                        formattedTime: viewModel.formattedTime
                     )
                     
                     ZStack(alignment: .top) {
@@ -165,15 +166,16 @@ struct GameBackgroundView: View {
 }
 
 struct GameHeaderView: View {
-    @ObservedObject var viewModel: GameViewModel
+    let navigationTitle: String
     let theme: GameTheme
     @Binding var showSettings: Bool
     let progressRatio: Double
+    let formattedTime: String
     private let hapticManager = HapticManager.shared
     
     var body: some View {
         HStack(spacing: DeviceSizing.headerSpacing) {
-            StorybookBadge(text: viewModel.navigationTitle)
+            StorybookBadge(text: navigationTitle)
                 .scaleEffect(DeviceSizing.badgeScale)
             
             Spacer(minLength: 0)
@@ -182,8 +184,7 @@ struct GameHeaderView: View {
                 .frame(height: DeviceSizing.progressBarHeight)
                 .frame(maxWidth: DeviceSizing.progressBarMaxWidth)
             
-            StorybookInfoChip(icon: "clock", text: viewModel.formattedTime)
-                .scaleEffect(DeviceSizing.badgeScale)
+            GameTimerView(formattedTime: formattedTime)
             
             Button(action: {
                 showSettings = true
@@ -439,10 +440,10 @@ struct GameMessageBanner: View {
 /// Isolated timer view that only re-renders when time changes,
 /// preventing the entire GameView from re-rendering every second.
 private struct GameTimerView: View {
-    @ObservedObject var viewModel: GameViewModel
+    let formattedTime: String
     
     var body: some View {
-        StorybookInfoChip(icon: "clock", text: viewModel.formattedTime)
+        StorybookInfoChip(icon: "clock", text: formattedTime)
             .scaleEffect(DeviceSizing.badgeScale)
     }
 }
