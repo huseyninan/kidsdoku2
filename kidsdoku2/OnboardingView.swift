@@ -19,6 +19,15 @@ struct OnboardingPage: Identifiable {
 
 // MARK: - Constants & Theme
 
+private enum DeviceType {
+    case iPhone
+    case iPad
+    
+    static var current: DeviceType {
+        return UIDevice.current.userInterfaceIdiom == .pad ? .iPad : .iPhone
+    }
+}
+
 private enum OnboardingTheme {
     static let primaryColor = Color.orange
     static let dotInactive = Color.orange.opacity(0.3)
@@ -29,9 +38,39 @@ private enum OnboardingTheme {
     )
     
     enum Layout {
-        static let horizontalPadding: CGFloat = 24
-        static let buttonHeight: CGFloat = 56
-        static let cornerRadius: CGFloat = 28
+        static var horizontalPadding: CGFloat {
+            DeviceType.current == .iPad ? 48 : 24
+        }
+        static var buttonHeight: CGFloat {
+            DeviceType.current == .iPad ? 72 : 56
+        }
+        static var cornerRadius: CGFloat {
+            DeviceType.current == .iPad ? 36 : 28
+        }
+        static var dotSize: CGFloat {
+            DeviceType.current == .iPad ? 12 : 8
+        }
+        static var titleFontSize: CGFloat {
+            DeviceType.current == .iPad ? 42 : 28
+        }
+        static var bodyFontSize: CGFloat {
+            DeviceType.current == .iPad ? 20 : 17
+        }
+        static var contentHorizontalPadding: CGFloat {
+            DeviceType.current == .iPad ? 80 : 32
+        }
+        static var contentBottomPadding: CGFloat {
+            DeviceType.current == .iPad ? 120 : 80
+        }
+        static var bottomControlsHeight: CGFloat {
+            DeviceType.current == .iPad ? 220 : 160
+        }
+        static var controlsSpacing: CGFloat {
+            DeviceType.current == .iPad ? 32 : 24
+        }
+        static var buttonSpacing: CGFloat {
+            DeviceType.current == .iPad ? 24 : 16
+        }
     }
 }
 
@@ -98,7 +137,7 @@ struct OnboardingView: View {
                     Button("Skip") {
                         completeOnboarding()
                     }
-                    .font(.subheadline.bold()) // Better readability
+                    .font(.system(size: DeviceType.current == .iPad ? 18 : 15, weight: .bold))
                     .foregroundColor(Color(red: 40/255, green: 30/255, blue: 20/255))
                     .padding(.horizontal, 16)
                     .padding(.vertical, 8)
@@ -110,20 +149,20 @@ struct OnboardingView: View {
                 Spacer()
                 
                 // Bottom Area
-                VStack(spacing: 24) {
+                VStack(spacing: OnboardingTheme.Layout.controlsSpacing) {
                     
                     // Page Indicators
                     HStack(spacing: 8) {
                         ForEach(pages.indices, id: \.self) { index in
                             Circle()
                                 .fill(index == currentPage ? OnboardingTheme.primaryColor : OnboardingTheme.dotInactive)
-                                .frame(width: 8, height: 8)
+                                .frame(width: OnboardingTheme.Layout.dotSize, height: OnboardingTheme.Layout.dotSize)
                                 .animation(.spring(), value: currentPage) // Smooth dot transition
                         }
                     }
                     
                     // Navigation Buttons
-                    HStack(spacing: 16) {
+                    HStack(spacing: OnboardingTheme.Layout.buttonSpacing) {
                         // Back Button
                         if currentPage > 0 {
                             Button {
@@ -151,8 +190,7 @@ struct OnboardingView: View {
                             handleNextButton()
                         } label: {
                             Text(pages[currentPage].buttonText)
-                                .font(.headline)
-                                .fontWeight(.semibold)
+                                .font(.system(size: DeviceType.current == .iPad ? 20 : 17, weight: .semibold))
                                 .foregroundColor(.white)
                                 .frame(maxWidth: .infinity)
                                 .frame(height: OnboardingTheme.Layout.buttonHeight)
@@ -200,37 +238,71 @@ struct OnboardingPageView: View {
     let page: OnboardingPage
     
     var body: some View {
-        ZStack {
-            // 1. Background Image
-            Image(page.image)
-                .resizable()
-                .scaledToFill()
-                .ignoresSafeArea()
-                .overlay(Color.black.opacity(0.1)) // Slight dim for text readability
-            
-            // 2. Content
-            VStack(spacing: 24) {
-                Spacer()
+        GeometryReader { geometry in
+            ZStack {
+                // 1. Background Image
+                Image(page.image)
+                    .resizable()
+                    .scaledToFill()
+                    .ignoresSafeArea()
+                    .overlay(Color.black.opacity(0.1)) // Slight dim for text readability
                 
-                // Title
-                Text(page.title)
-                    .font(.system(size: 28, weight: .bold)) // Consider converting to relative size for Dynamic Type
-                    .multilineTextAlignment(.center)
-                    .foregroundColor(Color(red: 40/255, green: 30/255, blue: 20/255))
-                    .padding(.horizontal, 32)
-                
-                // Subtitle
-                Text(page.subtitle)
-                    .font(.body)
-                    .multilineTextAlignment(.center)
-                    .foregroundColor(Color(red: 40/255, green: 30/255, blue: 20/255))
-                    .padding(.horizontal, 40)
-                    .padding(.bottom, 80)
-                    .lineSpacing(4)
-                    
-                // Spacer for the bottom controls area
-                Spacer()
-                    .frame(height: 160) // Reserve space for buttons/dots
+                // 2. Content positioned differently for iPad vs iPhone
+                if DeviceType.current == .iPad {
+                    // iPad: Text at top
+                    VStack(spacing: 0) {
+                        VStack(spacing: 20) {
+                            // Title
+                            Text(page.title)
+                                .font(.system(size: OnboardingTheme.Layout.titleFontSize, weight: .bold))
+                                .multilineTextAlignment(.center)
+                                .foregroundColor(Color(red: 40/255, green: 30/255, blue: 20/255))
+                                .padding(.horizontal, OnboardingTheme.Layout.contentHorizontalPadding)
+                                .fixedSize(horizontal: false, vertical: true)
+                            
+                            // Subtitle
+                            Text(page.subtitle)
+                                .font(.system(size: OnboardingTheme.Layout.bodyFontSize))
+                                .multilineTextAlignment(.center)
+                                .foregroundColor(Color(red: 40/255, green: 30/255, blue: 20/255))
+                                .padding(.horizontal, OnboardingTheme.Layout.contentHorizontalPadding)
+                                .lineSpacing(6)
+                                .fixedSize(horizontal: false, vertical: true)
+                        }
+                        .padding(.top, geometry.safeAreaInsets.top + 60) // Position at top with safe area
+                        
+                        Spacer()
+                    }
+                } else {
+                    // iPhone: Text at bottom
+                    VStack(spacing: 0) {
+                        Spacer()
+                            .frame(height: geometry.size.height * 0.55)
+                        
+                        VStack(spacing: 16) {
+                            // Title
+                            Text(page.title)
+                                .font(.system(size: OnboardingTheme.Layout.titleFontSize, weight: .bold))
+                                .multilineTextAlignment(.center)
+                                .foregroundColor(Color(red: 40/255, green: 30/255, blue: 20/255))
+                                .padding(.horizontal, OnboardingTheme.Layout.contentHorizontalPadding)
+                                .fixedSize(horizontal: false, vertical: true)
+                            
+                            // Subtitle
+                            Text(page.subtitle)
+                                .font(.system(size: OnboardingTheme.Layout.bodyFontSize))
+                                .multilineTextAlignment(.center)
+                                .foregroundColor(Color(red: 40/255, green: 30/255, blue: 20/255))
+                                .padding(.horizontal, OnboardingTheme.Layout.contentHorizontalPadding)
+                                .lineSpacing(4)
+                                .fixedSize(horizontal: false, vertical: true)
+                        }
+                        .padding(.bottom, 24)
+                        
+                        Spacer()
+                            .frame(minHeight: OnboardingTheme.Layout.bottomControlsHeight)
+                    }
+                }
             }
         }
     }
