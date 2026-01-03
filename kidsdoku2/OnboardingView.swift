@@ -78,7 +78,9 @@ private enum OnboardingTheme {
 
 struct OnboardingView: View {
     @Binding var hasSeenOnboarding: Bool
+    @EnvironmentObject private var appEnvironment: AppEnvironment
     @State private var currentPage = 0
+    @State private var showGuidedPlay = false
     
     // Using a reliable data source
     private let pages: [OnboardingPage] = [
@@ -205,6 +207,17 @@ struct OnboardingView: View {
                 .padding(.bottom, 20) // Bottom safe area padding usually handled, but this adds breathing room
             }
         }
+        .fullScreenCover(isPresented: $showGuidedPlay, onDismiss: {
+            completeOnboarding()
+        }) {
+            NavigationStack {
+                GameView(config: PremadePuzzle.tutorialPuzzle.config, premadePuzzle: PremadePuzzle.tutorialPuzzle, isTutorialMode: true)
+                    .environmentObject(appEnvironment)
+                    .onAppear {
+                        appEnvironment.setTheme(.storybook)
+                    }
+            }
+        }
     }
     
     // MARK: - Helpers
@@ -220,7 +233,7 @@ struct OnboardingView: View {
             if currentPage < pages.count - 1 {
                 currentPage += 1
             } else {
-                completeOnboarding()
+                showGuidedPlay = true
             }
         }
     }

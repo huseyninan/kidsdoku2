@@ -10,14 +10,19 @@ struct GameView: View {
     
     @State private var showSettings: Bool = false
     @State private var highlightManager = PaletteHighlightManager()
+    @State private var tutorialManager = GameTutorialManager()
+    
+    let isTutorialMode: Bool
 
-    init(config: KidSudokuConfig) {
+    init(config: KidSudokuConfig, isTutorialMode: Bool = false) {
         self.config = config
+        self.isTutorialMode = isTutorialMode
         _viewModel = StateObject(wrappedValue: GameViewModel(config: config))
     }
     
-    init(config: KidSudokuConfig, premadePuzzle: PremadePuzzle) {
+    init(config: KidSudokuConfig, premadePuzzle: PremadePuzzle, isTutorialMode: Bool = false) {
         self.config = config
+        self.isTutorialMode = isTutorialMode
         _viewModel = StateObject(wrappedValue: GameViewModel(config: config, premadePuzzle: premadePuzzle))
     }
 
@@ -43,7 +48,8 @@ struct GameView: View {
                         GameBoardSection(
                             viewModel: viewModel,
                             boardSize: boardSize,
-                            highlightManager: highlightManager
+                            highlightManager: highlightManager,
+                            tutorialManager: tutorialManager
                         )
                         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
                         
@@ -59,7 +65,8 @@ struct GameView: View {
                     GamePaletteSection(
                         viewModel: viewModel,
                         theme: theme,
-                        highlightManager: highlightManager
+                        highlightManager: highlightManager,
+                        tutorialManager: tutorialManager
                     )
                     
                     GameActionButtons(
@@ -81,6 +88,20 @@ struct GameView: View {
                         onDismiss: { dismiss() }
                     )
                 }
+                
+                // Tutorial overlay
+                if tutorialManager.isActive {
+                    GameTutorialOverlayView(
+                        tutorialManager: tutorialManager,
+                        onDismiss: {
+                            tutorialManager.complete()
+                            if isTutorialMode {
+                                dismiss()
+                            }
+                        }
+                    )
+                    .zIndex(GameConstants.ZIndex.messageBanner + 10)
+                }
             }
             .gameTheme(theme)
         }
@@ -100,6 +121,16 @@ struct GameView: View {
         .onAppear {
             viewModel.startTimer()
             viewModel.showInitialMessage()
+            if isTutorialMode {
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                    tutorialManager.start()
+                }
+            }
+        }
+        .onPreferenceChange(TutorialFramePreferenceKey.self) { frames in
+            for (area, frame) in frames {
+                tutorialManager.registerFrame(frame, for: area)
+            }
         }
         .onDisappear {
             viewModel.stopTimer()
@@ -208,6 +239,7 @@ struct GameBoardSection: View {
     @ObservedObject var viewModel: GameViewModel
     let boardSize: CGFloat
     let highlightManager: PaletteHighlightManager
+    var tutorialManager: GameTutorialManager? = nil
     private let hapticManager = HapticManager.shared
     
     var body: some View {
@@ -225,12 +257,20 @@ struct GameBoardSection: View {
                 completedColumns: viewModel.completedColumns,
                 completedSubgrids: viewModel.completedSubgrids,
                 isPuzzleComplete: viewModel.isPuzzleCompleteAnimation,
+                tutorialManager: tutorialManager,
                 onTap: { cell in
                     withAnimation(.easeInOut(duration: GameConstants.Animation.cellTapDuration)) {
                         viewModel.didTapCell(cell)
                         highlightManager.hideHighlight()
                     }
                     hapticManager.trigger(.selection)
+                    // Advance tutorial if tapping correct grid cell
+                    if let manager = tutorialManager, manager.isActive {
+                        let focusArea = TutorialFocusArea.gridCell(row: cell.position.row, col: cell.position.col)
+                        if manager.handleTap(on: focusArea) {
+                            manager.advanceToNextStep()
+                        }
+                    }
                 }
             )
             .frame(width: boardSize, height: boardSize)
@@ -243,6 +283,7 @@ struct GamePaletteSection: View {
     @ObservedObject var viewModel: GameViewModel
     let theme: GameTheme
     let highlightManager: PaletteHighlightManager
+    var tutorialManager: GameTutorialManager? = nil
     
     var body: some View {
         VStack(spacing: GameConstants.Layout.paletteButtonSpacing) {
@@ -268,7 +309,16 @@ struct GamePaletteSection: View {
                                     viewModel.selectPaletteSymbol(item.index)
                                     highlightManager.hideHighlight()
                                 }
-                            }
+                                // Advance tutorial if tapping correct palette item
+                                if let manager = tutorialManager, manager.isActive {
+                                    let focusArea = TutorialFocusArea.paletteItem(index: item.index)
+                                    if manager.handleTap(on: focusArea) {
+                                        manager.advanceToNextStep()
+                                    }
+                                }
+                            },
+                            tutorialManager: tutorialManager,
+                            paletteIndex: item.index
                         )
                     }
                 }
@@ -288,6 +338,8 @@ struct GamePaletteButton: View {
     let isSelected: Bool
     let showNumbers: Bool
     let onTap: () -> Void
+    var tutorialManager: GameTutorialManager? = nil
+    var paletteIndex: Int = 0
     private let hapticManager = HapticManager.shared
     
     var body: some View {
@@ -307,6 +359,23 @@ struct GamePaletteButton: View {
             .scaleEffect(isSelected ? GameConstants.Scale.paletteButtonSelected : GameConstants.Scale.paletteButtonNormal)
         }
         .buttonStyle(.plain)
+        .background(
+            GeometryReader { geometry in
+                Color.clear
+                    .preference(
+                        key: TutorialFramePreferenceKey.self,
+                        value: [TutorialFocusArea.paletteItem(index: paletteIndex): geometry.frame(in: .global)]
+                    )
+            }
+        )
+        .overlay(
+            Group {
+                if let manager = tutorialManager, manager.shouldHighlight(.paletteItem(index: paletteIndex)) {
+                    TutorialFocusRing(isActive: true)
+                        .padding(-4)
+                }
+            }
+        )
     }
 }
 

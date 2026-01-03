@@ -33,6 +33,11 @@ struct ContentView: View {
                         GameView(config: puzzle.config, premadePuzzle: puzzle)
                     case .settings:
                         SettingsView()
+                    case .tutorialGame:
+                        GameView(config: PremadePuzzle.tutorialPuzzle.config, premadePuzzle: PremadePuzzle.tutorialPuzzle, isTutorialMode: true)
+                            .onAppear {
+                                appEnvironment.setTheme(.storybook)
+                            }
                     }
                 }
                 .onChange(of: deepLinkProduct) { _, newValue in

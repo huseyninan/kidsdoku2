@@ -229,3 +229,32 @@ struct ChristmasQuestButtonStyle: ButtonStyle {
     }
 }
 
+struct PlayGuideButtonStyle: ButtonStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .foregroundColor(.white)
+            .padding(.horizontal, 12)
+            .padding(.vertical, 8)
+            .background(
+                RoundedRectangle(cornerRadius: 16)
+                    .fill(
+                        LinearGradient(
+                            colors: [
+                                Color(red: 0.95, green: 0.55, blue: 0.25),
+                                Color(red: 0.90, green: 0.40, blue: 0.15)
+                            ],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
+                    )
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 16)
+                            .strokeBorder(Color.white.opacity(0.4), lineWidth: 1)
+                    )
+                    .shadow(color: Color.orange.opacity(0.4), radius: 6, x: 0, y: 3)
+            )
+            .scaleEffect(configuration.isPressed ? 0.95 : 1.0)
+            .animation(.easeInOut(duration: 0.1), value: configuration.isPressed)
+    }
+}
+

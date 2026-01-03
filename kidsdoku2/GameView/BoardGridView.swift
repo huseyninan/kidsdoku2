@@ -11,6 +11,7 @@ struct BoardGridView: View {
     let completedColumns: Set<Int>
     let completedSubgrids: Set<Int>
     let isPuzzleComplete: Bool
+    var tutorialManager: GameTutorialManager? = nil
     let onTap: (KidSudokuCell) -> Void
     
     @Environment(\.gameTheme) private var theme
@@ -50,10 +51,12 @@ struct BoardGridView: View {
                                     isHighlighted: highlightedValue != nil && cell.value == highlightedValue,
                                     isCompleted: isCompleted,
                                     showNumbers: showNumbers,
+                                    tutorialManager: tutorialManager,
                                     onTap: onTap
                                 )
                             }
                         }
+                        .zIndex(rowContainsHighlightedCell(row: row) ? 100 : Double(config.size - row))
                     }
                 }
                 .frame(width: side, height: side)
@@ -86,6 +89,17 @@ struct BoardGridView: View {
     }
 
 
+    // Check if a row contains the tutorial-highlighted cell
+    private func rowContainsHighlightedCell(row: Int) -> Bool {
+        guard let manager = tutorialManager, manager.isActive else { return false }
+        switch manager.currentStep.focusArea {
+        case .gridCell(let focusRow, _):
+            return focusRow == row
+        case .paletteItem:
+            return false
+        }
+    }
+    
     // subgrid lines - optimized with pre-calculated cellSize
     private func drawSubgridLines(context: inout GraphicsContext, size: CGSize, cellSize: CGFloat) {
         let dimension = min(size.width, size.height)
@@ -136,6 +150,7 @@ struct BoardCellView: View {
     let isHighlighted: Bool
     let isCompleted: Bool
     let showNumbers: Bool
+    var tutorialManager: GameTutorialManager? = nil
     let onTap: (KidSudokuCell) -> Void
     
     @Environment(\.gameTheme) private var theme
@@ -202,6 +217,23 @@ struct BoardCellView: View {
             Rectangle()
                 .stroke(theme.cellBorderColor, lineWidth: Layout.borderLineWidth)
         )
+        .background(
+            GeometryReader { geometry in
+                Color.clear
+                    .preference(
+                        key: TutorialFramePreferenceKey.self,
+                        value: [TutorialFocusArea.gridCell(row: cell.position.row, col: cell.position.col): geometry.frame(in: .global)]
+                    )
+            }
+        )
+        .overlay(
+            Group {
+                if let manager = tutorialManager, manager.shouldHighlight(.gridCell(row: cell.position.row, col: cell.position.col)) {
+                    TutorialFocusRing(isActive: true)
+                }
+            }
+        )
+        .zIndex(tutorialManager?.shouldHighlight(.gridCell(row: cell.position.row, col: cell.position.col)) == true ? 100 : 0)
         .accessibilityLabel(Text("Cell at row \(cell.position.row + 1), column \(cell.position.col + 1)"))
         .accessibilityValue(Text(cell.value.map { symbol(for: $0) } ?? "Empty"))
         .accessibilityAddTraits(isSelected ? [.isSelected] : [])

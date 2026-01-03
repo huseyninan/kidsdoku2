@@ -3,7 +3,9 @@ import SwiftUI
 struct TutorialView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.colorScheme) private var colorScheme
+    @EnvironmentObject private var appEnvironment: AppEnvironment
     @State private var currentStep = 0
+    @State private var showGuidedPlay = false
     private let totalSteps = 4
     
     var body: some View {
@@ -50,6 +52,33 @@ struct TutorialView: View {
             .navigationTitle("How to Play")
             .navigationBarTitleDisplayMode(.large)
             .toolbar {
+                ToolbarItem(placement: .navigationBarLeading) {
+                    Button(action: {
+                        showGuidedPlay = true
+                    }) {
+                        HStack(spacing: 4) {
+                            Image(systemName: "hand.tap.fill")
+                                .font(.system(size: 16))
+                            Text("Guided Play")
+                                .font(.system(size: 14, weight: .semibold))
+                        }
+                        .foregroundColor(.white)
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 6)
+                    }
+                    .background(
+                        LinearGradient(
+                            colors: [
+                                Color(red: 0.95, green: 0.55, blue: 0.25),
+                                Color(red: 0.90, green: 0.40, blue: 0.15)
+                            ],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
+                    )
+                    .cornerRadius(16)
+                }
+                
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button(String(localized: "Done")) {
                         dismiss()
@@ -57,6 +86,15 @@ struct TutorialView: View {
                     .font(.headline)
                     .foregroundColor(colorScheme == .dark ? Color(red: 0.9, green: 0.5, blue: 0.45) : Color(red: 0.7, green: 0.35, blue: 0.3))
                 }
+            }
+        }
+        .fullScreenCover(isPresented: $showGuidedPlay) {
+            NavigationStack {
+                GameView(config: PremadePuzzle.tutorialPuzzle.config, premadePuzzle: PremadePuzzle.tutorialPuzzle, isTutorialMode: true)
+                    .environmentObject(appEnvironment)
+                    .onAppear {
+                        appEnvironment.setTheme(.storybook)
+                    }
             }
         }
     }
