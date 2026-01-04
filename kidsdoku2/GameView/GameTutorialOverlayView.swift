@@ -12,7 +12,7 @@ enum GameTutorialStep: Int, CaseIterable {
         case .selectFirstSymbol:
             return String(localized: "Ready for an adventure? Pick a magic symbol from Safari Camp to start the quest!")
         case .placeFirstSymbol:
-            return String(localized: "Great! Now, tap the empty box in the meadow to plant it.")
+            return String(localized: "Great! Now, tap the empty box in the grid to place it.")
         case .selectSecondSymbol:
             return String(localized: "Awesome! Let's pick a different friend for the next box.")
         case .placeSecondSymbol:
