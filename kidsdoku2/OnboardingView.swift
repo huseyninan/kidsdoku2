@@ -323,4 +323,5 @@ struct OnboardingPageView: View {
 
 #Preview {
     OnboardingView(hasSeenOnboarding: .constant(false))
+        .environmentObject(AppEnvironment())
 }

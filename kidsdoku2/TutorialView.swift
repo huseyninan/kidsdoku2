@@ -525,4 +525,5 @@ struct TutorialView: View {
 
 #Preview {
     TutorialView()
+        .environmentObject(AppEnvironment())
 }
