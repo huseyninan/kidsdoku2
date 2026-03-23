@@ -43,6 +43,7 @@ enum BadgeRequirement {
     case noHints(count: Int)
     case noMistakes(count: Int)
     case christmasTheme(count: Int)
+    case springTheme(count: Int)
     case streak(days: Int)
 }
 
@@ -73,6 +74,16 @@ struct BadgeDefinitions {
                     color: Color(red: 0.2, green: 0.6, blue: 0.4),
                     gradientColors: [Color(red: 0.85, green: 0.15, blue: 0.2), Color(red: 0.2, green: 0.55, blue: 0.35)],
                     requirement: .christmasTheme(count: 27),
+                    rarity: .legendary
+                ),
+                Badge(
+                    id: "spring_challenge",
+                    name: String(localized: "Spring Challenge"),
+                    description: String(localized: "Complete all Spring puzzles"),
+                    icon: "leaf.fill",
+                    color: Color(red: 0.45, green: 0.72, blue: 0.48),
+                    gradientColors: [Color(red: 0.95, green: 0.55, blue: 0.72), Color(red: 0.40, green: 0.72, blue: 0.48)],
+                    requirement: .springTheme(count: 27),
                     rarity: .legendary
                 ),
             ]
@@ -341,6 +352,11 @@ struct BadgeProgressData {
         ).union(
             ratings.keys.filter { $0.hasPrefix("christmas-") }
         ).count
+        let springCompleted = Set(
+            completedPuzzles.filter { $0.contains("spring-") }
+        ).union(
+            ratings.keys.filter { $0.hasPrefix("spring-") }
+        ).count
         
         // Pre-compute grid size counts
         var gridSizeCounts: [Int: Int] = [:]
@@ -372,6 +388,8 @@ struct BadgeProgressData {
                 value = min(1.0, Double(completedCount) / Double(count))
             case .christmasTheme(let count):
                 value = min(1.0, Double(christmasCompleted) / Double(count))
+            case .springTheme(let count):
+                value = min(1.0, Double(springCompleted) / Double(count))
             case .streak:
                 value = 0.0
             }
