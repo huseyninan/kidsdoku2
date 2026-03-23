@@ -32,13 +32,14 @@ private struct Snowflake: Identifiable {
 // MARK: - Configuration Constants
 
 private enum SnowfallConfig {
-    static let snowflakeCount = 50
-    static let frameRate: Double = 30
+    static let snowflakeCount = 30
+    static let frameRate: Double = 15
     static let frameDuration: TimeInterval = 1.0 / frameRate
     static let offScreenBuffer: CGFloat = 20
     static let sizeRange: ClosedRange<CGFloat> = 4...12
     static let opacityRange: ClosedRange<Double> = 0.4...0.9
-    static let speedRange: ClosedRange<Double> = 30...80
+    // Doubled speed range so visual velocity stays the same at half the frame rate
+    static let speedRange: ClosedRange<Double> = 60...160
     static let wobbleAmountRange: ClosedRange<CGFloat> = 10...30
     static let wobbleSpeedRange: ClosedRange<Double> = 1...3
     static let rotationSpeedRange: ClosedRange<Double> = 0.3...1.5
@@ -72,6 +73,7 @@ struct SnowfallView: View {
                     }
                 }
             }
+            .drawingGroup()
             .onAppear {
                 startAnimation(in: geometry.size)
             }

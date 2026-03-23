@@ -33,10 +33,6 @@ struct SymbolTokenView: View {
     
     @State private var glowPhase: CGFloat = 0
     
-    private var glowAnimation: Animation {
-        .easeInOut(duration: 1.6).repeatForever(autoreverses: true)
-    }
-    
     private var numberText: String {
         "\(symbolIndex)"
     }
@@ -166,13 +162,11 @@ struct SymbolTokenView: View {
     private func updateGlowAnimation(_ active: Bool) {
         if active {
             glowPhase = 0
-            DispatchQueue.main.async {
-                withAnimation(glowAnimation) {
-                    glowPhase = 1
-                }
+            withAnimation(.spring(response: 0.3, dampingFraction: 0.65)) {
+                glowPhase = 1
             }
         } else {
-            withAnimation(.easeOut(duration: 0.25)) {
+            withAnimation(.easeOut(duration: 0.2)) {
                 glowPhase = 0
             }
         }

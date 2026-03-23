@@ -23,40 +23,33 @@ struct RunningFoxView: View {
                 .frame(width: 300, height: 300)
                 .offset(x: isRunning ? geometry.size.width + 300 : -300)
                 .task {
-                    await withTaskGroup(of: Void.self) { group in
-                        group.addTask { await animateFrames() }
-                        group.addTask { await runFoxLoop() }
-                    }
+                    await runFoxLoop()
                 }
-        }
-    }
-    
-    private func animateFrames() async {
-        while !Task.isCancelled {
-            do {
-                try await Task.sleep(nanoseconds: 100_000_000) // 0.1s
-                currentFrame = (currentFrame + 1) % foxFrames.count
-            } catch {
-                break  // Task cancelled
-            }
         }
     }
     
     private func runFoxLoop() async {
         while !Task.isCancelled {
             do {
-                // 1. Start moving
+                // 1. Start moving and begin frame animation
                 withAnimation(.linear(duration: travelDuration)) {
                     isRunning = true
                 }
                 
-                // 2. Wait for travel to complete
-                try await Task.sleep(nanoseconds: UInt64(travelDuration * 1_000_000_000))
+                // 2. Animate frames only while fox is travelling across screen
+                let frameInterval: UInt64 = 100_000_000 // 0.1s = 10 FPS
+                let travelNano = UInt64(travelDuration * 1_000_000_000)
+                let frameCount = Int(travelDuration / 0.1)
+                for _ in 0..<frameCount {
+                    guard !Task.isCancelled else { return }
+                    try await Task.sleep(nanoseconds: frameInterval)
+                    currentFrame = (currentFrame + 1) % foxFrames.count
+                }
                 
-                // 3. Wait 5 seconds
+                // 3. Fox is off screen — pause without any frame updates
                 try await Task.sleep(nanoseconds: UInt64(pauseDuration * 1_000_000_000))
                 
-                // 4. Reset position instantly
+                // 4. Reset position instantly before next run
                 withAnimation(.none) {
                     isRunning = false
                 }

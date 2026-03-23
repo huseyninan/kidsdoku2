@@ -32,13 +32,14 @@ private struct Petal: Identifiable {
 // MARK: - Configuration Constants
 
 private enum PetalFallConfig {
-    static let petalCount = 35
-    static let frameRate: Double = 30
+    static let petalCount = 20
+    static let frameRate: Double = 15
     static let frameDuration: TimeInterval = 1.0 / frameRate
     static let offScreenBuffer: CGFloat = 20
     static let sizeRange: ClosedRange<CGFloat> = 6...16
     static let opacityRange: ClosedRange<Double> = 0.45...0.85
-    static let speedRange: ClosedRange<Double> = 22...60
+    // Doubled speed range so visual velocity stays the same at half the frame rate
+    static let speedRange: ClosedRange<Double> = 44...120
     static let wobbleAmountRange: ClosedRange<CGFloat> = 18...45
     static let wobbleSpeedRange: ClosedRange<Double> = 0.5...1.8
     static let rotationSpeedRange: ClosedRange<Double> = 0.4...1.2
@@ -74,6 +75,7 @@ struct PetalFallView: View {
                     }
                 }
             }
+            .drawingGroup()
             .onAppear {
                 startAnimation(in: geometry.size)
             }

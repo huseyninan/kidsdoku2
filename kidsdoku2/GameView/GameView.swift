@@ -11,6 +11,7 @@ struct GameView: View {
     @State private var showSettings: Bool = false
     @State private var highlightManager = PaletteHighlightManager()
     @State private var tutorialManager = GameTutorialManager()
+    @StateObject private var timerModel = GameTimerModel()
     
     let isTutorialMode: Bool
 
@@ -41,7 +42,7 @@ struct GameView: View {
                         theme: theme,
                         showSettings: $showSettings,
                         progressRatio: progressRatio,
-                        formattedTime: viewModel.formattedTime
+                        timerModel: timerModel
                     )
                     
                     ZStack(alignment: .top) {
@@ -119,6 +120,7 @@ struct GameView: View {
             )
         }
         .onAppear {
+            viewModel.timerModel = timerModel
             viewModel.startTimer()
             viewModel.showInitialMessage()
             if isTutorialMode {
@@ -205,7 +207,7 @@ struct GameHeaderView: View {
     let theme: GameTheme
     @Binding var showSettings: Bool
     let progressRatio: Double
-    let formattedTime: String
+    let timerModel: GameTimerModel
     private let hapticManager = HapticManager.shared
     
     var body: some View {
@@ -219,7 +221,7 @@ struct GameHeaderView: View {
                 .frame(height: DeviceSizing.progressBarHeight)
                 .frame(maxWidth: DeviceSizing.progressBarMaxWidth)
             
-            GameTimerView(formattedTime: formattedTime)
+            GameTimerView(timerModel: timerModel)
             
             Button(action: {
                 showSettings = true
@@ -364,12 +366,17 @@ struct GamePaletteButton: View {
         }
         .buttonStyle(.plain)
         .background(
-            GeometryReader { geometry in
-                Color.clear
-                    .preference(
-                        key: TutorialFramePreferenceKey.self,
-                        value: [TutorialFocusArea.paletteItem(index: paletteIndex): geometry.frame(in: .global)]
-                    )
+            Group {
+                // Only install the GeometryReader preference when tutorial is active
+                if let manager = tutorialManager, manager.isActive {
+                    GeometryReader { geometry in
+                        Color.clear
+                            .preference(
+                                key: TutorialFramePreferenceKey.self,
+                                value: [TutorialFocusArea.paletteItem(index: paletteIndex): geometry.frame(in: .global)]
+                            )
+                    }
+                }
             }
         )
         .overlay(
@@ -506,10 +513,10 @@ struct GameMessageBanner: View {
 /// Isolated timer view that only re-renders when time changes,
 /// preventing the entire GameView from re-rendering every second.
 private struct GameTimerView: View {
-    let formattedTime: String
+    @ObservedObject var timerModel: GameTimerModel
     
     var body: some View {
-        StorybookInfoChip(icon: "clock", text: formattedTime)
+        StorybookInfoChip(icon: "clock", text: timerModel.formattedTime)
             .scaleEffect(DeviceSizing.badgeScale)
     }
 }

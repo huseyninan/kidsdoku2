@@ -173,43 +173,43 @@ struct BoardCellView: View {
         return symbol(for: value)
     }
     
+    @ViewBuilder
+    private var cellContent: some View {
+        Rectangle()
+            .fill(backgroundColor)
+            .overlay(highlightOverlay)
+            .overlay(completionOverlay)
+            .overlay(symbolOverlay)
+    }
+
+    @ViewBuilder private var highlightOverlay: some View {
+        if isHighlighted { OptimizedGlowingHighlight(size: cellSize) }
+    }
+
+    @ViewBuilder private var completionOverlay: some View {
+        if isCompleted { CompletionCelebrationEffect(size: cellSize) }
+    }
+
+    @ViewBuilder private var symbolOverlay: some View {
+        if let symbolName = cachedSymbol, let value = cell.value {
+            SymbolTokenView(
+                symbolIndex: value,
+                symbolName: symbolName,
+                showNumbers: showNumbers,
+                size: symbolSize,
+                context: .grid,
+                isSelected: isSelected || isHighlighted
+            )
+            .scaleEffect(isCompleted ? Layout.completionScaleEffect : 1.0)
+            .animation(.spring(response: Layout.springResponse, dampingFraction: Layout.springDamping), value: isCompleted)
+        }
+    }
+
     var body: some View {
         Button {
             onTap(cell)
         } label: {
-            // Simplified view hierarchy - avoid nested ZStacks when possible
-            Rectangle()
-                .fill(backgroundColor)
-                .overlay(
-                    Group {
-                        if isHighlighted {
-                            OptimizedGlowingHighlight(size: cellSize)
-                        }
-                    }
-                )
-                .overlay(
-                    Group {
-                        if isCompleted {
-                            CompletionCelebrationEffect(size: cellSize)
-                        }
-                    }
-                )
-                .overlay(
-                    Group {
-                        if let symbolName = cachedSymbol, let value = cell.value {
-                            SymbolTokenView(
-                                symbolIndex: value,
-                                symbolName: symbolName,
-                                showNumbers: showNumbers,
-                                size: symbolSize,
-                                context: .grid,
-                                isSelected: isSelected || isHighlighted
-                            )
-                            .scaleEffect(isCompleted ? Layout.completionScaleEffect : 1.0)
-                            .animation(.spring(response: Layout.springResponse, dampingFraction: Layout.springDamping), value: isCompleted)
-                        }
-                    }
-                )
+            cellContent
         }
         .buttonStyle(.plain)
         .frame(width: cellSize, height: cellSize)
@@ -218,12 +218,18 @@ struct BoardCellView: View {
                 .stroke(theme.cellBorderColor, lineWidth: Layout.borderLineWidth)
         )
         .background(
-            GeometryReader { geometry in
-                Color.clear
-                    .preference(
-                        key: TutorialFramePreferenceKey.self,
-                        value: [TutorialFocusArea.gridCell(row: cell.position.row, col: cell.position.col): geometry.frame(in: .global)]
-                    )
+            Group {
+                // Only install the GeometryReader preference when tutorial is active
+                // to avoid 36 extra layout readers during normal gameplay.
+                if let manager = tutorialManager, manager.isActive {
+                    GeometryReader { geometry in
+                        Color.clear
+                            .preference(
+                                key: TutorialFramePreferenceKey.self,
+                                value: [TutorialFocusArea.gridCell(row: cell.position.row, col: cell.position.col): geometry.frame(in: .global)]
+                            )
+                    }
+                }
             }
         )
         .overlay(
@@ -258,7 +264,7 @@ struct BoardCellView: View {
 
 // MARK: - Optimized Highlight Effects
 
-/// Optimized version with reduced animation complexity for better performance
+/// Optimized highlight with a single-shot spring settle — no continuous animation loop.
 struct OptimizedGlowingHighlight: View {
     let size: CGFloat
     @Environment(\.gameTheme) private var theme
@@ -268,13 +274,11 @@ struct OptimizedGlowingHighlight: View {
     private enum Layout {
         static let cornerRadiusRatio: CGFloat = 0.28
         static let mainFrameRatio: CGFloat = 0.82
-        static let animationDuration: Double = 1.0  // Reduced from 1.4
     }
     
     var body: some View {
         let cornerRadius = size * Layout.cornerRadiusRatio
         
-        // Simplified single-layer highlight with reduced effects
         RoundedRectangle(cornerRadius: cornerRadius)
             .fill(
                 LinearGradient(
@@ -289,13 +293,14 @@ struct OptimizedGlowingHighlight: View {
             .frame(width: size * Layout.mainFrameRatio, height: size * Layout.mainFrameRatio)
             .overlay(
                 RoundedRectangle(cornerRadius: cornerRadius)
-                    .stroke(Color.white.opacity(animate ? 0.7 : 0.3), lineWidth: 2)
+                    .stroke(Color.white.opacity(0.6), lineWidth: 2)
                     .frame(width: size * Layout.mainFrameRatio, height: size * Layout.mainFrameRatio)
             )
-            .scaleEffect(animate ? 1.05 : 0.95)
-            .opacity(animate ? 0.9 : 0.6)
+            // Single-shot spring settle: starts slightly small and snaps to full size once.
+            .scaleEffect(animate ? 1.0 : 0.88)
+            .opacity(animate ? 0.88 : 0.5)
             .onAppear {
-                withAnimation(.easeInOut(duration: Layout.animationDuration).repeatForever(autoreverses: true)) {
+                withAnimation(.spring(response: 0.35, dampingFraction: 0.6)) {
                     animate = true
                 }
             }

@@ -5,14 +5,9 @@ import Combine
 @MainActor
 final class GameViewModel: ObservableObject {
     @Published private(set) var puzzle: KidSudokuPuzzle
-    @Published var selectedPosition: KidSudokuPosition?
-    @Published var message: KidSudokuMessage?
     @Published private(set) var showCelebration = false
-    @Published var highlightedValue: Int?
-    @Published var selectedPaletteSymbol: Int?
     @Published private(set) var mistakeCount = 0
     @Published private(set) var hintCount = 0
-    @Published private(set) var elapsedTime: TimeInterval = 0
     @Published var showNumbers: Bool = false {
         didSet { updateCurrentConfig() }
     }
@@ -31,14 +26,37 @@ final class GameViewModel: ObservableObject {
     private(set) var validSymbolIndices: [Int] = []
     @Published private(set) var paletteSymbols: [(index: Int, symbol: String)] = []
 
+    // These four properties change together on nearly every user interaction.
+    // Plain stored properties (no @Published) updated only via notifyAndUpdate(_:)
+    // so each interaction sends a single objectWillChange notification instead of 4.
+    private(set) var selectedPosition: KidSudokuPosition?
+    private(set) var message: KidSudokuMessage?
+    private(set) var highlightedValue: Int?
+    private(set) var selectedPaletteSymbol: Int?
+
+    /// Update one or more selection properties with a single objectWillChange notification.
+    /// Use double-optional `T??` so callers can distinguish "no update" (nil) from "set to nil" (.some(nil)).
+    private func notifyAndUpdate(
+        position: KidSudokuPosition?? = nil,
+        message newMessage: KidSudokuMessage?? = nil,
+        highlighted: Int?? = nil,
+        palette: Int?? = nil
+    ) {
+        objectWillChange.send()
+        if let v = position { selectedPosition = v }
+        if let v = newMessage { message = v }
+        if let v = highlighted { highlightedValue = v }
+        if let v = palette { selectedPaletteSymbol = v }
+    }
+
     let config: KidSudokuConfig
     private let isPremadePuzzle: Bool
     private let originalPremadePuzzle: PremadePuzzle?
     private let soundManager = SoundManager.shared
     private var moveHistory: [(position: KidSudokuPosition, oldValue: Int?)] = []
-    private var timerCancellable: AnyCancellable?
-    private var isTimerRunning = false
     private var generationTask: Task<Void, Never>?
+    /// Weak reference to the timer model; GameView owns it via @StateObject.
+    weak var timerModel: GameTimerModel?
     private var hasShownPaletteSelectionMessage = false
     
     var selectedSymbolGroup: SymbolGroup {
@@ -149,7 +167,7 @@ final class GameViewModel: ObservableObject {
         self.hasShownPaletteSelectionMessage = false
         self.cacheSymbolData()
         if showMessage {
-            self.message = KidSudokuMessage(text: String(localized: "New puzzle ready!"), type: .info)
+            self.notifyAndUpdate(message: .some(KidSudokuMessage(text: String(localized: "New puzzle ready!"), type: .info)))
             self.startTimer()
         }
     }
@@ -168,13 +186,11 @@ final class GameViewModel: ObservableObject {
     }
 
     func startNewPuzzle() {
-        // Cancel any ongoing generation
         generationTask?.cancel()
         
-        selectedPosition = nil
+        // Reset all selection state in one notification
+        notifyAndUpdate(position: .some(nil), message: .some(nil), highlighted: .some(nil), palette: .some(nil))
         showCelebration = false
-        highlightedValue = nil
-        selectedPaletteSymbol = nil
         moveHistory.removeAll()
         mistakeCount = 0
         hintCount = 0
@@ -184,7 +200,7 @@ final class GameViewModel: ObservableObject {
             puzzle = KidSudokuPuzzle(from: premadePuzzle)
             updateFilledCount()
             cacheSymbolData()
-            message = KidSudokuMessage(text: String(localized: "New puzzle ready!"), type: .info)
+            notifyAndUpdate(message: .some(KidSudokuMessage(text: String(localized: "New puzzle ready!"), type: .info)))
             startTimer()
         } else {
             // Generate new puzzle in background
@@ -212,27 +228,17 @@ final class GameViewModel: ObservableObject {
 
     func select(position: KidSudokuPosition) {
         guard puzzle.cell(at: position).isFixed == false else { return }
-        selectedPosition = position
-        message = nil
+        notifyAndUpdate(position: .some(position), message: .some(nil))
     }
 
     func didTapCell(_ cell: KidSudokuCell) {
-        message = nil
-        
         // If cell is fixed, just highlight it and select it in the palette
         if cell.isFixed {
-            highlightedValue = cell.value
-            selectedPaletteSymbol = cell.value
-            selectedPosition = nil
-            
-            // Show message to guide user to select an empty cell
-            if !hasShownPaletteSelectionMessage {
-                message = KidSudokuMessage(
-                    text: String(localized: "Select an empty cell in the grid to place"),
-                    type: .info
-                )
-                hasShownPaletteSelectionMessage = true
-            }
+            let msg: KidSudokuMessage? = !hasShownPaletteSelectionMessage
+                ? KidSudokuMessage(text: String(localized: "Select an empty cell in the grid to place"), type: .info)
+                : nil
+            if !hasShownPaletteSelectionMessage { hasShownPaletteSelectionMessage = true }
+            notifyAndUpdate(position: .some(nil), message: .some(msg), highlighted: .some(cell.value), palette: .some(cell.value))
             return
         }
         
@@ -244,7 +250,7 @@ final class GameViewModel: ObservableObject {
                 puzzle.updateCell(at: cell.position, with: paletteSymbol)
                 updateFilledCount()
                 updateCorrectCount(at: cell.position, oldValue: oldValue, newValue: paletteSymbol)
-                highlightedValue = paletteSymbol
+                notifyAndUpdate(message: .some(nil), highlighted: .some(paletteSymbol))
                 let isCompleted = checkForCompletion()
                 if !isCompleted {
                     checkForLineCompletion(at: cell.position)
@@ -254,12 +260,12 @@ final class GameViewModel: ObservableObject {
                 mistakeCount += 1
                 guard paletteSymbol < config.symbols.count else {
                     print("⚠️ Symbol index \(paletteSymbol) out of bounds (max: \(config.symbols.count - 1))")
-                    message = KidSudokuMessage(text: String(localized: "Invalid symbol!"), type: .warning)
+                    notifyAndUpdate(message: .some(KidSudokuMessage(text: String(localized: "Invalid symbol!"), type: .warning)))
                     soundManager.play(.incorrectPlacement, volume: 0.5)
                     return
                 }
                 let symbolImageName = config.symbols[paletteSymbol]
-                message = KidSudokuMessage(text: String(localized: "That symbol is already there!"), type: .warning, symbolImageName: symbolImageName)
+                notifyAndUpdate(message: .some(KidSudokuMessage(text: String(localized: "That symbol is already there!"), type: .warning, symbolImageName: symbolImageName)))
                 soundManager.play(.incorrectPlacement, volume: 0.5)
             }
             return
@@ -267,34 +273,25 @@ final class GameViewModel: ObservableObject {
         
         // If the cell has a value (user-filled), highlight it in the palette
         if let value = cell.value {
-            highlightedValue = value
-            selectedPaletteSymbol = value
-            selectedPosition = cell.position
-            
-            // Show message to guide user to select an empty cell
-            if !hasShownPaletteSelectionMessage {
-                message = KidSudokuMessage(
-                    text: String(localized: "Tap an empty square to plant it!"),
-                    type: .info
-                )
-                hasShownPaletteSelectionMessage = true
-            }
+            let msg: KidSudokuMessage? = !hasShownPaletteSelectionMessage
+                ? KidSudokuMessage(text: String(localized: "Tap an empty square to plant it!"), type: .info)
+                : nil
+            if !hasShownPaletteSelectionMessage { hasShownPaletteSelectionMessage = true }
+            notifyAndUpdate(position: .some(cell.position), message: .some(msg), highlighted: .some(value), palette: .some(value))
             return
         }
         
         // Otherwise, select the empty cell and highlight its value
-        selectedPosition = cell.position
-        highlightedValue = cell.value
-        selectedPaletteSymbol = cell.value
+        notifyAndUpdate(position: .some(cell.position), message: .some(nil), highlighted: .some(cell.value), palette: .some(cell.value))
     }
 
     func clearSelection() {
-        selectedPosition = nil
+        notifyAndUpdate(position: .some(nil))
     }
 
     func removeValue() {
         guard let position = selectedPosition else {
-            message = KidSudokuMessage(text: String(localized: "Tap a square first."), type: .info)
+            notifyAndUpdate(message: .some(KidSudokuMessage(text: String(localized: "Tap a square first."), type: .info)))
             return
         }
 
@@ -307,35 +304,25 @@ final class GameViewModel: ObservableObject {
             puzzle.updateCell(at: position, with: nil)
             updateFilledCount()
             updateCorrectCount(at: position, oldValue: oldValue, newValue: nil)
-            selectedPosition = nil
+            notifyAndUpdate(position: .some(nil))
         }
     }
     
     func highlightSymbol(at symbolIndex: Int) {
-        highlightedValue = symbolIndex
+        notifyAndUpdate(highlighted: .some(symbolIndex))
     }
     
     func selectPaletteSymbol(_ symbolIndex: Int) {
-        selectedPaletteSymbol = symbolIndex
-        highlightedValue = symbolIndex
-        
-        // Show message when first selecting from palette
-        if !hasShownPaletteSelectionMessage {
-            message = KidSudokuMessage(
-                text: String(localized: "Select an empty cell in the grid to place"),
-                type: .info
-            )
-            hasShownPaletteSelectionMessage = true
-        } else {
-            message = nil
-        }
-        
-        selectedPosition = nil
+        let msg: KidSudokuMessage? = !hasShownPaletteSelectionMessage
+            ? KidSudokuMessage(text: String(localized: "Select an empty cell in the grid to place"), type: .info)
+            : nil
+        if !hasShownPaletteSelectionMessage { hasShownPaletteSelectionMessage = true }
+        notifyAndUpdate(position: .some(nil), message: .some(msg), highlighted: .some(symbolIndex), palette: .some(symbolIndex))
     }
 
     func placeSymbol(at symbolIndex: Int) {
         guard let position = selectedPosition else {
-            message = KidSudokuMessage(text: String(localized: "Tap a square first."), type: .info)
+            notifyAndUpdate(message: .some(KidSudokuMessage(text: String(localized: "Tap a square first."), type: .info)))
             return
         }
 
@@ -357,8 +344,7 @@ final class GameViewModel: ObservableObject {
             puzzle.updateCell(at: position, with: symbolIndex)
             updateFilledCount()
             updateCorrectCount(at: position, oldValue: oldValue, newValue: symbolIndex)
-            highlightedValue = symbolIndex
-            message = nil
+            notifyAndUpdate(message: .some(nil), highlighted: .some(symbolIndex))
             let isCompleted = checkForCompletion()
             if !isCompleted {
                 checkForLineCompletion(at: position)
@@ -368,12 +354,12 @@ final class GameViewModel: ObservableObject {
             mistakeCount += 1
             guard symbolIndex < config.symbols.count else {
                 print("⚠️ Symbol index \(symbolIndex) out of bounds (max: \(config.symbols.count - 1))")
-                message = KidSudokuMessage(text: String(localized: "Invalid symbol!"), type: .warning)
+                notifyAndUpdate(message: .some(KidSudokuMessage(text: String(localized: "Invalid symbol!"), type: .warning)))
                 soundManager.play(.incorrectPlacement, volume: 0.5)
                 return
             }
             let symbolImageName = config.symbols[symbolIndex]
-            message = KidSudokuMessage(text: String(localized: "That symbol is already there!"), type: .warning, symbolImageName: symbolImageName)
+            notifyAndUpdate(message: .some(KidSudokuMessage(text: String(localized: "That symbol is already there!"), type: .warning, symbolImageName: symbolImageName)))
             soundManager.play(.incorrectPlacement, volume: 0.5)
         }
     }
@@ -407,7 +393,7 @@ final class GameViewModel: ObservableObject {
             showCelebration = true
             isPuzzleCompleteAnimation = false
         }
-        message = KidSudokuMessage(text: String(localized: "Amazing! Puzzle complete!"), type: .success)
+        notifyAndUpdate(message: .some(KidSudokuMessage(text: String(localized: "Amazing! Puzzle complete!"), type: .success)))
         soundManager.play(.victory, volume: 0.7)
         
         // Mark premade puzzle as completed
@@ -582,15 +568,13 @@ final class GameViewModel: ObservableObject {
     }
     
     func provideHint() {
-        // Find an empty cell that can be filled
         let emptyCells = puzzleCells.filter { !$0.isFixed && $0.value == nil }
         
         guard !emptyCells.isEmpty else {
-            message = KidSudokuMessage(text: String(localized: "No hints available!"), type: .info)
+            notifyAndUpdate(message: .some(KidSudokuMessage(text: String(localized: "No hints available!"), type: .info)))
             return
         }
         
-        // Pick a random empty cell
         if let randomCell = emptyCells.randomElement() {
             hintCount += 1
             let oldValue = randomCell.value
@@ -598,11 +582,12 @@ final class GameViewModel: ObservableObject {
             puzzle.updateCell(at: randomCell.position, with: randomCell.solution)
             updateFilledCount()
             updateCorrectCount(at: randomCell.position, oldValue: oldValue, newValue: randomCell.solution)
-            highlightedValue = randomCell.solution
-            selectedPaletteSymbol = randomCell.solution
-            message = KidSudokuMessage(text: String(localized: "Here's a hint! ✨"), type: .info)
+            notifyAndUpdate(
+                message: .some(KidSudokuMessage(text: String(localized: "Here's a hint! ✨"), type: .info)),
+                highlighted: .some(randomCell.solution),
+                palette: .some(randomCell.solution)
+            )
             
-            // Check if this completes the puzzle
             let isCompleted = checkForCompletion()
             if !isCompleted {
                 checkForLineCompletion(at: randomCell.position)
@@ -613,7 +598,7 @@ final class GameViewModel: ObservableObject {
     
     func undo() {
         guard let lastMove = moveHistory.popLast() else {
-            message = KidSudokuMessage(text: String(localized: "Nothing to undo!"), type: .info)
+            notifyAndUpdate(message: .some(KidSudokuMessage(text: String(localized: "Nothing to undo!"), type: .info)))
             return
         }
         
@@ -621,8 +606,7 @@ final class GameViewModel: ObservableObject {
         puzzle.updateCell(at: lastMove.position, with: lastMove.oldValue)
         updateFilledCount()
         updateCorrectCount(at: lastMove.position, oldValue: currentValue, newValue: lastMove.oldValue)
-        highlightedValue = lastMove.oldValue
-        message = nil
+        notifyAndUpdate(message: .some(nil), highlighted: .some(lastMove.oldValue))
     }
     
     var canUndo: Bool {
@@ -652,51 +636,25 @@ final class GameViewModel: ObservableObject {
     }
     
     // MARK: - Timer Management
-    
+
     func startTimer() {
-        guard !isTimerRunning else { return }
-        isTimerRunning = true
-        timerCancellable = Timer.publish(every: 1.0, on: .main, in: .common)
-            .autoconnect()
-            .sink { [weak self] _ in
-                guard let self = self else {
-                    // Self was deallocated, timer will be cleaned up
-                    return
-                }
-                guard !self.showCelebration else { return }
-                self.elapsedTime += 1
-            }
+        timerModel?.start()
     }
-    
+
     func stopTimer() {
-        guard isTimerRunning else { return }
-        isTimerRunning = false
-        timerCancellable?.cancel()
-        timerCancellable = nil
+        timerModel?.stop()
     }
-    
+
     func resetTimer() {
-        stopTimer()
-        elapsedTime = 0
-    }
-    
-    var formattedTime: String {
-        let minutes = Int(elapsedTime) / 60
-        let seconds = Int(elapsedTime) % 60
-        return String(format: "%02d:%02d", minutes, seconds)
+        timerModel?.reset()
     }
     
     func showInitialMessage() {
         let paletteTitle = selectedSymbolGroup.paletteTitle
-        message = KidSudokuMessage(
-            text: String(localized: "Select a symbol from \(paletteTitle)"),
-            type: .info
-        )
+        notifyAndUpdate(message: .some(KidSudokuMessage(text: String(localized: "Select a symbol from \(paletteTitle)"), type: .info)))
     }
     
     deinit {
-        // Cancel subscriptions - thread-safe, no need to nil out in deinit
-        timerCancellable?.cancel()
         generationTask?.cancel()
     }
 }
