@@ -132,38 +132,32 @@ struct MainMenuView: View {
             appEnvironment.setTheme(.spring)
             path.append(.puzzleSelection(size: 4))
         }) {
-            HStack(spacing: 16) {
-                VStack(alignment: .leading, spacing: 4) {
-                    Text(String(localized: "Spring Quest"))
-                        .font(.system(size: 26, weight: .bold, design: .rounded))
-                        .foregroundStyle(.white)
+            ZStack {
+                // Background image
+                Image("spring_banner")
+                    .resizable()
+                    .scaledToFit()
+                
+                // Content overlay
+                HStack(spacing: 16) {
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text(String(localized: "Spring Quest"))
+                            .font(.system(size: 26, weight: .bold, design: .rounded))
+                            .foregroundStyle(.white)
+                        
+                        Text(String(localized: "Blooming Garden"))
+                            .font(.system(size: 16, weight: .medium, design: .rounded))
+                            .foregroundStyle(Color(red: 1.0, green: 0.92, blue: 0.95))
+                    }
+                    .padding(.bottom, 22)
+                    .padding(.leading, 22)
                     
-                    Text(String(localized: "Blooming Garden"))
-                        .font(.system(size: 16, weight: .medium, design: .rounded))
-                        .foregroundStyle(Color(red: 1.0, green: 0.92, blue: 0.95))
+                    Spacer()
                 }
-                
-                Spacer()
-                
-                Text("🌸")
-                    .font(.system(size: 48))
+                .padding()
             }
-            .padding(.horizontal, 24)
-            .padding(.vertical, 20)
-            .frame(maxWidth: .infinity)
-            .background(
-                LinearGradient(
-                    colors: [
-                        Color(red: 0.88, green: 0.55, blue: 0.70),
-                        Color(red: 0.70, green: 0.40, blue: 0.80)
-                    ],
-                    startPoint: .leading,
-                    endPoint: .trailing
-                )
-            )
-            .clipShape(RoundedRectangle(cornerRadius: 20))
-            .shadow(color: Color(red: 0.70, green: 0.40, blue: 0.80).opacity(0.35), radius: 8, x: 0, y: 4)
         }
+        .buttonStyle(SpringQuestButtonStyle())
     }
     
     private var christmasQuestButton: some View {
