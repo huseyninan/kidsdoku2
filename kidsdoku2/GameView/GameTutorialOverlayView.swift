@@ -122,7 +122,7 @@ struct GameTutorialOverlayView: View {
                         Spacer()
                         Button(action: onDismiss) {
                             HStack(spacing: 4) {
-                                Text("Close")
+                                Text(String(localized: "Close"))
                                     .font(.system(size: 14, weight: .semibold, design: .rounded))
                                 Image(systemName: "xmark.circle.fill")
                                     .font(.system(size: 16))
@@ -342,9 +342,12 @@ struct TutorialFocusRing: View {
                     pulseOpacity = 0.4
                 }
             } else {
-                // Reset animation state
-                pulseScale = 1.0
-                pulseOpacity = 0.8
+                // Override the repeatForever animation with a one-shot animation
+                // so it actually stops rather than continuing to run in the background.
+                withAnimation(.easeOut(duration: 0.15)) {
+                    pulseScale = 1.0
+                    pulseOpacity = 0.0
+                }
             }
         }
     }

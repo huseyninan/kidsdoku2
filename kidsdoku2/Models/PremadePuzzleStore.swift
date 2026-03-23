@@ -482,6 +482,438 @@ final class PremadePuzzleStore {
                theme: .christmas)
     ]
     
+    // MARK: - Spring 3x3 Puzzles
+    private let springThreeByThreePuzzles: [PremadePuzzle] = [
+        puzzle(1, 3, .easy,
+               initial:  """
+                          .23
+                          .12
+                          2.1
+                          """,
+               solution: """
+                          123
+                          312
+                          231
+                          """,
+               theme: .spring),
+        
+        puzzle(2, 3, .easy,
+               initial:  """
+                          12.
+                          23.
+                          .12
+                          """,
+               solution: """
+                          123
+                          231
+                          312
+                          """,
+               theme: .spring),
+        
+        puzzle(3, 3, .easy,
+               initial:  """
+                          1.3
+                          2.1
+                          .12
+                          """,
+               solution: """
+                          123
+                          231
+                          312
+                          """,
+               theme: .spring),
+        
+        puzzle(4, 3, .normal,
+               initial:  """
+                          ..3
+                          2..
+                          .12
+                          """,
+               solution: """
+                          123
+                          231
+                          312
+                          """,
+               theme: .spring),
+        
+        puzzle(5, 3, .normal,
+               initial:  """
+                          1..
+                          ..1
+                          31.
+                          """,
+               solution: """
+                          123
+                          231
+                          312
+                          """,
+               theme: .spring),
+        
+        puzzle(6, 3, .normal,
+               initial:  """
+                          .2.
+                          2..
+                          .12
+                          """,
+               solution: """
+                          123
+                          231
+                          312
+                          """,
+               theme: .spring),
+        
+        puzzle(7, 3, .hard,
+               initial:  """
+                          ...
+                          2.1
+                          .1.
+                          """,
+               solution: """
+                          123
+                          231
+                          312
+                          """,
+               theme: .spring),
+        
+        puzzle(8, 3, .hard,
+               initial:  """
+                          1..
+                          ..1
+                          .12
+                          """,
+               solution: """
+                          123
+                          231
+                          312
+                          """,
+               theme: .spring),
+        
+        puzzle(9, 3, .hard,
+               initial:  """
+                          ...
+                          ..1
+                          31.
+                          """,
+               solution: """
+                          123
+                          231
+                          312
+                          """,
+               theme: .spring),
+    ]
+    
+    // MARK: - Spring 4x4 Puzzles
+    private let springFourByFourPuzzles: [PremadePuzzle] = [
+        puzzle(1, 4, .easy,
+               initial:  """
+                          1.3.
+                          .412
+                          2.4.
+                          43.1
+                          """,
+               solution: """
+                          1234
+                          3412
+                          2143
+                          4321
+                          """,
+               theme: .spring),
+        
+        puzzle(2, 4, .easy,
+               initial:  """
+                          .234
+                          34..
+                          .143
+                          4.2.
+                          """,
+               solution: """
+                          1234
+                          3412
+                          2143
+                          4321
+                          """,
+               theme: .spring),
+        
+        puzzle(3, 4, .easy,
+               initial:  """
+                          12.4
+                          .41.
+                          .1.3
+                          4321
+                          """,
+               solution: """
+                          1234
+                          3412
+                          2143
+                          4321
+                          """,
+               theme: .spring),
+        
+        puzzle(4, 4, .normal,
+               initial:  """
+                          1..4
+                          ..12
+                          21..
+                          .32.
+                          """,
+               solution: """
+                          1234
+                          3412
+                          2143
+                          4321
+                          """,
+               theme: .spring),
+        
+        puzzle(5, 4, .normal,
+               initial:  """
+                          .23.
+                          3..2
+                          .14.
+                          4.2.
+                          """,
+               solution: """
+                          1234
+                          3412
+                          2143
+                          4321
+                          """,
+               theme: .spring),
+        
+        puzzle(6, 4, .normal,
+               initial:  """
+                        12.4
+                        4..1
+                        .1.3
+                        ..1.
+                        """,
+               solution: """
+                        1234
+                        4321
+                        2143
+                        3412
+                        """,
+               theme: .spring),
+        
+        puzzle(7, 4, .hard,
+               initial:  """
+                        ...4
+                        .41.
+                        2...
+                        4.21
+                        """,
+               solution: """
+                        1234
+                        3412
+                        2143
+                        4321
+                        """,
+               theme: .spring),
+        
+        puzzle(8, 4, .hard,
+               initial:  """
+                        123.
+                        ..1.
+                        .14.
+                        43..
+                        """,
+               solution: """
+                        1234
+                        3412
+                        2143
+                        4321
+                        """,
+               theme: .spring),
+        
+        puzzle(9, 4, .hard,
+               initial:  """
+                          ..34
+                          3...
+                          .1.3
+                          4.2.
+                          """,
+               solution: """
+                          1234
+                          3412
+                          2143
+                          4321
+                          """,
+               theme: .spring),
+    ]
+    
+    // MARK: - Spring 6x6 Puzzles
+    private let springSixBySixPuzzles: [PremadePuzzle] = [
+        puzzle(1, 6, .easy,
+               initial:  """
+                              1.34.6
+                              45..23
+                              .3.564
+                              564..1
+                              3.264.
+                              .45312
+                              """,
+               solution: """
+                              123456
+                              456123
+                              231564
+                              564231
+                              312645
+                              645312
+                              """,
+               theme: .spring),
+        
+        puzzle(2, 6, .easy,
+               initial:  """
+                              65.3.1
+                              .21.5.
+                              1.52.6
+                              .3.14.
+                              4.2.63
+                              .634.2
+                              """,
+               solution: """
+                              654321
+                              321654
+                              145236
+                              236145
+                              412563
+                              563412
+                              """,
+               theme: .spring),
+        
+        puzzle(3, 6, .easy,
+               initial:  """
+                              65.3.1
+                              .21.5.
+                              5.62.3
+                              2.354.
+                              46.13.
+                              .32.65
+                              """,
+               solution: """
+                              654321
+                              321654
+                              546213
+                              213546
+                              465132
+                              132465
+                              """,
+               theme: .spring),
+        
+        puzzle(4, 6, .normal,
+               initial:  """
+                              3.1.56
+                              56.1.3
+                              1.563.
+                              .36.12
+                              2.43.1
+                              .13.25
+                              """,
+               solution: """
+                              341256
+                              562143
+                              125634
+                              436512
+                              254361
+                              613425
+                              """,
+               theme: .spring),
+        
+        puzzle(5, 6, .normal,
+               initial:  """
+                              61.34.
+                              3.56.2
+                              12..56
+                              45..23
+                              2.15.4
+                              .64.31
+                              """,
+               solution: """
+                              612345
+                              345612
+                              123456
+                              456123
+                              231564
+                              564231
+                              """,
+               theme: .spring),
+        
+        puzzle(6, 6, .normal,
+               initial:  """
+                              2.345.
+                              54..23
+                              3.15.4
+                              .5423.
+                              1.2.45
+                              46.3.2
+                              """,
+               solution: """
+                              213456
+                              546123
+                              321564
+                              654231
+                              132645
+                              465312
+                              """,
+               theme: .spring),
+        
+        puzzle(7, 6, .hard,
+               initial:  """
+                              .56.41
+                              3.16.5
+                              51.46.
+                              .34.12
+                              4.5.36
+                              1.32.4
+                              """,
+               solution: """
+                              256341
+                              341625
+                              512463
+                              634512
+                              425136
+                              163254
+                              """,
+               theme: .spring),
+        
+        puzzle(8, 6, .hard,
+               initial:  """
+                              14.3.6
+                              23.54.
+                              .12.5.
+                              .634.2
+                              6.12.4
+                              3.4.65
+                              """,
+               solution: """
+                              145326
+                              236541
+                              412653
+                              563412
+                              651234
+                              324165
+                              """,
+               theme: .spring),
+        
+        puzzle(9, 6, .hard,
+               initial:  """
+                              5.2.36
+                              3.65.2
+                              1.5.4.
+                              46.2.1
+                              .5132.
+                              2.41.5
+                              """,
+               solution: """
+                              512436
+                              346512
+                              125643
+                              463251
+                              651324
+                              234165
+                              """,
+               theme: .spring),
+    ]
+    
     // MARK: - 3x3 Puzzles
     private let threeByThreePuzzles: [PremadePuzzle] = [
         // Easy 3x3
@@ -2505,6 +2937,34 @@ final class PremadePuzzleStore {
                     solutionBoard: puzzle.solutionBoard
                 )
             }
+        case .spring:
+            // Return dedicated Spring puzzles for each size
+            let basePuzzles: [PremadePuzzle]
+            switch size {
+            case 3: basePuzzles = springThreeByThreePuzzles
+            case 4: basePuzzles = springFourByFourPuzzles
+            case 6: basePuzzles = springSixBySixPuzzles
+            default: basePuzzles = []
+            }
+            // Apply Spring symbol groups
+            return basePuzzles.map { puzzle in
+                let symbolGroup = assignSymbolGroup(size: size, difficulty: puzzle.difficulty, number: puzzle.number, themeType: themeType)
+                let newConfig = KidSudokuConfig(
+                    size: puzzle.config.size,
+                    subgridRows: puzzle.config.subgridRows,
+                    subgridCols: puzzle.config.subgridCols,
+                    symbolGroup: symbolGroup
+                )
+                return PremadePuzzle(
+                    id: puzzle.id,
+                    number: puzzle.number,
+                    size: puzzle.size,
+                    difficulty: puzzle.difficulty,
+                    config: newConfig,
+                    initialBoard: puzzle.initialBoard,
+                    solutionBoard: puzzle.solutionBoard
+                )
+            }
         case .storybook:
             // Combine all difficulties for this size
             var allPuzzles: [PremadePuzzle] = []
@@ -2587,6 +3047,8 @@ private func assignSymbolGroup(size: Int, difficulty: PuzzleDifficulty, number: 
         symbolCases = SymbolGroup.puzzleCases
     case .christmas:
         symbolCases = SymbolGroup.christmasCases
+    case .spring:
+        symbolCases = SymbolGroup.springCases
     }
     let groupIndex = abs(seed) % symbolCases.count
     return symbolCases[groupIndex]

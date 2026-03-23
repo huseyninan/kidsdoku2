@@ -12,6 +12,7 @@ import SwiftUI
 enum GameThemeType: String, CaseIterable, Identifiable {
     case storybook = "storybook"
     case christmas = "christmas"
+    case spring = "spring"
     
     var id: String { rawValue }
     
@@ -21,12 +22,15 @@ enum GameThemeType: String, CaseIterable, Identifiable {
             return String(localized: "Storybook")
         case .christmas:
             return String(localized: "Christmas")
+        case .spring:
+            return String(localized: "Spring")
         }
     }
     
     // Cached theme instances to avoid repeated allocations
     private static let storybookTheme = StorybookTheme()
     private static let christmasTheme = ChristmasTheme()
+    private static let springTheme = SpringTheme()
     
     var theme: GameTheme {
         switch self {
@@ -34,6 +38,8 @@ enum GameThemeType: String, CaseIterable, Identifiable {
             return Self.storybookTheme
         case .christmas:
             return Self.christmasTheme
+        case .spring:
+            return Self.springTheme
         }
     }
 }
@@ -45,6 +51,7 @@ protocol GameTheme {
     var backgroundImageName: String { get }
     var showRunningFox: Bool { get }
     var showSnowfall: Bool { get }
+    var showPetalFall: Bool { get }
     
     // MARK: - Header Colors
     var badgeTextColor: Color { get }
@@ -161,6 +168,7 @@ protocol GameTheme {
 extension GameTheme {
     var showRunningFox: Bool { true }
     var showSnowfall: Bool { false }
+    var showPetalFall: Bool { false }
     
     // Default: group by difficulty (Storybook behavior)
     var groupPuzzlesBySize: Bool { false }
@@ -412,6 +420,131 @@ struct ChristmasTheme: GameTheme {
     let gridSize3x3Color = Color(red: 0.2, green: 0.5, blue: 0.35) // Christmas green
     let gridSize4x4Color = Color(red: 0.7, green: 0.2, blue: 0.2) // Christmas red
     let gridSize6x6Color = Color(red: 0.6, green: 0.45, blue: 0.2) // Christmas gold
+}
+
+// MARK: - Spring Theme
+
+struct SpringTheme: GameTheme {
+    // Background
+    let backgroundImageName = "spring_bg"
+    let showRunningFox = true
+    let showPetalFall = true
+    
+    // Header - Badge (Soft pink and cream)
+    let badgeTextColor = Color(red: 0.55, green: 0.25, blue: 0.35)
+    let badgeGradientStart = Color(red: 1.0, green: 0.94, blue: 0.96)
+    let badgeGradientEnd = Color(red: 0.98, green: 0.87, blue: 0.91)
+    let badgeBorderColor = Color(red: 0.92, green: 0.65, blue: 0.75)
+    
+    // Header Card (Soft white with pink tint)
+    let headerCardGradientStart = Color.white.opacity(0.95)
+    let headerCardGradientEnd = Color(red: 0.99, green: 0.96, blue: 0.97)
+    let headerCardBorderColor = Color(red: 0.88, green: 0.70, blue: 0.78).opacity(0.6)
+    
+    // Info Chip (Lavender-pink)
+    let infoChipTextColor = Color(red: 0.50, green: 0.22, blue: 0.42)
+    let infoChipGradientStart = Color(red: 1.0, green: 0.93, blue: 0.96)
+    let infoChipGradientEnd = Color(red: 0.96, green: 0.85, blue: 0.92)
+    
+    // Progress Bar (Pink to green spring gradient)
+    let progressBarBackground = Color.white.opacity(0.6)
+    let progressBarGradient: [Color] = [
+        Color(red: 0.95, green: 0.55, blue: 0.70),
+        Color(red: 0.98, green: 0.80, blue: 0.40),
+        Color(red: 0.40, green: 0.72, blue: 0.45)
+    ]
+    
+    // Board Mat (Warm white with soft pink border)
+    let boardMatGradientStart = Color(red: 1.0, green: 0.98, blue: 0.98)
+    let boardMatGradientEnd = Color.white
+    let boardMatBorderGradientStart = Color(red: 0.95, green: 0.72, blue: 0.80)
+    let boardMatBorderGradientEnd = Color(red: 0.88, green: 0.58, blue: 0.68)
+    
+    // Board Grid
+    let boardBackgroundColor = Color.white
+    let cellBorderColor = Color(red: 0.92, green: 0.86, blue: 0.88)
+    let fixedCellColor = Color(red: 0.98, green: 0.94, blue: 0.96)
+    let emptyCellColor = Color.white
+    let selectedCellColor = Color(red: 0.90, green: 0.45, blue: 0.62).opacity(0.5)
+    let subgridLineColor = Color(red: 0.75, green: 0.55, blue: 0.65)
+    
+    // Palette (Pink and lavender tones)
+    let paletteTitleColor = Color(red: 0.45, green: 0.22, blue: 0.35)
+    let paletteSubtitleColor = Color(red: 0.60, green: 0.38, blue: 0.50)
+    let paletteMatGradientStart = Color(red: 1.0, green: 0.96, blue: 0.97)
+    let paletteMatGradientEnd = Color(red: 0.97, green: 0.92, blue: 0.95)
+    let paletteMatBorderColor = Color(red: 0.88, green: 0.72, blue: 0.80)
+    
+    // Action Buttons
+    let actionButtonTextColor = Color(red: 0.38, green: 0.20, blue: 0.30)
+    let actionButtonDisabledColor = Color(.systemGray3)
+    
+    // Undo - Soft lavender
+    let undoGradientStart = Color(red: 0.92, green: 0.88, blue: 0.98)
+    let undoGradientEnd = Color(red: 0.84, green: 0.78, blue: 0.96)
+    // Erase - Soft pink
+    let eraseGradientStart = Color(red: 1.0, green: 0.90, blue: 0.93)
+    let eraseGradientEnd = Color(red: 0.97, green: 0.78, blue: 0.84)
+    // Hint - Soft yellow-green
+    let hintGradientStart = Color(red: 0.94, green: 0.98, blue: 0.82)
+    let hintGradientEnd = Color(red: 0.82, green: 0.94, blue: 0.68)
+    
+    // Message Banner
+    let messageBannerTextColor = Color(red: 0.38, green: 0.20, blue: 0.30)
+    let messageBannerBackgroundStart = Color(red: 1.0, green: 0.96, blue: 0.97)
+    let messageBannerSymbolBackgroundStart = Color.white.opacity(0.98)
+    let messageBannerSymbolBackgroundEnd = Color(red: 1.0, green: 0.95, blue: 0.97)
+    
+    // Highlight (Warm pink glow)
+    let highlightGradientStart = Color(red: 0.98, green: 0.58, blue: 0.72)
+    let highlightGradientEnd = Color(red: 0.90, green: 0.38, blue: 0.56)
+    let highlightGlowColor = Color(red: 0.98, green: 0.65, blue: 0.75)
+    
+    // Settings Button (Soft green)
+    let settingsButtonGradientStart = Color(red: 0.50, green: 0.78, blue: 0.55)
+    let settingsButtonGradientEnd = Color(red: 0.38, green: 0.65, blue: 0.42)
+    
+    // Message Colors (Spring themed)
+    let messageInfoColor = Color(red: 0.38, green: 0.62, blue: 0.85)
+    let messageSuccessColor = Color(red: 0.38, green: 0.72, blue: 0.45)
+    let messageWarningColor = Color(red: 0.95, green: 0.70, blue: 0.28)
+    
+    // MARK: - Puzzle Selection (Spring - Blooming garden)
+    let puzzleSelectionBackground = Color(red: 0.94, green: 0.90, blue: 0.95)
+    let puzzleHeaderText = Color(red: 0.30, green: 0.18, blue: 0.32)
+    let puzzleHeaderEmoji = "🌸"
+    let puzzleSettingsIcon = Color(red: 0.58, green: 0.40, blue: 0.55)
+    let puzzleLoadingText = Color(red: 0.45, green: 0.32, blue: 0.45)
+    let puzzleSettingsBackground = Color(red: 0.94, green: 0.90, blue: 0.95)
+    let puzzleSettingsText = Color(red: 0.42, green: 0.28, blue: 0.42)
+    let puzzleSettingsTitle = Color(red: 0.30, green: 0.18, blue: 0.32)
+    let puzzleSettingsDoneButton = Color(red: 0.55, green: 0.35, blue: 0.72)
+    let puzzleToggleHideFinished = Color(red: 0.40, green: 0.68, blue: 0.45)
+    
+    // Difficulty Cards - Spring garden palette
+    let difficultyEasy = Color(red: 0.40, green: 0.68, blue: 0.45)
+    let difficultyNormal = Color(red: 0.80, green: 0.45, blue: 0.62)
+    let difficultyHard = Color(red: 0.55, green: 0.35, blue: 0.72)
+    
+    // Puzzle Buttons
+    let puzzleButtonBackground = Color(red: 0.99, green: 0.97, blue: 0.98)
+    let puzzleButtonBackgroundLocked: Double = 0.5
+    let puzzleButtonBadge = Color(red: 0.88, green: 0.55, blue: 0.70)
+    let puzzleButtonBadgeText = Color.white
+    let puzzleCompletedBorder = Color(red: 0.40, green: 0.68, blue: 0.45)
+    let puzzleCompletedIcon = Color(red: 0.40, green: 0.68, blue: 0.45)
+    let puzzleLockOverlay = Color(red: 0.35, green: 0.22, blue: 0.35).opacity(0.75)
+    
+    // Shadows
+    let puzzleCardShadow = Color(red: 0.55, green: 0.35, blue: 0.50).opacity(0.12)
+    let puzzleSettingsCardShadow = Color(red: 0.55, green: 0.35, blue: 0.50).opacity(0.08)
+    
+    // Grid Size Section Colors - Spring blooms
+    let groupPuzzlesBySize = true
+    let freePuzzlesPerSection = 1
+    let gridSize3x3Color = Color(red: 0.40, green: 0.68, blue: 0.45)
+    let gridSize4x4Color = Color(red: 0.80, green: 0.45, blue: 0.62)
+    let gridSize6x6Color = Color(red: 0.55, green: 0.35, blue: 0.72)
 }
 
 // MARK: - Theme Environment Key

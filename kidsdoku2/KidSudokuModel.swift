@@ -19,6 +19,10 @@ enum SymbolGroup: Int, CaseIterable, Hashable {
     case christmas2
     case christmas3
     case christmas4
+    case spring1
+    case spring2
+    case spring3
+    case spring4
 
     var symbols: [String] {
             switch self {
@@ -54,6 +58,14 @@ enum SymbolGroup: Int, CaseIterable, Hashable {
                 return ["christmas_13", "christmas_13", "christmas_9", "christmas_12", "christmas_4", "christmas_5", "christmas_3"]
             case .christmas4:
                 return ["christmas_2", "christmas_2", "christmas_5", "christmas_9", "christmas_10", "christmas_8", "christmas_11"]
+            case .spring1:
+                return ["spring_1", "spring_1", "spring_2", "spring_3", "spring_4", "spring_5", "spring_6"]
+            case .spring2:
+                return ["spring_7", "spring_7", "spring_8", "spring_9", "spring_10", "spring_11", "spring_12"]
+            case .spring3:
+                return ["spring_13", "spring_13", "spring_14", "spring_15", "spring_16", "spring_17", "spring_18"]
+            case .spring4:
+                return ["spring_10", "spring_10", "spring_8", "spring_4", "spring_15", "spring_13", "spring_12"]
             }
         }
     
@@ -73,6 +85,8 @@ enum SymbolGroup: Int, CaseIterable, Hashable {
             return String(localized: "Numbers")
         case .christmas1, .christmas2, .christmas3, .christmas4:
             return String(localized: "Christmas Box")
+        case .spring1, .spring2, .spring3, .spring4:
+            return String(localized: "Springtime")
         }
     }
     
@@ -82,6 +96,10 @@ enum SymbolGroup: Int, CaseIterable, Hashable {
     
     static var christmasCases: [SymbolGroup] {
         return [.christmas1, .christmas3, .christmas4, .christmas2]
+    }
+    
+    static var springCases: [SymbolGroup] {
+        return [.spring1, .spring2, .spring3, .spring4]
     }
 }
 

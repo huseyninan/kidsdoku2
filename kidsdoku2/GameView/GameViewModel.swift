@@ -146,6 +146,7 @@ final class GameViewModel: ObservableObject {
         self.filledCellCount = filled
         self.correctCellCount = correct
         self.isGeneratingPuzzle = false
+        self.hasShownPaletteSelectionMessage = false
         self.cacheSymbolData()
         if showMessage {
             self.message = KidSudokuMessage(text: String(localized: "New puzzle ready!"), type: .info)
@@ -496,9 +497,11 @@ final class GameViewModel: ObservableObject {
             }
             soundManager.play(.lineComplete, volume: 0.5)
             
-            // Clear animation after delay
+            // Clear animation after delay, but only if the puzzle hasn't been completed
+            // in the meantime (which would start its own completion animation).
             Task { @MainActor in
                 try? await Task.sleep(nanoseconds: 1_200_000_000)
+                guard !isPuzzleCompleteAnimation else { return }
                 withAnimation(.easeOut(duration: 0.3)) {
                     completedCellPositions = []
                     completedRows = []

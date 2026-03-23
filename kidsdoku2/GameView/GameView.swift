@@ -183,6 +183,10 @@ struct GameBackgroundView: View {
             if theme.showSnowfall {
                 SnowfallView().ignoresSafeArea()
             }
+
+            if theme.showPetalFall {
+                PetalFallView().ignoresSafeArea()
+            }
             
             if theme.showRunningFox {
                 VStack {
@@ -382,7 +386,7 @@ struct GamePaletteButton: View {
 struct PaletteHighlightTip: View {
     var body: some View {
         VStack(spacing: GameConstants.Padding.paletteItemSpacing) {
-            Text("Start here!")
+            Text(String(localized: "Start here!"))
                 .font(.system(size: GameConstants.Typography.highlightTipSize, weight: .bold, design: .rounded))
                 .foregroundStyle(.white)
                 .padding(.horizontal, GameConstants.Padding.highlightTipHorizontal)

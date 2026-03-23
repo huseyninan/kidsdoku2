@@ -6,6 +6,7 @@ struct TutorialView: View {
     @EnvironmentObject private var appEnvironment: AppEnvironment
     @State private var currentStep = 0
     @State private var showGuidedPlay = false
+    @State private var previousTheme: GameThemeType?
     private let totalSteps = 4
     
     var body: some View {
@@ -59,7 +60,7 @@ struct TutorialView: View {
                         HStack(spacing: 4) {
                             Image(systemName: "hand.tap.fill")
                                 .font(.system(size: 16))
-                            Text("Guided Play")
+                            Text(String(localized: "Guided Play"))
                                 .font(.system(size: 14, weight: .semibold))
                         }
                         .foregroundColor(.white)
@@ -93,7 +94,14 @@ struct TutorialView: View {
                 GameView(config: PremadePuzzle.tutorialPuzzle.config, premadePuzzle: PremadePuzzle.tutorialPuzzle, isTutorialMode: true)
                     .environmentObject(appEnvironment)
                     .onAppear {
+                        previousTheme = appEnvironment.currentThemeType
                         appEnvironment.setTheme(.storybook)
+                    }
+                    .onDisappear {
+                        if let theme = previousTheme {
+                            appEnvironment.setTheme(theme)
+                            previousTheme = nil
+                        }
                     }
             }
         }

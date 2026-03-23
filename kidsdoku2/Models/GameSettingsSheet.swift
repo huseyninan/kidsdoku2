@@ -26,6 +26,8 @@ struct GameSettingsSheet: View {
             self.availableSymbolGroups = SymbolGroup.puzzleCases
         case .christmas:
             self.availableSymbolGroups = SymbolGroup.christmasCases
+        case .spring:
+            self.availableSymbolGroups = SymbolGroup.springCases
         }
     }
     
@@ -125,7 +127,7 @@ private struct DisplayModeSegmentedPicker: View {
                             : Color(red: 0.5, green: 0.35, blue: 0.25)
                         )
                     
-                    Text("Picture Mode")
+                    Text(String(localized: "Picture Mode"))
                         .font(.system(size: 15, weight: .semibold, design: .rounded))
                         .foregroundStyle(
                             !showNumbers 
@@ -191,7 +193,7 @@ private struct DisplayModeSegmentedPicker: View {
                             : Color(red: 0.5, green: 0.35, blue: 0.25)
                         )
                     
-                    Text("Numbers Mode")
+                    Text(String(localized: "Numbers Mode"))
                         .font(.system(size: 15, weight: .semibold, design: .rounded))
                         .foregroundStyle(
                             showNumbers 

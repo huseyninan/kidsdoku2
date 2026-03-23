@@ -12,6 +12,7 @@ struct ContentView: View {
     @Binding var deepLinkProduct: String?
     @EnvironmentObject var appEnvironment: AppEnvironment
     @AppStorage("hasSeenOnboarding") private var hasSeenOnboarding = false
+    @State private var previousThemeBeforeTutorial: GameThemeType?
 
     var body: some View {
         if !hasSeenOnboarding {
@@ -36,7 +37,14 @@ struct ContentView: View {
                     case .tutorialGame:
                         GameView(config: PremadePuzzle.tutorialPuzzle.config, premadePuzzle: PremadePuzzle.tutorialPuzzle, isTutorialMode: true)
                             .onAppear {
+                                previousThemeBeforeTutorial = appEnvironment.currentThemeType
                                 appEnvironment.setTheme(.storybook)
+                            }
+                            .onDisappear {
+                                if let theme = previousThemeBeforeTutorial {
+                                    appEnvironment.setTheme(theme)
+                                    previousThemeBeforeTutorial = nil
+                                }
                             }
                     }
                 }
@@ -55,6 +63,9 @@ struct ContentView: View {
         
         if product == "christmas" {
             appEnvironment.setTheme(.christmas)
+            path = [.puzzleSelection(size: 4)]
+        } else if product == "spring" {
+            appEnvironment.setTheme(.spring)
             path = [.puzzleSelection(size: 4)]
         }
         
