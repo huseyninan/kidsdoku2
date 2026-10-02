@@ -189,9 +189,10 @@ struct PuzzleSelectionView: View {
                 // Check if any puzzle completion changed
                 hasRelevantChange = oldValue != newValue
             } else {
-                let sizePrefix = "\(size)-"
+                // IDs look like "theme-size-difficulty-number"
+                let sizePattern = "-\(size)-"
                 let changes = oldValue.symmetricDifference(newValue)
-                hasRelevantChange = changes.contains { $0.hasPrefix(sizePrefix) }
+                hasRelevantChange = changes.contains { $0.contains(sizePattern) }
             }
             
             if hasRelevantChange {
@@ -224,125 +225,77 @@ struct PuzzleSelectionView: View {
     
     /// Computes filtered puzzles on a background thread
     private func computeFilteredPuzzles() async -> [(PuzzleSectionType, [PuzzleWithStatus])] {
-        // Capture values for background processing
-        let completedSet = completionManager.completedPuzzles
-        let ratingsDict = completionManager.puzzleRatings
-        let currentSize = size
-        let currentShowEasy = showEasy
-        let currentShowNormal = showNormal
-        let currentShowHard = showHard
-        let currentHideFinished = hideFinishedPuzzles
-        let currentThemeType = appEnvironment.currentThemeType
-        let currentGroupBySize = gameTheme.groupPuzzlesBySize
-        
+        let input = currentSectionInput()
         return await Task.detached(priority: .userInitiated) {
-            if currentGroupBySize {
-                // Christmas theme: Group by grid size (3x3, 4x4, 6x6)
-                return [3, 4, 6].compactMap { gridSize in
-                    let puzzles = PremadePuzzleStore.shared.puzzles(for: gridSize, themeType: currentThemeType)
-                    guard !puzzles.isEmpty else { return nil }
-                    
-                    var puzzlesWithStatus = puzzles.map { puzzle in
-                        return PuzzleWithStatus(
-                            puzzle: puzzle,
-                            isCompleted: puzzle.isSolved,
-                            rating: ratingsDict[puzzle.id]
-                        )
-                    }
-                    
-                    if currentHideFinished {
-                        puzzlesWithStatus = puzzlesWithStatus.filter { !$0.isCompleted }
-                    }
-                    
-                    return puzzlesWithStatus.isEmpty ? nil : (PuzzleSectionType.gridSize(gridSize), puzzlesWithStatus)
-                }
-            } else {
-                // Storybook theme: Group by difficulty (Easy, Normal, Hard)
-                return PuzzleDifficulty.allCases.compactMap { difficulty in
-                    // Check difficulty visibility first
-                    let shouldShow: Bool
-                    switch difficulty {
-                    case .easy: shouldShow = currentShowEasy
-                    case .normal: shouldShow = currentShowNormal
-                    case .hard: shouldShow = currentShowHard
-                    }
-                    guard shouldShow else { return nil }
-                    
-                    let puzzles = PremadePuzzleStore.shared.puzzles(for: currentSize, difficulty: difficulty, themeType: currentThemeType)
-                    guard !puzzles.isEmpty else { return nil }
-                    
-                    var puzzlesWithStatus = puzzles.map { puzzle in
-                        return PuzzleWithStatus(
-                            puzzle: puzzle,
-                            isCompleted: puzzle.isSolved,
-                            rating: ratingsDict[puzzle.id]
-                        )
-                    }
-                    
-                    if currentHideFinished {
-                        puzzlesWithStatus = puzzlesWithStatus.filter { !$0.isCompleted }
-                    }
-                    
-                    return puzzlesWithStatus.isEmpty ? nil : (PuzzleSectionType.difficulty(difficulty), puzzlesWithStatus)
-                }
-            }
+            Self.buildSections(input)
         }.value
     }
     
     /// Synchronous update for filter changes (runs on main thread for responsiveness)
     private func updateCachedPuzzles() {
         guard !isLoading else { return }
-        let ratingsDict = completionManager.puzzleRatings
-        let currentSize = size
-        let currentThemeType = appEnvironment.currentThemeType
+        cachedPuzzleSections = Self.buildSections(currentSectionInput())
+    }
+    
+    /// Snapshot of everything section building needs, so it can run off the main thread
+    /// without touching shared state.
+    private struct SectionInput {
+        let completedSet: Set<String>
+        let ratings: [String: Double]
+        let size: Int
+        let showEasy: Bool
+        let showNormal: Bool
+        let showHard: Bool
+        let hideFinished: Bool
+        let themeType: GameThemeType
+        let groupBySize: Bool
+    }
+    
+    private func currentSectionInput() -> SectionInput {
+        SectionInput(
+            completedSet: completionManager.completedPuzzles,
+            ratings: completionManager.puzzleRatings,
+            size: size,
+            showEasy: showEasy,
+            showNormal: showNormal,
+            showHard: showHard,
+            hideFinished: hideFinishedPuzzles,
+            themeType: appEnvironment.currentThemeType,
+            groupBySize: gameTheme.groupPuzzlesBySize
+        )
+    }
+    
+    private static func buildSections(_ input: SectionInput) -> [(PuzzleSectionType, [PuzzleWithStatus])] {
+        func withStatus(_ puzzles: [PremadePuzzle]) -> [PuzzleWithStatus] {
+            let all = puzzles.map { puzzle in
+                PuzzleWithStatus(
+                    puzzle: puzzle,
+                    isCompleted: input.completedSet.contains(puzzle.id),
+                    rating: input.ratings[puzzle.id]
+                )
+            }
+            return input.hideFinished ? all.filter { !$0.isCompleted } : all
+        }
         
-        if groupBySize {
-            // Christmas theme: Group by grid size
-            cachedPuzzleSections = [3, 4, 6].compactMap { gridSize in
-                let puzzles = PremadePuzzleStore.shared.puzzles(for: gridSize, themeType: currentThemeType)
-                guard !puzzles.isEmpty else { return nil }
-                
-                var puzzlesWithStatus = puzzles.map { puzzle in
-                    return PuzzleWithStatus(
-                        puzzle: puzzle,
-                        isCompleted: puzzle.isSolved,
-                        rating: ratingsDict[puzzle.id]
-                    )
-                }
-                
-                if hideFinishedPuzzles {
-                    puzzlesWithStatus = puzzlesWithStatus.filter { !$0.isCompleted }
-                }
-                
-                return puzzlesWithStatus.isEmpty ? nil : (PuzzleSectionType.gridSize(gridSize), puzzlesWithStatus)
+        if input.groupBySize {
+            // Christmas/Spring themes: Group by grid size (3x3, 4x4, 6x6)
+            return [3, 4, 6].compactMap { gridSize in
+                let puzzles = withStatus(PremadePuzzleStore.shared.puzzles(for: gridSize, themeType: input.themeType))
+                return puzzles.isEmpty ? nil : (PuzzleSectionType.gridSize(gridSize), puzzles)
             }
         } else {
-            // Storybook theme: Group by difficulty
-            cachedPuzzleSections = PuzzleDifficulty.allCases.compactMap { difficulty in
+            // Storybook theme: Group by difficulty (Easy, Normal, Hard)
+            return PuzzleDifficulty.allCases.compactMap { difficulty in
                 let shouldShow: Bool
                 switch difficulty {
-                case .easy: shouldShow = showEasy
-                case .normal: shouldShow = showNormal
-                case .hard: shouldShow = showHard
+                case .easy: shouldShow = input.showEasy
+                case .normal: shouldShow = input.showNormal
+                case .hard: shouldShow = input.showHard
                 }
                 guard shouldShow else { return nil }
                 
-                let puzzles = PremadePuzzleStore.shared.puzzles(for: currentSize, difficulty: difficulty, themeType: currentThemeType)
-                guard !puzzles.isEmpty else { return nil }
-                
-                var puzzlesWithStatus = puzzles.map { puzzle in
-                    return PuzzleWithStatus(
-                        puzzle: puzzle,
-                        isCompleted: puzzle.isSolved,
-                        rating: ratingsDict[puzzle.id]
-                    )
-                }
-                
-                if hideFinishedPuzzles {
-                    puzzlesWithStatus = puzzlesWithStatus.filter { !$0.isCompleted }
-                }
-                
-                return puzzlesWithStatus.isEmpty ? nil : (PuzzleSectionType.difficulty(difficulty), puzzlesWithStatus)
+                let puzzles = withStatus(PremadePuzzleStore.shared.puzzles(for: input.size, difficulty: difficulty, themeType: input.themeType))
+                return puzzles.isEmpty ? nil : (PuzzleSectionType.difficulty(difficulty), puzzles)
             }
         }
     }
@@ -385,6 +338,7 @@ struct PuzzleSelectionView: View {
     private func sectionCard(sectionType: PuzzleSectionType, puzzles: [PuzzleWithStatus]) -> some View {
         let sectionColor = sectionColor(for: sectionType)
         let sectionTitle = sectionTitle(for: sectionType)
+        let buttonColors = PuzzleButtonColors(theme: gameTheme)
         
         return VStack(spacing: 16) {
             Text(sectionTitle)
@@ -404,7 +358,7 @@ struct PuzzleSelectionView: View {
                         isPremium: appEnvironment.isPremium,
                         isCompleted: puzzleWithStatus.isCompleted,
                         rating: puzzleWithStatus.rating,
-                        theme: gameTheme,
+                        colors: buttonColors,
                         freePuzzlesPerSection: gameTheme.freePuzzlesPerSection
                     )
                     .onTapGesture {
@@ -412,7 +366,6 @@ struct PuzzleSelectionView: View {
                     }
                 }
             }
-            .drawingGroup() // Optimize rendering by rasterizing the grid
             .padding(.horizontal, 12)
             .padding(.bottom, 24)
         }
@@ -554,12 +507,34 @@ struct PuzzleSelectionView: View {
 /// Separate view struct to isolate isPremium dependency from parent view.
 /// This prevents unnecessary re-renders of the entire grid when unrelated
 /// AppEnvironment properties change.
+/// The theme colors a puzzle button needs. Unlike the `GameTheme` existential this is
+/// Equatable, so SwiftUI can skip re-rendering buttons whose inputs didn't change.
+private struct PuzzleButtonColors: Equatable {
+    let puzzleButtonBackground: Color
+    let puzzleButtonBackgroundLocked: Double
+    let puzzleButtonBadge: Color
+    let puzzleButtonBadgeText: Color
+    let puzzleCompletedBorder: Color
+    let puzzleCompletedIcon: Color
+    let puzzleLockOverlay: Color
+    
+    init(theme: GameTheme) {
+        puzzleButtonBackground = theme.puzzleButtonBackground
+        puzzleButtonBackgroundLocked = theme.puzzleButtonBackgroundLocked
+        puzzleButtonBadge = theme.puzzleButtonBadge
+        puzzleButtonBadgeText = theme.puzzleButtonBadgeText
+        puzzleCompletedBorder = theme.puzzleCompletedBorder
+        puzzleCompletedIcon = theme.puzzleCompletedIcon
+        puzzleLockOverlay = theme.puzzleLockOverlay
+    }
+}
+
 private struct PuzzleButtonView: View {
     let puzzle: PremadePuzzle
     let isPremium: Bool
     let isCompleted: Bool
     let rating: Double?
-    let theme: GameTheme
+    let colors: PuzzleButtonColors
     let freePuzzlesPerSection: Int
     
     private var isLocked: Bool {
@@ -574,7 +549,7 @@ private struct PuzzleButtonView: View {
         ZStack {
             // Background
             RoundedRectangle(cornerRadius: Theme.Layout.puzzleButtonCornerRadius, style: .continuous)
-                .fill(theme.puzzleButtonBackground.opacity(isLocked ? theme.puzzleButtonBackgroundLocked : 0.9))
+                .fill(colors.puzzleButtonBackground.opacity(isLocked ? colors.puzzleButtonBackgroundLocked : 0.9))
                 .frame(height: Theme.Layout.puzzleButtonHeight)
             
             // Main content
@@ -615,12 +590,12 @@ private struct PuzzleButtonView: View {
                 cornerRadii: .init(topLeading: 18, bottomLeading: 0, bottomTrailing: 142, topTrailing: 0),
                 style: .continuous
             )
-            .fill(theme.puzzleButtonBadge)
+            .fill(colors.puzzleButtonBadge)
             .frame(width: 46, height: 46)
             
             Text("\(puzzle.number)")
                 .font(.system(size: 18, weight: .bold, design: .rounded))
-                .foregroundStyle(theme.puzzleButtonBadgeText)
+                .foregroundStyle(colors.puzzleButtonBadgeText)
                 .padding(.top, 8)
                 .padding(.leading, 12)
         }
@@ -641,10 +616,10 @@ private struct PuzzleButtonView: View {
         } else if isCompleted {
             ZStack {
                 Circle().fill(Color.white)
-                Circle().stroke(theme.puzzleCompletedBorder, lineWidth: 3)
+                Circle().stroke(colors.puzzleCompletedBorder, lineWidth: 3)
                 Image(systemName: "checkmark")
                     .font(.system(size: 16, weight: .bold, design: .rounded))
-                    .foregroundStyle(theme.puzzleCompletedIcon)
+                    .foregroundStyle(colors.puzzleCompletedIcon)
             }
             .frame(width: 34, height: 34)
             .padding(.top, 4)
@@ -654,7 +629,7 @@ private struct PuzzleButtonView: View {
     private var lockOverlay: some View {
         ZStack {
             Circle()
-                .fill(theme.puzzleLockOverlay)
+                .fill(colors.puzzleLockOverlay)
                 .frame(width: 50, height: 50)
             Image(systemName: "lock.fill")
                 .font(.system(size: 24))

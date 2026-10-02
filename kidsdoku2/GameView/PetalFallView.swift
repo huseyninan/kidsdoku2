@@ -6,14 +6,14 @@
 //
 
 import SwiftUI
-import Combine
 
 // MARK: - Petal Model
 
-private struct Petal: Identifiable {
-    let id = UUID()
-    var x: CGFloat
-    var y: CGFloat
+private struct Petal {
+    /// Horizontal position as a fraction of the view width, so resizes are handled.
+    let xFraction: Double
+    /// Initial progress through one fall cycle (0...1).
+    let startOffset: Double
     let size: CGFloat
     let opacity: Double
     let speed: Double
@@ -36,9 +36,10 @@ private enum PetalFallConfig {
     static let frameRate: Double = 15
     static let frameDuration: TimeInterval = 1.0 / frameRate
     static let offScreenBuffer: CGFloat = 20
+    static let respawnShift: Double = 0.618034
     static let sizeRange: ClosedRange<CGFloat> = 6...16
     static let opacityRange: ClosedRange<Double> = 0.45...0.85
-    // Doubled speed range so visual velocity stays the same at half the frame rate
+    // Points per second
     static let speedRange: ClosedRange<Double> = 44...120
     static let wobbleAmountRange: ClosedRange<CGFloat> = 18...45
     static let wobbleSpeedRange: ClosedRange<Double> = 0.5...1.8
@@ -48,22 +49,43 @@ private enum PetalFallConfig {
 // MARK: - Petal Fall View
 
 struct PetalFallView: View {
-    @State private var petals: [Petal] = []
-    @State private var animationTime: Double = 0
-    @State private var isAnimating = false
-    @State private var timerCancellable: AnyCancellable?
+    /// Generated once and shared; positions are derived from time, so no per-frame state.
+    private static let petals: [Petal] = (0..<PetalFallConfig.petalCount).map { _ in
+        Petal(
+            xFraction: Double.random(in: 0...1),
+            startOffset: Double.random(in: 0...1),
+            size: CGFloat.random(in: PetalFallConfig.sizeRange),
+            opacity: Double.random(in: PetalFallConfig.opacityRange),
+            speed: Double.random(in: PetalFallConfig.speedRange),
+            wobbleAmount: CGFloat.random(in: PetalFallConfig.wobbleAmountRange),
+            wobbleSpeed: Double.random(in: PetalFallConfig.wobbleSpeedRange),
+            rotationSpeed: Double.random(in: PetalFallConfig.rotationSpeedRange) * (Bool.random() ? 1 : -1),
+            type: Petal.PetalType.allCases.randomElement() ?? .round
+        )
+    }
 
     var body: some View {
-        GeometryReader { geometry in
+        // TimelineView redraws only the Canvas at the capped frame rate and pauses
+        // automatically when the view is off screen or the app is in the background.
+        TimelineView(.animation(minimumInterval: PetalFallConfig.frameDuration)) { timeline in
+            let time = timeline.date.timeIntervalSinceReferenceDate
             Canvas { context, size in
-                for petal in petals {
-                    let wobble = sin(animationTime * petal.wobbleSpeed + Double(petal.x) * 0.05) * Double(petal.wobbleAmount)
-                    let currentX = petal.x + CGFloat(wobble)
-                    let currentY = petal.y
+                let travel = Double(size.height + PetalFallConfig.offScreenBuffer * 2)
+                guard travel > 0 else { return }
+
+                for petal in Self.petals {
+                    let distance = petal.startOffset * travel + petal.speed * time
+                    let cycle = (distance / travel).rounded(.down)
+                    let currentY = CGFloat(distance - cycle * travel) - PetalFallConfig.offScreenBuffer
+                    // Shift each new pass horizontally so a respawned petal doesn't reuse its column.
+                    let xFraction = (petal.xFraction + cycle * PetalFallConfig.respawnShift).truncatingRemainder(dividingBy: 1)
+                    let baseX = CGFloat(xFraction) * size.width
+                    let wobble = sin(time * petal.wobbleSpeed + Double(baseX) * 0.05) * Double(petal.wobbleAmount)
+                    let currentX = baseX + CGFloat(wobble)
 
                     context.opacity = petal.opacity
 
-                    let rotation = animationTime * petal.rotationSpeed
+                    let rotation = time * petal.rotationSpeed
 
                     switch petal.type {
                     case .round:
@@ -75,35 +97,8 @@ struct PetalFallView: View {
                     }
                 }
             }
-            .drawingGroup()
-            .onAppear {
-                startAnimation(in: geometry.size)
-            }
-            .onDisappear {
-                stopAnimation()
-            }
         }
         .allowsHitTesting(false)
-    }
-
-    // MARK: - Animation Lifecycle
-
-    private func startAnimation(in size: CGSize) {
-        guard !isAnimating else { return }
-        isAnimating = true
-        initializePetals(in: size)
-
-        timerCancellable = Timer.publish(every: PetalFallConfig.frameDuration, on: .main, in: .common)
-            .autoconnect()
-            .sink { [size] _ in
-                updatePetals(in: size)
-            }
-    }
-
-    private func stopAnimation() {
-        isAnimating = false
-        timerCancellable?.cancel()
-        timerCancellable = nil
     }
 
     // MARK: - Petal Drawing
@@ -245,40 +240,6 @@ struct PetalFallView: View {
         context.fill(centerPath, with: .color(centerColor))
 
         context.transform = .identity
-    }
-
-    // MARK: - Animation Logic
-
-    private func initializePetals(in size: CGSize) {
-        petals = (0..<PetalFallConfig.petalCount).map { _ in
-            createPetal(in: size, startAtTop: false)
-        }
-    }
-
-    private func createPetal(in size: CGSize, startAtTop: Bool) -> Petal {
-        Petal(
-            x: CGFloat.random(in: 0...size.width),
-            y: startAtTop ? -PetalFallConfig.offScreenBuffer : CGFloat.random(in: -PetalFallConfig.offScreenBuffer...size.height),
-            size: CGFloat.random(in: PetalFallConfig.sizeRange),
-            opacity: Double.random(in: PetalFallConfig.opacityRange),
-            speed: Double.random(in: PetalFallConfig.speedRange),
-            wobbleAmount: CGFloat.random(in: PetalFallConfig.wobbleAmountRange),
-            wobbleSpeed: Double.random(in: PetalFallConfig.wobbleSpeedRange),
-            rotationSpeed: Double.random(in: PetalFallConfig.rotationSpeedRange) * (Bool.random() ? 1 : -1),
-            type: Petal.PetalType.allCases.randomElement() ?? .round
-        )
-    }
-
-    private func updatePetals(in size: CGSize) {
-        animationTime += PetalFallConfig.frameDuration
-
-        for i in petals.indices {
-            petals[i].y += CGFloat(petals[i].speed * PetalFallConfig.frameDuration)
-
-            if petals[i].y > size.height + PetalFallConfig.offScreenBuffer {
-                petals[i] = createPetal(in: size, startAtTop: true)
-            }
-        }
     }
 }
 

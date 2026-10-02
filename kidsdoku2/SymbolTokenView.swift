@@ -90,11 +90,7 @@ struct SymbolTokenView: View {
                         .foregroundColor(.white)
                         .shadow(color: Color.black.opacity(0.2), radius: 1, x: 0, y: 1)
                 } else {
-                    Image(symbolName)
-                        .resizable()
-                        .scaledToFit()
-                        .padding(padding)
-                        .shadow(color: Color.black.opacity(0.18), radius: size * 0.08, x: 0, y: size * 0.04)
+                    symbolImage(padding: padding)
                 }
             }
             .frame(width: size * 0.88, height: size * 0.88)
@@ -144,6 +140,21 @@ struct SymbolTokenView: View {
             .opacity(0.5 + 0.3 * highlightStrength)
             .scaleEffect(1 + 0.05 * highlightStrength)
             .animation(.easeInOut(duration: 0.2), value: isSelected)
+    }
+    
+    @ViewBuilder
+    private func symbolImage(padding: CGFloat) -> some View {
+        let image = Image(symbolName)
+            .resizable()
+            .scaledToFit()
+            .padding(padding)
+        // An alpha-masked image shadow needs an offscreen pass per token.
+        // Skip it on the grid (up to 36 tokens, where it is barely visible).
+        if context == .palette {
+            image.shadow(color: Color.black.opacity(0.18), radius: size * 0.08, x: 0, y: size * 0.04)
+        } else {
+            image
+        }
     }
     
     private var numberBadge: some View {

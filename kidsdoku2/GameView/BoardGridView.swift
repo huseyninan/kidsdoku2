@@ -54,6 +54,7 @@ struct BoardGridView: View {
                                     tutorialManager: tutorialManager,
                                     onTap: onTap
                                 )
+                                .equatable()
                             }
                         }
                         .zIndex(rowContainsHighlightedCell(row: row) ? 100 : Double(config.size - row))
@@ -259,6 +260,23 @@ struct BoardCellView: View {
         // Safety check for array bounds
         guard value >= 0 && value < config.symbols.count else { return "?" }
         return config.symbols[value]
+    }
+}
+
+// The `onTap` closure defeats SwiftUI's automatic diffing, which would otherwise
+// re-render every cell on each view-model change. Compare only the inputs that
+// affect rendering so unchanged cells are skipped. Tutorial focus changes still
+// invalidate cells directly through Observation tracking on `tutorialManager`.
+extension BoardCellView: Equatable {
+    static func == (lhs: BoardCellView, rhs: BoardCellView) -> Bool {
+        lhs.cell == rhs.cell &&
+        lhs.config == rhs.config &&
+        lhs.cellSize == rhs.cellSize &&
+        lhs.isSelected == rhs.isSelected &&
+        lhs.isHighlighted == rhs.isHighlighted &&
+        lhs.isCompleted == rhs.isCompleted &&
+        lhs.showNumbers == rhs.showNumbers &&
+        lhs.tutorialManager === rhs.tutorialManager
     }
 }
 

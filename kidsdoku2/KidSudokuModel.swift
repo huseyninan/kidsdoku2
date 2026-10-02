@@ -24,7 +24,16 @@ enum SymbolGroup: Int, CaseIterable, Hashable {
     case spring3
     case spring4
 
+    /// Symbol lists built once; `symbols` is read per cell on every board render.
+    private static let symbolTable: [SymbolGroup: [String]] = Dictionary(
+        uniqueKeysWithValues: allCases.map { ($0, $0.makeSymbols()) }
+    )
+
     var symbols: [String] {
+        Self.symbolTable[self] ?? []
+    }
+
+    private func makeSymbols() -> [String] {
             switch self {
             case .animals:
                 return ["animal1", "animal1", "animal2", "animal4", "animal8", "animal10", "animal15"]
@@ -110,7 +119,7 @@ struct KidSudokuConfig: Hashable {
     let symbolGroup: SymbolGroup
     
     var symbols: [String] {
-        return Array(symbolGroup.symbols)
+        symbolGroup.symbols
     }
 
     static let threeByThree = KidSudokuConfig(

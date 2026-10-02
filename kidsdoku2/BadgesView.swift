@@ -360,9 +360,10 @@ struct BadgeProgressData {
         
         // Pre-compute grid size counts
         var gridSizeCounts: [Int: Int] = [:]
+        // IDs look like "theme-size-difficulty-number"
         for puzzle in completedPuzzles {
-            if let dashIndex = puzzle.firstIndex(of: "-"),
-               let size = Int(puzzle[..<dashIndex]) {
+            let components = puzzle.split(separator: "-")
+            if components.count >= 2, let size = Int(components[1]) {
                 gridSizeCounts[size, default: 0] += 1
             }
         }

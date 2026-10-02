@@ -36,6 +36,10 @@ final class PremadePuzzleStore {
     /// Pre-computed index for O(1) lookup
     private var indexedPuzzles: [Int: [PuzzleDifficulty: [PremadePuzzle]]] = [:]
     
+    /// Theme-specific puzzle lists, built once so lookups don't rebuild every puzzle.
+    private var themedByDifficulty: [GameThemeType: [Int: [PuzzleDifficulty: [PremadePuzzle]]]] = [:]
+    private var themedBySize: [GameThemeType: [Int: [PremadePuzzle]]] = [:]
+    
     private init() {
         // Build index eagerly at app startup
         for (size, puzzles) in [(3, threeByThreePuzzles), (4, fourByFourPuzzles), (6, sixBySixPuzzles)] {
@@ -44,6 +48,63 @@ final class PremadePuzzleStore {
                 byDifficulty[difficulty] = puzzles.filter { $0.difficulty == difficulty }
             }
             indexedPuzzles[size] = byDifficulty
+        }
+        
+        for themeType in GameThemeType.allCases {
+            var bySize: [Int: [PuzzleDifficulty: [PremadePuzzle]]] = [:]
+            for (size, byDifficulty) in indexedPuzzles {
+                bySize[size] = byDifficulty.mapValues { Self.applyTheme(themeType, to: $0) }
+            }
+            themedByDifficulty[themeType] = bySize
+        }
+        
+        for size in [3, 4, 6] {
+            themedBySize[.christmas, default: [:]][size] = Self.applyTheme(.christmas, to: christmasPuzzles(for: size))
+            themedBySize[.spring, default: [:]][size] = Self.applyTheme(.spring, to: springPuzzles(for: size))
+            // Storybook combines all difficulties for the size
+            themedBySize[.storybook, default: [:]][size] = PuzzleDifficulty.allCases.flatMap { difficulty in
+                themedByDifficulty[.storybook]?[size]?[difficulty] ?? []
+            }
+        }
+    }
+    
+    /// Returns copies of `puzzles` using the symbol groups for `themeType`.
+    private static func applyTheme(_ themeType: GameThemeType, to puzzles: [PremadePuzzle]) -> [PremadePuzzle] {
+        puzzles.map { puzzle in
+            let symbolGroup = assignSymbolGroup(size: puzzle.size, difficulty: puzzle.difficulty, number: puzzle.number, themeType: themeType)
+            let newConfig = KidSudokuConfig(
+                size: puzzle.config.size,
+                subgridRows: puzzle.config.subgridRows,
+                subgridCols: puzzle.config.subgridCols,
+                symbolGroup: symbolGroup
+            )
+            return PremadePuzzle(
+                id: puzzle.id,
+                number: puzzle.number,
+                size: puzzle.size,
+                difficulty: puzzle.difficulty,
+                config: newConfig,
+                initialBoard: puzzle.initialBoard,
+                solutionBoard: puzzle.solutionBoard
+            )
+        }
+    }
+    
+    private func christmasPuzzles(for size: Int) -> [PremadePuzzle] {
+        switch size {
+        case 3: return christMasThreeByThreePuzzles
+        case 4: return christmasFourByFourPuzzles
+        case 6: return chrismasSixBySixPuzzles
+        default: return []
+        }
+    }
+    
+    private func springPuzzles(for size: Int) -> [PremadePuzzle] {
+        switch size {
+        case 3: return springThreeByThreePuzzles
+        case 4: return springFourByFourPuzzles
+        case 6: return springSixBySixPuzzles
+        default: return []
         }
     }
     
@@ -2883,97 +2944,14 @@ final class PremadePuzzleStore {
     }
     
     func puzzles(for size: Int, difficulty: PuzzleDifficulty, themeType: GameThemeType) -> [PremadePuzzle] {
-        let basePuzzles = indexedPuzzles[size]?[difficulty] ?? []
-        return basePuzzles.map { puzzle in
-            let symbolGroup = assignSymbolGroup(size: size, difficulty: difficulty, number: puzzle.number, themeType: themeType)
-            let newConfig = KidSudokuConfig(
-                size: puzzle.config.size,
-                subgridRows: puzzle.config.subgridRows,
-                subgridCols: puzzle.config.subgridCols,
-                symbolGroup: symbolGroup
-            )
-            return PremadePuzzle(
-                id: puzzle.id,
-                number: puzzle.number,
-                size: puzzle.size,
-                difficulty: puzzle.difficulty,
-                config: newConfig,
-                initialBoard: puzzle.initialBoard,
-                solutionBoard: puzzle.solutionBoard
-            )
-        }
+        themedByDifficulty[themeType]?[size]?[difficulty] ?? []
     }
     
     /// Returns all puzzles for a given size with theme-specific symbols
-    /// For Christmas theme: Returns dedicated Christmas puzzles
+    /// For Christmas and Spring themes: Returns dedicated themed puzzles
     /// For other themes: Combines all difficulties for the size
     func puzzles(for size: Int, themeType: GameThemeType) -> [PremadePuzzle] {
-        switch themeType {
-        case .christmas:
-            // Return dedicated Christmas puzzles for each size
-            let basePuzzles: [PremadePuzzle]
-            switch size {
-            case 3: basePuzzles = christMasThreeByThreePuzzles
-            case 4: basePuzzles = christmasFourByFourPuzzles
-            case 6: basePuzzles = chrismasSixBySixPuzzles
-            default: basePuzzles = []
-            }
-            // Apply Christmas symbol groups
-            return basePuzzles.map { puzzle in
-                let symbolGroup = assignSymbolGroup(size: size, difficulty: puzzle.difficulty, number: puzzle.number, themeType: themeType)
-                let newConfig = KidSudokuConfig(
-                    size: puzzle.config.size,
-                    subgridRows: puzzle.config.subgridRows,
-                    subgridCols: puzzle.config.subgridCols,
-                    symbolGroup: symbolGroup
-                )
-                return PremadePuzzle(
-                    id: puzzle.id,
-                    number: puzzle.number,
-                    size: puzzle.size,
-                    difficulty: puzzle.difficulty,
-                    config: newConfig,
-                    initialBoard: puzzle.initialBoard,
-                    solutionBoard: puzzle.solutionBoard
-                )
-            }
-        case .spring:
-            // Return dedicated Spring puzzles for each size
-            let basePuzzles: [PremadePuzzle]
-            switch size {
-            case 3: basePuzzles = springThreeByThreePuzzles
-            case 4: basePuzzles = springFourByFourPuzzles
-            case 6: basePuzzles = springSixBySixPuzzles
-            default: basePuzzles = []
-            }
-            // Apply Spring symbol groups
-            return basePuzzles.map { puzzle in
-                let symbolGroup = assignSymbolGroup(size: size, difficulty: puzzle.difficulty, number: puzzle.number, themeType: themeType)
-                let newConfig = KidSudokuConfig(
-                    size: puzzle.config.size,
-                    subgridRows: puzzle.config.subgridRows,
-                    subgridCols: puzzle.config.subgridCols,
-                    symbolGroup: symbolGroup
-                )
-                return PremadePuzzle(
-                    id: puzzle.id,
-                    number: puzzle.number,
-                    size: puzzle.size,
-                    difficulty: puzzle.difficulty,
-                    config: newConfig,
-                    initialBoard: puzzle.initialBoard,
-                    solutionBoard: puzzle.solutionBoard
-                )
-            }
-        case .storybook:
-            // Combine all difficulties for this size
-            var allPuzzles: [PremadePuzzle] = []
-            for difficulty in PuzzleDifficulty.allCases {
-                let puzzlesForDifficulty = puzzles(for: size, difficulty: difficulty, themeType: themeType)
-                allPuzzles.append(contentsOf: puzzlesForDifficulty)
-            }
-            return allPuzzles
-        }
+        themedBySize[themeType]?[size] ?? []
     }
 }
 
