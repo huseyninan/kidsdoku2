@@ -30,6 +30,9 @@ struct SymbolTokenView: View {
     let size: CGFloat
     let context: DisplayContext
     var isSelected: Bool = false
+    /// When false, a selected token shows its glow at full strength without the
+    /// repeat-forever pulse (used on the board, where a highlight behind it already pulses).
+    var animatesGlow: Bool = true
     
     @State private var glowPhase: CGFloat = 0
     
@@ -164,6 +167,12 @@ struct SymbolTokenView: View {
     }
     
     private func updateGlowAnimation(_ active: Bool) {
+        guard animatesGlow else {
+            withAnimation(.easeOut(duration: 0.25)) {
+                glowPhase = active ? 1 : 0
+            }
+            return
+        }
         if active {
             glowPhase = 0
             DispatchQueue.main.async {

@@ -12,7 +12,9 @@ final class GameViewModel: ObservableObject {
     @Published var selectedPaletteSymbol: Int?
     @Published private(set) var mistakeCount = 0
     @Published private(set) var hintCount = 0
-    @Published private(set) var elapsedTime: TimeInterval = 0
+    /// Owns the per-second clock. Kept in its own ObservableObject so a tick only
+    /// re-renders views that observe the timer, not everything observing the view model.
+    let timer = GameTimer()
     @Published var showNumbers: Bool = false {
         didSet { updateCurrentConfig() }
     }
@@ -27,12 +29,12 @@ final class GameViewModel: ObservableObject {
     @Published private(set) var paletteSymbols: [(index: Int, symbol: String)] = []
 
     let config: KidSudokuConfig
+    /// `KidSudokuConfig.symbols` builds a new array on every access, so cache it once.
+    private let configSymbols: [String]
     private let isPremadePuzzle: Bool
     private let originalPremadePuzzle: PremadePuzzle?
     private let soundManager = SoundManager.shared
     private var moveHistory: [(position: KidSudokuPosition, oldValue: Int?)] = []
-    private var timerCancellable: AnyCancellable?
-    private var isTimerRunning = false
     private var generationTask: Task<Void, Never>?
     
     var selectedSymbolGroup: SymbolGroup {
@@ -60,13 +62,15 @@ final class GameViewModel: ObservableObject {
     }
     
     private func updatePaletteSymbols() {
+        let symbols = currentConfig.symbols
         paletteSymbols = validSymbolIndices.map { index in
-            (index: index, symbol: currentConfig.symbols[index])
+            (index: index, symbol: symbols[index])
         }
     }
 
     init(config: KidSudokuConfig) {
         self.config = config
+        self.configSymbols = config.symbols
         self.isPremadePuzzle = false
         self.originalPremadePuzzle = nil
         // Start with a placeholder puzzle while generating in background
@@ -126,19 +130,7 @@ final class GameViewModel: ObservableObject {
     /// Extracted to reduce code duplication and improve single-pass efficiency
     private func applyGeneratedPuzzle(_ generatedPuzzle: KidSudokuPuzzle, showMessage: Bool = false) {
         self.puzzle = generatedPuzzle
-        // PERF: Single pass to count both filled and correct cells
-        var filled = 0
-        var correct = 0
-        for cell in generatedPuzzle.cells {
-            if cell.value != nil {
-                filled += 1
-                if cell.value == cell.solution {
-                    correct += 1
-                }
-            }
-        }
-        self.filledCellCount = filled
-        self.correctCellCount = correct
+        self.recountCells()
         self.isGeneratingPuzzle = false
         self.cacheSymbolData()
         if showMessage {
@@ -149,14 +141,14 @@ final class GameViewModel: ObservableObject {
     
     init(config: KidSudokuConfig, premadePuzzle: PremadePuzzle) {
         self.config = config
+        self.configSymbols = config.symbols
         self.isPremadePuzzle = true
         self.originalPremadePuzzle = premadePuzzle
         self.puzzle = KidSudokuPuzzle(from: premadePuzzle)
         self.highlightedValue = nil
         self.selectedSymbolGroupRawValue = config.symbolGroup.rawValue
         self.currentConfig = config
-        self.filledCellCount = puzzle.cells.filter { $0.value != nil }.count
-        self.correctCellCount = puzzle.cells.filter { $0.value == $0.solution }.count
+        recountCells()
         cacheSymbolData()
     }
 
@@ -175,7 +167,7 @@ final class GameViewModel: ObservableObject {
         
         if let premadePuzzle = originalPremadePuzzle {
             puzzle = KidSudokuPuzzle(from: premadePuzzle)
-            updateFilledCount()
+            recountCells()
             cacheSymbolData()
             message = KidSudokuMessage(text: String(localized: "New puzzle ready!"), type: .info)
             startTimer()
@@ -183,6 +175,7 @@ final class GameViewModel: ObservableObject {
             // Generate new puzzle in background
             puzzle = Self.createPlaceholderPuzzle(config: config)
             filledCellCount = 0
+            correctCellCount = 0
             isGeneratingPuzzle = true
             cacheSymbolData()
             
@@ -226,8 +219,7 @@ final class GameViewModel: ObservableObject {
                 let oldValue = cell.value
                 moveHistory.append((position: cell.position, oldValue: oldValue))
                 puzzle.updateCell(at: cell.position, with: paletteSymbol)
-                updateFilledCount()
-                updateCorrectCount(at: cell.position, oldValue: oldValue, newValue: paletteSymbol)
+                updateCellCounts(at: cell.position, oldValue: oldValue, newValue: paletteSymbol)
                 highlightedValue = paletteSymbol
                 let isCompleted = checkForCompletion()
                 if !isCompleted {
@@ -235,13 +227,13 @@ final class GameViewModel: ObservableObject {
                 }
             } else {
                 mistakeCount += 1
-                guard paletteSymbol < config.symbols.count else {
-                    print("⚠️ Symbol index \(paletteSymbol) out of bounds (max: \(config.symbols.count - 1))")
+                guard paletteSymbol < configSymbols.count else {
+                    print("⚠️ Symbol index \(paletteSymbol) out of bounds (max: \(configSymbols.count - 1))")
                     message = KidSudokuMessage(text: String(localized: "Invalid symbol!"), type: .warning)
                     soundManager.play(.incorrectPlacement, volume: 0.5)
                     return
                 }
-                let symbolImageName = config.symbols[paletteSymbol]
+                let symbolImageName = configSymbols[paletteSymbol]
                 message = KidSudokuMessage(text: String(localized: "That symbol is already there!"), type: .warning, symbolImageName: symbolImageName)
                 soundManager.play(.incorrectPlacement, volume: 0.5)
             }
@@ -271,8 +263,7 @@ final class GameViewModel: ObservableObject {
             let oldValue = cell.value
             moveHistory.append((position: position, oldValue: oldValue))
             puzzle.updateCell(at: position, with: nil)
-            updateFilledCount()
-            updateCorrectCount(at: position, oldValue: oldValue, newValue: nil)
+            updateCellCounts(at: position, oldValue: oldValue, newValue: nil)
             selectedPosition = nil
         }
     }
@@ -301,8 +292,7 @@ final class GameViewModel: ObservableObject {
             let oldValue = cell.value
             moveHistory.append((position: position, oldValue: oldValue))
             puzzle.updateCell(at: position, with: nil)
-            updateFilledCount()
-            updateCorrectCount(at: position, oldValue: oldValue, newValue: nil)
+            updateCellCounts(at: position, oldValue: oldValue, newValue: nil)
             return
         }
 
@@ -310,8 +300,7 @@ final class GameViewModel: ObservableObject {
             let oldValue = cell.value
             moveHistory.append((position: position, oldValue: oldValue))
             puzzle.updateCell(at: position, with: symbolIndex)
-            updateFilledCount()
-            updateCorrectCount(at: position, oldValue: oldValue, newValue: symbolIndex)
+            updateCellCounts(at: position, oldValue: oldValue, newValue: symbolIndex)
             highlightedValue = symbolIndex
             message = nil
             let isCompleted = checkForCompletion()
@@ -320,13 +309,13 @@ final class GameViewModel: ObservableObject {
             }
         } else {
             mistakeCount += 1
-            guard symbolIndex < config.symbols.count else {
-                print("⚠️ Symbol index \(symbolIndex) out of bounds (max: \(config.symbols.count - 1))")
+            guard symbolIndex < configSymbols.count else {
+                print("⚠️ Symbol index \(symbolIndex) out of bounds (max: \(configSymbols.count - 1))")
                 message = KidSudokuMessage(text: String(localized: "Invalid symbol!"), type: .warning)
                 soundManager.play(.incorrectPlacement, volume: 0.5)
                 return
             }
-            let symbolImageName = config.symbols[symbolIndex]
+            let symbolImageName = configSymbols[symbolIndex]
             message = KidSudokuMessage(text: String(localized: "That symbol is already there!"), type: .warning, symbolImageName: symbolImageName)
             soundManager.play(.incorrectPlacement, volume: 0.5)
         }
@@ -334,11 +323,11 @@ final class GameViewModel: ObservableObject {
 
     func displaySymbol(for cell: KidSudokuCell) -> String {
         if let value = cell.value {
-            guard value < config.symbols.count else {
-                print("⚠️ Symbol value \(value) out of bounds (max: \(config.symbols.count - 1))")
+            guard value < configSymbols.count else {
+                print("⚠️ Symbol value \(value) out of bounds (max: \(configSymbols.count - 1))")
                 return "?"
             }
-            return config.symbols[value]
+            return configSymbols[value]
         }
         return ""
     }
@@ -410,12 +399,28 @@ final class GameViewModel: ObservableObject {
         }
     }
     
-    private func updateFilledCount() {
-        filledCellCount = puzzleCells.filter { $0.value != nil }.count
+    /// Full O(n) recount; only used when a whole puzzle is loaded.
+    private func recountCells() {
+        var filled = 0
+        var correct = 0
+        for cell in puzzle.cells where cell.value != nil {
+            filled += 1
+            if cell.value == cell.solution {
+                correct += 1
+            }
+        }
+        filledCellCount = filled
+        correctCellCount = correct
     }
     
-    /// Updates correct cell count incrementally when a cell value changes
-    private func updateCorrectCount(at position: KidSudokuPosition, oldValue: Int?, newValue: Int?) {
+    /// Updates filled and correct cell counts incrementally when a cell value changes
+    private func updateCellCounts(at position: KidSudokuPosition, oldValue: Int?, newValue: Int?) {
+        if oldValue == nil && newValue != nil {
+            filledCellCount += 1
+        } else if oldValue != nil && newValue == nil {
+            filledCellCount -= 1
+        }
+        
         let cell = puzzle.cell(at: position)
         let wasCorrect = oldValue == cell.solution
         let isCorrect = newValue == cell.solution
@@ -446,8 +451,7 @@ final class GameViewModel: ObservableObject {
             let oldValue = randomCell.value
             moveHistory.append((position: randomCell.position, oldValue: oldValue))
             puzzle.updateCell(at: randomCell.position, with: randomCell.solution)
-            updateFilledCount()
-            updateCorrectCount(at: randomCell.position, oldValue: oldValue, newValue: randomCell.solution)
+            updateCellCounts(at: randomCell.position, oldValue: oldValue, newValue: randomCell.solution)
             highlightedValue = randomCell.solution
             selectedPaletteSymbol = randomCell.solution
             message = KidSudokuMessage(text: String(localized: "Here's a hint! ✨"), type: .info)
@@ -468,8 +472,7 @@ final class GameViewModel: ObservableObject {
         
         let currentValue = puzzle.cell(at: lastMove.position).value
         puzzle.updateCell(at: lastMove.position, with: lastMove.oldValue)
-        updateFilledCount()
-        updateCorrectCount(at: lastMove.position, oldValue: currentValue, newValue: lastMove.oldValue)
+        updateCellCounts(at: lastMove.position, oldValue: currentValue, newValue: lastMove.oldValue)
         highlightedValue = lastMove.oldValue
         message = nil
     }
@@ -503,36 +506,16 @@ final class GameViewModel: ObservableObject {
     // MARK: - Timer Management
     
     func startTimer() {
-        guard !isTimerRunning else { return }
-        isTimerRunning = true
-        timerCancellable = Timer.publish(every: 1.0, on: .main, in: .common)
-            .autoconnect()
-            .sink { [weak self] _ in
-                guard let self = self else {
-                    // Self was deallocated, timer will be cleaned up
-                    return
-                }
-                guard !self.showCelebration else { return }
-                self.elapsedTime += 1
-            }
+        guard !showCelebration else { return }
+        timer.start()
     }
     
     func stopTimer() {
-        guard isTimerRunning else { return }
-        isTimerRunning = false
-        timerCancellable?.cancel()
-        timerCancellable = nil
+        timer.stop()
     }
     
     func resetTimer() {
-        stopTimer()
-        elapsedTime = 0
-    }
-    
-    var formattedTime: String {
-        let minutes = Int(elapsedTime) / 60
-        let seconds = Int(elapsedTime) % 60
-        return String(format: "%02d:%02d", minutes, seconds)
+        timer.reset()
     }
     
     func showInitialMessage() {
@@ -544,9 +527,42 @@ final class GameViewModel: ObservableObject {
     }
     
     deinit {
-        // Cancel subscriptions - thread-safe, no need to nil out in deinit
-        timerCancellable?.cancel()
+        // GameTimer cancels its own subscription when it deinits
         generationTask?.cancel()
     }
 }
 
+// MARK: - GameTimer
+
+/// Elapsed-time clock for a game. Lives in its own ObservableObject so the
+/// once-per-second tick only invalidates views that observe it (GameTimerView).
+@MainActor
+final class GameTimer: ObservableObject {
+    @Published private(set) var elapsedTime: TimeInterval = 0
+    private var cancellable: AnyCancellable?
+    
+    func start() {
+        guard cancellable == nil else { return }
+        cancellable = Timer.publish(every: 1.0, on: .main, in: .common)
+            .autoconnect()
+            .sink { [weak self] _ in
+                self?.elapsedTime += 1
+            }
+    }
+    
+    func stop() {
+        cancellable?.cancel()
+        cancellable = nil
+    }
+    
+    func reset() {
+        stop()
+        elapsedTime = 0
+    }
+    
+    var formattedTime: String {
+        let minutes = Int(elapsedTime) / 60
+        let seconds = Int(elapsedTime) % 60
+        return String(format: "%02d:%02d", minutes, seconds)
+    }
+}

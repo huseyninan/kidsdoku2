@@ -32,7 +32,8 @@ struct GameView: View {
                     .ignoresSafeArea()
                 
                 // Snowfall effect for Christmas theme
-                if theme.showSnowfall {
+                // (skipped while the opaque celebration overlay covers the screen)
+                if theme.showSnowfall && !viewModel.showCelebration {
                     SnowfallView()
                         .ignoresSafeArea()
                 }
@@ -132,7 +133,7 @@ struct GameView: View {
                 .frame(height: DeviceSizing.progressBarHeight, alignment: .center)
                 .frame(maxWidth: DeviceSizing.progressBarMaxWidth)
             
-            GameTimerView(viewModel: viewModel)
+            GameTimerView(timer: viewModel.timer)
             
             Button(action: {
                 showSettings = true
@@ -171,6 +172,7 @@ struct GameView: View {
                     hapticManager.trigger(.selection)
                 }
             )
+            .equatable()
             .frame(width: size, height: size)
         }
         .frame(maxWidth: .infinity)
@@ -340,8 +342,10 @@ struct GameView: View {
                     lineWidth: 1.2
                 )
         )
+        // Flatten before shadowing so the shadow is rendered once for the whole banner
+        // rather than once per layer.
+        .compositingGroup()
         .shadow(color: accentColor.opacity(0.35), radius: 14, x: 0, y: 8)
-        .shadow(color: Color.black.opacity(0.15), radius: 4, x: 0, y: 1)
         .padding(.horizontal, 16)
         .transition(.move(edge: .top).combined(with: .opacity))
     }
@@ -373,13 +377,14 @@ struct GameView: View {
 }
 
 // MARK: - GameTimerView
-/// Isolated timer view that only re-renders when time changes,
-/// preventing the entire GameView from re-rendering every second.
+/// Isolated timer view that only re-renders when time changes.
+/// It observes `GameTimer` (not `GameViewModel`), so the once-per-second tick
+/// does not invalidate the rest of GameView.
 private struct GameTimerView: View {
-    @ObservedObject var viewModel: GameViewModel
+    @ObservedObject var timer: GameTimer
     
     var body: some View {
-        StorybookInfoChip(icon: "clock", text: viewModel.formattedTime)
+        StorybookInfoChip(icon: "clock", text: timer.formattedTime)
             .scaleEffect(DeviceSizing.badgeScale)
     }
 }

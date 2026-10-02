@@ -6,14 +6,16 @@
 //
 
 import SwiftUI
-import Combine
 
 // MARK: - Snowflake Model
 
-private struct Snowflake: Identifiable {
-    let id = UUID()
-    var x: CGFloat
-    var y: CGFloat
+/// A snowflake's fixed parameters. Its position at any moment is derived from the
+/// elapsed time, so no per-frame state is mutated.
+private struct Snowflake {
+    /// Horizontal position as a fraction of the view width (0...1).
+    let baseX: CGFloat
+    /// Starting point along the fall path as a fraction of the travel distance (0...1).
+    let phase: CGFloat
     let size: CGFloat
     let opacity: Double
     let speed: Double
@@ -42,69 +44,76 @@ private enum SnowfallConfig {
     static let wobbleAmountRange: ClosedRange<CGFloat> = 10...30
     static let wobbleSpeedRange: ClosedRange<Double> = 1...3
     static let rotationSpeedRange: ClosedRange<Double> = 0.3...1.5
+    /// Shifts a flake's column each time it wraps back to the top so the pattern doesn't repeat visibly.
+    static let respawnXShift: CGFloat = 0.618_034
 }
 
 // MARK: - Snowfall View
 
+/// PERF: Driven by `TimelineView(.animation)` instead of a 30 fps `Timer` that mutated
+/// `@State` every frame. Positions are computed from elapsed time inside the `Canvas`,
+/// so there is no per-frame view diffing, the animation pauses with the display, and
+/// layout changes (rotation, split view) are picked up automatically.
 struct SnowfallView: View {
-    @State private var snowflakes: [Snowflake] = []
-    @State private var animationTime: Double = 0
-    @State private var isAnimating = false
-    @State private var timerCancellable: AnyCancellable?
+    @State private var startDate = Date()
+    
+    private static let snowflakes: [Snowflake] = (0..<SnowfallConfig.snowflakeCount).map { _ in
+        Snowflake(
+            baseX: CGFloat.random(in: 0...1),
+            phase: CGFloat.random(in: 0...1),
+            size: CGFloat.random(in: SnowfallConfig.sizeRange),
+            opacity: Double.random(in: SnowfallConfig.opacityRange),
+            speed: Double.random(in: SnowfallConfig.speedRange),
+            wobbleAmount: CGFloat.random(in: SnowfallConfig.wobbleAmountRange),
+            wobbleSpeed: Double.random(in: SnowfallConfig.wobbleSpeedRange),
+            rotationSpeed: Double.random(in: SnowfallConfig.rotationSpeedRange),
+            type: Snowflake.SnowflakeType.allCases.randomElement() ?? .circle
+        )
+    }
     
     var body: some View {
-        GeometryReader { geometry in
+        TimelineView(.animation(minimumInterval: SnowfallConfig.frameDuration)) { timeline in
+            let time = timeline.date.timeIntervalSince(startDate)
             Canvas { context, size in
-                for flake in snowflakes {
-                    let wobble = sin(animationTime * flake.wobbleSpeed + Double(flake.x)) * Double(flake.wobbleAmount)
-                    let currentX = flake.x + CGFloat(wobble)
-                    let currentY = flake.y
-                    
-                    context.opacity = flake.opacity
-                    
-                    switch flake.type {
-                    case .circle:
-                        drawCircleSnowflake(context: &context, x: currentX, y: currentY, size: flake.size)
-                    case .star:
-                        drawStarSnowflake(context: &context, x: currentX, y: currentY, size: flake.size, rotation: animationTime * flake.rotationSpeed)
-                    case .crystal:
-                        drawCrystalSnowflake(context: &context, x: currentX, y: currentY, size: flake.size, rotation: animationTime * flake.rotationSpeed)
-                    }
-                }
-            }
-            .onAppear {
-                startAnimation(in: geometry.size)
-            }
-            .onDisappear {
-                stopAnimation()
+                drawSnowflakes(context: context, size: size, time: time)
             }
         }
         .allowsHitTesting(false)
     }
     
-    // MARK: - Animation Lifecycle
-    
-    private func startAnimation(in size: CGSize) {
-        guard !isAnimating else { return }
-        isAnimating = true
-        initializeSnowflakes(in: size)
+    private func drawSnowflakes(context: GraphicsContext, size: CGSize, time: Double) {
+        let buffer = SnowfallConfig.offScreenBuffer
+        let travel = size.height + buffer * 2
+        guard travel > 0, size.width > 0 else { return }
         
-        timerCancellable = Timer.publish(every: SnowfallConfig.frameDuration, on: .main, in: .common)
-            .autoconnect()
-            .sink { [size] _ in
-                updateSnowflakes(in: size)
+        for flake in Self.snowflakes {
+            let distance = flake.phase * travel + CGFloat(flake.speed * time)
+            let cycle = (distance / travel).rounded(.down)
+            let y = distance - cycle * travel - buffer
+            
+            var normalizedX = flake.baseX + cycle * SnowfallConfig.respawnXShift
+            normalizedX -= normalizedX.rounded(.down)
+            let baseX = normalizedX * size.width
+            let wobble = sin(time * flake.wobbleSpeed + Double(baseX)) * Double(flake.wobbleAmount)
+            let x = baseX + CGFloat(wobble)
+            
+            var flakeContext = context
+            flakeContext.opacity = flake.opacity
+            
+            switch flake.type {
+            case .circle:
+                drawCircleSnowflake(context: flakeContext, x: x, y: y, size: flake.size)
+            case .star:
+                drawStarSnowflake(context: flakeContext, x: x, y: y, size: flake.size, rotation: time * flake.rotationSpeed)
+            case .crystal:
+                drawCrystalSnowflake(context: flakeContext, x: x, y: y, size: flake.size, rotation: time * flake.rotationSpeed)
             }
-    }
-    
-    private func stopAnimation() {
-        isAnimating = false
-        timerCancellable?.cancel()
-        timerCancellable = nil
+        }
     }
     
     // MARK: - Snowflake Drawing
     
-    private func drawCircleSnowflake(context: inout GraphicsContext, x: CGFloat, y: CGFloat, size: CGFloat) {
+    private func drawCircleSnowflake(context: GraphicsContext, x: CGFloat, y: CGFloat, size: CGFloat) {
         let rect = CGRect(x: x - size/2, y: y - size/2, width: size, height: size)
         
         // Outer glow
@@ -124,12 +133,10 @@ struct SnowfallView: View {
         )
     }
     
-    private func drawStarSnowflake(context: inout GraphicsContext, x: CGFloat, y: CGFloat, size: CGFloat, rotation: Double) {
-        var transform = CGAffineTransform.identity
-        transform = transform.translatedBy(x: x, y: y)
-        transform = transform.rotated(by: rotation)
-        
-        context.transform = transform
+    private func drawStarSnowflake(context: GraphicsContext, x: CGFloat, y: CGFloat, size: CGFloat, rotation: Double) {
+        var context = context
+        context.translateBy(x: x, y: y)
+        context.rotate(by: .radians(rotation))
         
         // Draw 6-pointed star
         let path = Path { p in
@@ -153,15 +160,12 @@ struct SnowfallView: View {
         }
         
         context.fill(path, with: .color(.white))
-        context.transform = .identity
     }
     
-    private func drawCrystalSnowflake(context: inout GraphicsContext, x: CGFloat, y: CGFloat, size: CGFloat, rotation: Double) {
-        var transform = CGAffineTransform.identity
-        transform = transform.translatedBy(x: x, y: y)
-        transform = transform.rotated(by: rotation)
-        
-        context.transform = transform
+    private func drawCrystalSnowflake(context: GraphicsContext, x: CGFloat, y: CGFloat, size: CGFloat, rotation: Double) {
+        var context = context
+        context.translateBy(x: x, y: y)
+        context.rotate(by: .radians(rotation))
         
         // Draw 6 crystal arms
         let path = Path { p in
@@ -200,43 +204,6 @@ struct SnowfallView: View {
             with: .color(.white)
         )
         
-        context.transform = .identity
-    }
-    
-    // MARK: - Animation Logic
-    
-    private func initializeSnowflakes(in size: CGSize) {
-        snowflakes = (0..<SnowfallConfig.snowflakeCount).map { _ in
-            createSnowflake(in: size, startAtTop: false)
-        }
-    }
-    
-    private func createSnowflake(in size: CGSize, startAtTop: Bool) -> Snowflake {
-        let flakeSize = CGFloat.random(in: SnowfallConfig.sizeRange)
-        return Snowflake(
-            x: CGFloat.random(in: 0...size.width),
-            y: startAtTop ? -SnowfallConfig.offScreenBuffer : CGFloat.random(in: -SnowfallConfig.offScreenBuffer...size.height),
-            size: flakeSize,
-            opacity: Double.random(in: SnowfallConfig.opacityRange),
-            speed: Double.random(in: SnowfallConfig.speedRange),
-            wobbleAmount: CGFloat.random(in: SnowfallConfig.wobbleAmountRange),
-            wobbleSpeed: Double.random(in: SnowfallConfig.wobbleSpeedRange),
-            rotationSpeed: Double.random(in: SnowfallConfig.rotationSpeedRange),
-            type: Snowflake.SnowflakeType.allCases.randomElement() ?? .circle
-        )
-    }
-    
-    private func updateSnowflakes(in size: CGSize) {
-        animationTime += SnowfallConfig.frameDuration
-        
-        for i in snowflakes.indices {
-            snowflakes[i].y += CGFloat(snowflakes[i].speed * SnowfallConfig.frameDuration)
-            
-            // Reset snowflake when it goes off screen
-            if snowflakes[i].y > size.height + SnowfallConfig.offScreenBuffer {
-                snowflakes[i] = createSnowflake(in: size, startAtTop: true)
-            }
-        }
     }
 }
 

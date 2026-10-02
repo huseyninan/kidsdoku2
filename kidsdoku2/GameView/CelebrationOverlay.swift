@@ -165,9 +165,11 @@ struct CelebrationOverlay: View {
         )
         .overlay(
             RoundedRectangle(cornerRadius: 36, style: .continuous)
-                .stroke(Color.white.opacity(0.4), lineWidth: 1)
-                .blur(radius: 1)
+                .stroke(Color.white.opacity(0.3), lineWidth: 1)
         )
+        // PERF: Flatten the card first so the large shadow is rendered once for the card
+        // rather than for every text, icon and shape inside it.
+        .compositingGroup()
         .shadow(color: Color.black.opacity(0.25), radius: 30, x: 0, y: 18)
         .scaleEffect(showCard ? 1 : 0.85)
         .opacity(showCard ? 1 : 0)
@@ -269,7 +271,6 @@ struct CelebrationBackdrop: View {
             .blendMode(.screen)
             
             CelebrationSparkles()
-                .blur(radius: 0.5)
             
             Color.black.opacity(0.25)
         }
