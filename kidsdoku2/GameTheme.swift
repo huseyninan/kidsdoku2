@@ -13,6 +13,7 @@ enum GameThemeType: String, CaseIterable, Identifiable {
     case storybook = "storybook"
     case christmas = "christmas"
     case spring = "spring"
+    case backToSchool = "backtoschool"
     
     var id: String { rawValue }
     
@@ -24,6 +25,8 @@ enum GameThemeType: String, CaseIterable, Identifiable {
             return String(localized: "Christmas")
         case .spring:
             return String(localized: "Spring")
+        case .backToSchool:
+            return String(localized: "Back to School")
         }
     }
     
@@ -31,6 +34,7 @@ enum GameThemeType: String, CaseIterable, Identifiable {
     private static let storybookTheme = StorybookTheme()
     private static let christmasTheme = ChristmasTheme()
     private static let springTheme = SpringTheme()
+    private static let backToSchoolTheme = BackToSchoolTheme()
     
     var theme: GameTheme {
         switch self {
@@ -40,6 +44,8 @@ enum GameThemeType: String, CaseIterable, Identifiable {
             return Self.christmasTheme
         case .spring:
             return Self.springTheme
+        case .backToSchool:
+            return Self.backToSchoolTheme
         }
     }
 }
@@ -545,6 +551,130 @@ struct SpringTheme: GameTheme {
     let gridSize3x3Color = Color(red: 0.40, green: 0.68, blue: 0.45)
     let gridSize4x4Color = Color(red: 0.80, green: 0.45, blue: 0.62)
     let gridSize6x6Color = Color(red: 0.55, green: 0.35, blue: 0.72)
+}
+
+// MARK: - Back to School Theme
+
+struct BackToSchoolTheme: GameTheme {
+    // Background
+    let backgroundImageName = "backtoschool_bg"
+    let showRunningFox = true
+    
+    // Header - Badge (School bus yellow and pencil wood)
+    let badgeTextColor = Color(red: 0.45, green: 0.25, blue: 0.08)
+    let badgeGradientStart = Color(red: 1.0, green: 0.97, blue: 0.82)
+    let badgeGradientEnd = Color(red: 1.0, green: 0.88, blue: 0.60)
+    let badgeBorderColor = Color(red: 0.95, green: 0.65, blue: 0.20)
+    
+    // Header Card (Notebook paper with sky blue edge)
+    let headerCardGradientStart = Color.white.opacity(0.95)
+    let headerCardGradientEnd = Color(red: 0.96, green: 0.98, blue: 1.0)
+    let headerCardBorderColor = Color(red: 0.35, green: 0.60, blue: 0.90).opacity(0.5)
+    
+    // Info Chip (Apple red)
+    let infoChipTextColor = Color(red: 0.70, green: 0.18, blue: 0.15)
+    let infoChipGradientStart = Color(red: 1.0, green: 0.95, blue: 0.92)
+    let infoChipGradientEnd = Color(red: 1.0, green: 0.85, blue: 0.80)
+    
+    // Progress Bar (Crayon box: red, yellow, green)
+    let progressBarBackground = Color.white.opacity(0.7)
+    let progressBarGradient: [Color] = [
+        Color(red: 0.92, green: 0.30, blue: 0.28),
+        Color(red: 1.0, green: 0.78, blue: 0.20),
+        Color(red: 0.35, green: 0.70, blue: 0.30)
+    ]
+    
+    // Board Mat (Paper white with pencil yellow border)
+    let boardMatGradientStart = Color(red: 1.0, green: 0.99, blue: 0.95)
+    let boardMatGradientEnd = Color.white
+    let boardMatBorderGradientStart = Color(red: 1.0, green: 0.80, blue: 0.25)
+    let boardMatBorderGradientEnd = Color(red: 0.93, green: 0.58, blue: 0.15)
+    
+    // Board Grid (Notebook paper)
+    let boardBackgroundColor = Color.white
+    let cellBorderColor = Color(red: 0.82, green: 0.88, blue: 0.95)
+    let fixedCellColor = Color(red: 0.94, green: 0.97, blue: 1.0)
+    let emptyCellColor = Color.white
+    let selectedCellColor = Color(red: 0.92, green: 0.30, blue: 0.28).opacity(0.5)
+    let subgridLineColor = Color(red: 0.25, green: 0.45, blue: 0.75)
+    
+    // Palette (Chalkboard green and pencil yellow)
+    let paletteTitleColor = Color(red: 0.20, green: 0.40, blue: 0.30)
+    let paletteSubtitleColor = Color(red: 0.55, green: 0.35, blue: 0.12)
+    let paletteMatGradientStart = Color(red: 1.0, green: 0.98, blue: 0.92)
+    let paletteMatGradientEnd = Color(red: 0.98, green: 0.93, blue: 0.82)
+    let paletteMatBorderColor = Color(red: 0.95, green: 0.72, blue: 0.30).opacity(0.7)
+    
+    // Action Buttons
+    let actionButtonTextColor = Color(red: 0.30, green: 0.20, blue: 0.10)
+    let actionButtonDisabledColor = Color(.systemGray3)
+    
+    // Undo - Sky blue
+    let undoGradientStart = Color(red: 0.88, green: 0.94, blue: 1.0)
+    let undoGradientEnd = Color(red: 0.72, green: 0.85, blue: 0.98)
+    // Erase - Eraser pink
+    let eraseGradientStart = Color(red: 1.0, green: 0.90, blue: 0.90)
+    let eraseGradientEnd = Color(red: 0.98, green: 0.74, blue: 0.74)
+    // Hint - Pencil yellow
+    let hintGradientStart = Color(red: 1.0, green: 0.96, blue: 0.78)
+    let hintGradientEnd = Color(red: 1.0, green: 0.85, blue: 0.45)
+    
+    // Message Banner
+    let messageBannerTextColor = Color(red: 0.30, green: 0.20, blue: 0.10)
+    let messageBannerBackgroundStart = Color(red: 1.0, green: 0.98, blue: 0.93)
+    let messageBannerSymbolBackgroundStart = Color.white.opacity(0.98)
+    let messageBannerSymbolBackgroundEnd = Color(red: 1.0, green: 0.97, blue: 0.90)
+    
+    // Highlight (Sky blue glow)
+    let highlightGradientStart = Color(red: 0.40, green: 0.75, blue: 1.0)
+    let highlightGradientEnd = Color(red: 0.15, green: 0.52, blue: 0.92)
+    let highlightGlowColor = Color(red: 0.45, green: 0.78, blue: 1.0)
+    
+    // Settings Button (School bus orange)
+    let settingsButtonGradientStart = Color(red: 1.0, green: 0.70, blue: 0.25)
+    let settingsButtonGradientEnd = Color(red: 0.93, green: 0.52, blue: 0.15)
+    
+    // Message Colors (Back to School themed)
+    let messageInfoColor = Color(red: 0.25, green: 0.55, blue: 0.88) // Sky blue
+    let messageSuccessColor = Color(red: 0.30, green: 0.65, blue: 0.30) // Grass green
+    let messageWarningColor = Color(red: 0.95, green: 0.62, blue: 0.15) // Pencil orange
+    
+    // MARK: - Puzzle Selection (Back to School - Sunny schoolyard)
+    let puzzleSelectionBackground = Color(red: 0.88, green: 0.94, blue: 0.99)
+    let puzzleHeaderText = Color(red: 0.18, green: 0.25, blue: 0.40)
+    let puzzleHeaderEmoji = "🎒"
+    let puzzleSettingsIcon = Color(red: 0.40, green: 0.50, blue: 0.65)
+    let puzzleLoadingText = Color(red: 0.30, green: 0.40, blue: 0.55)
+    let puzzleSettingsBackground = Color(red: 0.88, green: 0.94, blue: 0.99)
+    let puzzleSettingsText = Color(red: 0.30, green: 0.38, blue: 0.50)
+    let puzzleSettingsTitle = Color(red: 0.18, green: 0.25, blue: 0.40)
+    let puzzleSettingsDoneButton = Color(red: 0.20, green: 0.50, blue: 0.88)
+    let puzzleToggleHideFinished = Color(red: 0.30, green: 0.65, blue: 0.30)
+    
+    // Difficulty Cards - Crayon palette
+    let difficultyEasy = Color(red: 0.30, green: 0.62, blue: 0.32) // Grass green
+    let difficultyNormal = Color(red: 0.93, green: 0.55, blue: 0.15) // Pencil orange
+    let difficultyHard = Color(red: 0.82, green: 0.25, blue: 0.25) // Apple red
+    
+    // Puzzle Buttons
+    let puzzleButtonBackground = Color(red: 1.0, green: 0.99, blue: 0.96)
+    let puzzleButtonBackgroundLocked: Double = 0.5
+    let puzzleButtonBadge = Color(red: 0.93, green: 0.55, blue: 0.15)
+    let puzzleButtonBadgeText = Color.white
+    let puzzleCompletedBorder = Color(red: 0.30, green: 0.65, blue: 0.30)
+    let puzzleCompletedIcon = Color(red: 0.30, green: 0.65, blue: 0.30)
+    let puzzleLockOverlay = Color(red: 0.15, green: 0.22, blue: 0.35).opacity(0.75)
+    
+    // Shadows
+    let puzzleCardShadow = Color(red: 0.15, green: 0.30, blue: 0.50).opacity(0.15)
+    let puzzleSettingsCardShadow = Color(red: 0.15, green: 0.30, blue: 0.50).opacity(0.1)
+    
+    // Grid Size Section Colors - Crayon box (avoid orange: it matches the puzzle number badge)
+    let groupPuzzlesBySize = true
+    let freePuzzlesPerSection = 1
+    let gridSize3x3Color = Color(red: 0.30, green: 0.62, blue: 0.32) // Grass green
+    let gridSize4x4Color = Color(red: 0.86, green: 0.32, blue: 0.34) // Apple red
+    let gridSize6x6Color = Color(red: 0.25, green: 0.48, blue: 0.82) // Backpack blue
 }
 
 // MARK: - Theme Environment Key

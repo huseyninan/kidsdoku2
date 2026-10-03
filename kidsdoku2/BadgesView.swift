@@ -44,6 +44,7 @@ enum BadgeRequirement {
     case noMistakes(count: Int)
     case christmasTheme(count: Int)
     case springTheme(count: Int)
+    case backToSchoolTheme(count: Int)
     case streak(days: Int)
 }
 
@@ -84,6 +85,16 @@ struct BadgeDefinitions {
                     color: Color(red: 0.45, green: 0.72, blue: 0.48),
                     gradientColors: [Color(red: 0.95, green: 0.55, blue: 0.72), Color(red: 0.40, green: 0.72, blue: 0.48)],
                     requirement: .springTheme(count: 27),
+                    rarity: .legendary
+                ),
+                Badge(
+                    id: "back_to_school",
+                    name: String(localized: "Back to School"),
+                    description: String(localized: "Complete all Back to School puzzles"),
+                    icon: "backpack.fill",
+                    color: Color(red: 0.93, green: 0.55, blue: 0.15),
+                    gradientColors: [Color(red: 1.0, green: 0.78, blue: 0.20), Color(red: 0.25, green: 0.48, blue: 0.82)],
+                    requirement: .backToSchoolTheme(count: 27),
                     rarity: .legendary
                 ),
             ]
@@ -357,6 +368,11 @@ struct BadgeProgressData {
         ).union(
             ratings.keys.filter { $0.hasPrefix("spring-") }
         ).count
+        let backToSchoolCompleted = Set(
+            completedPuzzles.filter { $0.contains("backtoschool-") }
+        ).union(
+            ratings.keys.filter { $0.hasPrefix("backtoschool-") }
+        ).count
         
         // Pre-compute grid size counts
         var gridSizeCounts: [Int: Int] = [:]
@@ -391,6 +407,8 @@ struct BadgeProgressData {
                 value = min(1.0, Double(christmasCompleted) / Double(count))
             case .springTheme(let count):
                 value = min(1.0, Double(springCompleted) / Double(count))
+            case .backToSchoolTheme(let count):
+                value = min(1.0, Double(backToSchoolCompleted) / Double(count))
             case .streak:
                 value = 0.0
             }
