@@ -23,6 +23,10 @@ enum SymbolGroup: Int, CaseIterable, Hashable {
     case spring2
     case spring3
     case spring4
+    case school1
+    case school2
+    case school3
+    case school4
 
     /// Symbol lists built once; `symbols` is read per cell on every board render.
     private static let symbolTable: [SymbolGroup: [String]] = Dictionary(
@@ -75,6 +79,14 @@ enum SymbolGroup: Int, CaseIterable, Hashable {
                 return ["spring_13", "spring_13", "spring_14", "spring_15", "spring_16", "spring_17", "spring_18"]
             case .spring4:
                 return ["spring_10", "spring_10", "spring_8", "spring_4", "spring_15", "spring_13", "spring_12"]
+            case .school1:
+                return ["school_1", "school_1", "school_2", "school_3", "school_4", "school_5", "school_6"]
+            case .school2:
+                return ["school_7", "school_7", "school_8", "school_9", "school_10", "school_11", "school_12"]
+            case .school3:
+                return ["school_13", "school_13", "school_14", "school_15", "school_16", "school_2", "school_8"]
+            case .school4:
+                return ["school_3", "school_3", "school_9", "school_11", "school_14", "school_5", "school_16"]
             }
         }
     
@@ -96,6 +108,8 @@ enum SymbolGroup: Int, CaseIterable, Hashable {
             return String(localized: "Christmas Box")
         case .spring1, .spring2, .spring3, .spring4:
             return String(localized: "Springtime")
+        case .school1, .school2, .school3, .school4:
+            return String(localized: "School Bag")
         }
     }
     
@@ -109,6 +123,10 @@ enum SymbolGroup: Int, CaseIterable, Hashable {
     
     static var springCases: [SymbolGroup] {
         return [.spring1, .spring2, .spring3, .spring4]
+    }
+    
+    static var backToSchoolCases: [SymbolGroup] {
+        return [.school1, .school2, .school3, .school4]
     }
 }
 

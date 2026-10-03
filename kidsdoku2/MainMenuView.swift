@@ -108,8 +108,8 @@ struct MainMenuView: View {
     @ViewBuilder
     private var questButtonsSection: some View {
         VStack(spacing: Theme.Layout.questButtonSpacing) {
-            // Spring Quest Button
-            springQuestButton
+            // Back to School Quest Button
+            backToSchoolQuestButton
             
             // Regular quest options
             if !questOptions.isEmpty {
@@ -125,6 +125,41 @@ struct MainMenuView: View {
                 }
             }
         }
+    }
+    
+    private var backToSchoolQuestButton: some View {
+        Button(action: {
+            appEnvironment.setTheme(.backToSchool)
+            path.append(.puzzleSelection(size: 4))
+        }) {
+            ZStack {
+                // Background image
+                Image("backtoschool_banner")
+                    .resizable()
+                    .scaledToFit()
+                
+                // Content overlay (right side, clear of the backpack artwork)
+                HStack(spacing: 16) {
+                    Spacer()
+                    
+                    VStack(alignment: .trailing, spacing: 4) {
+                        Text(String(localized: "Back to School"))
+                            .font(.system(size: 26, weight: .bold, design: .rounded))
+                            .foregroundStyle(.white)
+                        
+                        Text(String(localized: "Class Is in Session"))
+                            .font(.system(size: 16, weight: .medium, design: .rounded))
+                            .foregroundStyle(Color(red: 1.0, green: 0.95, blue: 0.75))
+                    }
+                    .multilineTextAlignment(.trailing)
+                    .shadow(color: Color.black.opacity(0.25), radius: 2, x: 0, y: 1)
+                    .padding(.top, 30)
+                    .padding(.trailing, 14)
+                }
+                .padding()
+            }
+        }
+        .buttonStyle(BackToSchoolQuestButtonStyle())
     }
     
     private var springQuestButton: some View {

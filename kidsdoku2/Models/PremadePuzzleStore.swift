@@ -61,6 +61,7 @@ final class PremadePuzzleStore {
         for size in [3, 4, 6] {
             themedBySize[.christmas, default: [:]][size] = Self.applyTheme(.christmas, to: christmasPuzzles(for: size))
             themedBySize[.spring, default: [:]][size] = Self.applyTheme(.spring, to: springPuzzles(for: size))
+            themedBySize[.backToSchool, default: [:]][size] = Self.applyTheme(.backToSchool, to: backToSchoolPuzzles(for: size))
             // Storybook combines all difficulties for the size
             themedBySize[.storybook, default: [:]][size] = PuzzleDifficulty.allCases.flatMap { difficulty in
                 themedByDifficulty[.storybook]?[size]?[difficulty] ?? []
@@ -104,6 +105,15 @@ final class PremadePuzzleStore {
         case 3: return springThreeByThreePuzzles
         case 4: return springFourByFourPuzzles
         case 6: return springSixBySixPuzzles
+        default: return []
+        }
+    }
+    
+    private func backToSchoolPuzzles(for size: Int) -> [PremadePuzzle] {
+        switch size {
+        case 3: return backToSchoolThreeByThreePuzzles
+        case 4: return backToSchoolFourByFourPuzzles
+        case 6: return backToSchoolSixBySixPuzzles
         default: return []
         }
     }
@@ -973,6 +983,438 @@ final class PremadePuzzleStore {
                               234165
                               """,
                theme: .spring),
+    ]
+    
+    // MARK: - Back to School 3x3 Puzzles
+    private let backToSchoolThreeByThreePuzzles: [PremadePuzzle] = [
+        puzzle(1, 3, .easy,
+               initial:  """
+                          2..
+                          32.
+                          132
+                          """,
+               solution: """
+                          213
+                          321
+                          132
+                          """,
+               theme: .backToSchool),
+        
+        puzzle(2, 3, .easy,
+               initial:  """
+                          213
+                          132
+                          ...
+                          """,
+               solution: """
+                          213
+                          132
+                          321
+                          """,
+               theme: .backToSchool),
+        
+        puzzle(3, 3, .easy,
+               initial:  """
+                          1.3
+                          .12
+                          .31
+                          """,
+               solution: """
+                          123
+                          312
+                          231
+                          """,
+               theme: .backToSchool),
+        
+        puzzle(4, 3, .normal,
+               initial:  """
+                          .3.
+                          12.
+                          ..2
+                          """,
+               solution: """
+                          231
+                          123
+                          312
+                          """,
+               theme: .backToSchool),
+        
+        puzzle(5, 3, .normal,
+               initial:  """
+                          .12
+                          .3.
+                          1..
+                          """,
+               solution: """
+                          312
+                          231
+                          123
+                          """,
+               theme: .backToSchool),
+        
+        puzzle(6, 3, .normal,
+               initial:  """
+                          ...
+                          23.
+                          1.3
+                          """,
+               solution: """
+                          312
+                          231
+                          123
+                          """,
+               theme: .backToSchool),
+        
+        puzzle(7, 3, .hard,
+               initial:  """
+                          .12
+                          ...
+                          .3.
+                          """,
+               solution: """
+                          312
+                          123
+                          231
+                          """,
+               theme: .backToSchool),
+        
+        puzzle(8, 3, .hard,
+               initial:  """
+                          .21
+                          ...
+                          .1.
+                          """,
+               solution: """
+                          321
+                          132
+                          213
+                          """,
+               theme: .backToSchool),
+        
+        puzzle(9, 3, .hard,
+               initial:  """
+                          2..
+                          1.2
+                          ...
+                          """,
+               solution: """
+                          213
+                          132
+                          321
+                          """,
+               theme: .backToSchool),
+    ]
+    
+    // MARK: - Back to School 4x4 Puzzles
+    private let backToSchoolFourByFourPuzzles: [PremadePuzzle] = [
+        puzzle(1, 4, .easy,
+               initial:  """
+                          1..2
+                          .214
+                          .123
+                          .34.
+                          """,
+               solution: """
+                          1432
+                          3214
+                          4123
+                          2341
+                          """,
+               theme: .backToSchool),
+        
+        puzzle(2, 4, .easy,
+               initial:  """
+                          34..
+                          .234
+                          .123
+                          2.4.
+                          """,
+               solution: """
+                          3412
+                          1234
+                          4123
+                          2341
+                          """,
+               theme: .backToSchool),
+        
+        puzzle(3, 4, .easy,
+               initial:  """
+                          4123
+                          ..1.
+                          134.
+                          .4.1
+                          """,
+               solution: """
+                          4123
+                          3214
+                          1342
+                          2431
+                          """,
+               theme: .backToSchool),
+        
+        puzzle(4, 4, .normal,
+               initial:  """
+                          4...
+                          123.
+                          ...2
+                          .143
+                          """,
+               solution: """
+                          4321
+                          1234
+                          3412
+                          2143
+                          """,
+               theme: .backToSchool),
+        
+        puzzle(5, 4, .normal,
+               initial:  """
+                          1.2.
+                          .4..
+                          ..42
+                          .213
+                          """,
+               solution: """
+                          1324
+                          2431
+                          3142
+                          4213
+                          """,
+               theme: .backToSchool),
+        
+        puzzle(6, 4, .normal,
+               initial:  """
+                          .432
+                          ..14
+                          .1..
+                          .2.1
+                          """,
+               solution: """
+                          1432
+                          2314
+                          4123
+                          3241
+                          """,
+               theme: .backToSchool),
+        
+        puzzle(7, 4, .hard,
+               initial:  """
+                          ..41
+                          .1.3
+                          3...
+                          1..4
+                          """,
+               solution: """
+                          2341
+                          4123
+                          3412
+                          1234
+                          """,
+               theme: .backToSchool),
+        
+        puzzle(8, 4, .hard,
+               initial:  """
+                          3.2.
+                          4...
+                          .43.
+                          .3.1
+                          """,
+               solution: """
+                          3124
+                          4213
+                          1432
+                          2341
+                          """,
+               theme: .backToSchool),
+        
+        puzzle(9, 4, .hard,
+               initial:  """
+                          .1.3
+                          2.1.
+                          3...
+                          .43.
+                          """,
+               solution: """
+                          4123
+                          2314
+                          3241
+                          1432
+                          """,
+               theme: .backToSchool),
+    ]
+    
+    // MARK: - Back to School 6x6 Puzzles
+    private let backToSchoolSixBySixPuzzles: [PremadePuzzle] = [
+        puzzle(1, 6, .easy,
+               initial:  """
+                              6.32.1
+                              51234.
+                              4.15..
+                              36.412
+                              256.3.
+                              134.2.
+                          """,
+               solution: """
+                              643251
+                              512346
+                              421563
+                              365412
+                              256134
+                              134625
+                          """,
+               theme: .backToSchool),
+        
+        puzzle(2, 6, .easy,
+               initial:  """
+                              ....2.
+                              .42316
+                              .1.643
+                              43615.
+                              62453.
+                              35.264
+                          """,
+               solution: """
+                              163425
+                              542316
+                              215643
+                              436152
+                              624531
+                              351264
+                          """,
+               theme: .backToSchool),
+        
+        puzzle(3, 6, .easy,
+               initial:  """
+                              65.234
+                              234156
+                              34.51.
+                              .25..3
+                              41.6..
+                              .6..41
+                          """,
+               solution: """
+                              651234
+                              234156
+                              346512
+                              125463
+                              413625
+                              562341
+                          """,
+               theme: .backToSchool),
+        
+        puzzle(4, 6, .normal,
+               initial:  """
+                              61....
+                              52.163
+                              23.4.5
+                              14532.
+                              452.31
+                              .6..5.
+                          """,
+               solution: """
+                              613542
+                              524163
+                              236415
+                              145326
+                              452631
+                              361254
+                          """,
+               theme: .backToSchool),
+        
+        puzzle(5, 6, .normal,
+               initial:  """
+                              .5614.
+                              4.1..3
+                              ..24..
+                              5346.1
+                              .63254
+                              2453..
+                          """,
+               solution: """
+                              356142
+                              421563
+                              612435
+                              534621
+                              163254
+                              245316
+                          """,
+               theme: .backToSchool),
+        
+        puzzle(6, 6, .normal,
+               initial:  """
+                              .14...
+                              3624..
+                              1.62..
+                              .23..6
+                              6..142
+                              241365
+                          """,
+               solution: """
+                              514623
+                              362451
+                              156234
+                              423516
+                              635142
+                              241365
+                          """,
+               theme: .backToSchool),
+        
+        puzzle(7, 6, .hard,
+               initial:  """
+                              ..362.
+                              .6.413
+                              .26.3.
+                              1.456.
+                              642.5.
+                              ..124.
+                          """,
+               solution: """
+                              413625
+                              265413
+                              526134
+                              134562
+                              642351
+                              351246
+                          """,
+               theme: .backToSchool),
+        
+        puzzle(8, 6, .hard,
+               initial:  """
+                              3624..
+                              14..6.
+                              21.5.6
+                              4..31.
+                              6....5
+                              52163.
+                          """,
+               solution: """
+                              362451
+                              145263
+                              213546
+                              456312
+                              634125
+                              521634
+                          """,
+               theme: .backToSchool),
+        
+        puzzle(9, 6, .hard,
+               initial:  """
+                              ..14.2
+                              .523..
+                              .6.51.
+                              3.524.
+                              .26.3.
+                              .4362.
+                          """,
+               solution: """
+                              631452
+                              452361
+                              264513
+                              315246
+                              526134
+                              143625
+                          """,
+               theme: .backToSchool),
     ]
     
     // MARK: - 3x3 Puzzles
@@ -2948,7 +3390,7 @@ final class PremadePuzzleStore {
     }
     
     /// Returns all puzzles for a given size with theme-specific symbols
-    /// For Christmas and Spring themes: Returns dedicated themed puzzles
+    /// For Christmas, Spring and Back to School themes: Returns dedicated themed puzzles
     /// For other themes: Combines all difficulties for the size
     func puzzles(for size: Int, themeType: GameThemeType) -> [PremadePuzzle] {
         themedBySize[themeType]?[size] ?? []
@@ -3027,6 +3469,8 @@ private func assignSymbolGroup(size: Int, difficulty: PuzzleDifficulty, number: 
         symbolCases = SymbolGroup.christmasCases
     case .spring:
         symbolCases = SymbolGroup.springCases
+    case .backToSchool:
+        symbolCases = SymbolGroup.backToSchoolCases
     }
     let groupIndex = abs(seed) % symbolCases.count
     return symbolCases[groupIndex]
