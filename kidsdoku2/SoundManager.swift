@@ -39,16 +39,33 @@ final class SoundManager: ObservableObject {
     
     private init() {
         setupAudioSession()
-        preloadSounds()
+        DispatchQueue.global(qos: .userInitiated).async { [weak self] in
+            self?.preloadSounds()
+        }
     }
     
     private func setupAudioSession() {
+        let audioSession = AVAudioSession.sharedInstance()
         do {
-            let audioSession = AVAudioSession.sharedInstance()
             try audioSession.setCategory(.ambient, mode: .default, options: [.mixWithOthers])
-            try audioSession.setActive(true)
         } catch {
             print("⚠️ Failed to setup audio session: \(error.localizedDescription)")
+        }
+
+        if #available(iOS 27.0, *) {
+            audioSession.activate(options: []) { success, error in
+                if let error {
+                    print("⚠️ Failed to activate audio session: \(error.localizedDescription)")
+                }
+            }
+        } else {
+            DispatchQueue.global(qos: .userInitiated).async {
+                do {
+                    try audioSession.setActive(true)
+                } catch {
+                    print("⚠️ Failed to activate audio session: \(error.localizedDescription)")
+                }
+            }
         }
     }
     
@@ -67,8 +84,10 @@ final class SoundManager: ObservableObject {
             }
             
             if !players.isEmpty {
+                lock.lock()
                 playerPools[sound.rawValue] = players
                 playerIndices[sound.rawValue] = 0
+                lock.unlock()
                 print("✅ Loaded \(players.count) players for: \(sound.fileName)")
             }
         }
