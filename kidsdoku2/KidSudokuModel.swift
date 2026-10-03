@@ -23,6 +23,22 @@ enum SymbolGroup: Int, CaseIterable, Hashable {
     case spring2
     case spring3
     case spring4
+    case school1
+    case school2
+    case school3
+    case school4
+    case school5
+    case school6
+    case school7
+    case school8
+    case school9
+    case school10
+    case school11
+    case school12
+    case school13
+    case school14
+    case school15
+    case school16
 
     /// Symbol lists built once; `symbols` is read per cell on every board render.
     private static let symbolTable: [SymbolGroup: [String]] = Dictionary(
@@ -75,6 +91,38 @@ enum SymbolGroup: Int, CaseIterable, Hashable {
                 return ["spring_13", "spring_13", "spring_14", "spring_15", "spring_16", "spring_17", "spring_18"]
             case .spring4:
                 return ["spring_10", "spring_10", "spring_8", "spring_4", "spring_15", "spring_13", "spring_12"]
+            case .school1:
+                return ["school_1", "school_1", "school_4", "school_7", "school_10", "school_13", "school_15"]
+            case .school2:
+                return ["school_2", "school_2", "school_5", "school_8", "school_11", "school_14", "school_16"]
+            case .school3:
+                return ["school_3", "school_3", "school_6", "school_9", "school_12", "school_15", "school_1"]
+            case .school4:
+                return ["school_4", "school_4", "school_7", "school_10", "school_13", "school_16", "school_2"]
+            case .school5:
+                return ["school_5", "school_5", "school_8", "school_11", "school_14", "school_1", "school_3"]
+            case .school6:
+                return ["school_6", "school_6", "school_9", "school_12", "school_15", "school_2", "school_4"]
+            case .school7:
+                return ["school_7", "school_7", "school_10", "school_13", "school_16", "school_3", "school_5"]
+            case .school8:
+                return ["school_8", "school_8", "school_11", "school_14", "school_1", "school_4", "school_6"]
+            case .school9:
+                return ["school_9", "school_9", "school_12", "school_15", "school_2", "school_5", "school_7"]
+            case .school10:
+                return ["school_10", "school_10", "school_13", "school_16", "school_3", "school_6", "school_8"]
+            case .school11:
+                return ["school_11", "school_11", "school_14", "school_1", "school_4", "school_7", "school_9"]
+            case .school12:
+                return ["school_12", "school_12", "school_15", "school_2", "school_5", "school_8", "school_10"]
+            case .school13:
+                return ["school_13", "school_13", "school_16", "school_3", "school_6", "school_9", "school_11"]
+            case .school14:
+                return ["school_14", "school_14", "school_1", "school_4", "school_7", "school_10", "school_12"]
+            case .school15:
+                return ["school_15", "school_15", "school_2", "school_5", "school_8", "school_11", "school_13"]
+            case .school16:
+                return ["school_16", "school_16", "school_3", "school_6", "school_9", "school_12", "school_14"]
             }
         }
     
@@ -96,6 +144,9 @@ enum SymbolGroup: Int, CaseIterable, Hashable {
             return String(localized: "Christmas Box")
         case .spring1, .spring2, .spring3, .spring4:
             return String(localized: "Springtime")
+        case .school1, .school2, .school3, .school4, .school5, .school6, .school7, .school8,
+             .school9, .school10, .school11, .school12, .school13, .school14, .school15, .school16:
+            return String(localized: "School Bag")
         }
     }
     
@@ -109,6 +160,11 @@ enum SymbolGroup: Int, CaseIterable, Hashable {
     
     static var springCases: [SymbolGroup] {
         return [.spring1, .spring2, .spring3, .spring4]
+    }
+    
+    static var backToSchoolCases: [SymbolGroup] {
+        return [.school1, .school2, .school3, .school4, .school5, .school6, .school7, .school8,
+                .school9, .school10, .school11, .school12, .school13, .school14, .school15, .school16]
     }
 }
 

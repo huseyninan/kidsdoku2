@@ -266,6 +266,43 @@ struct SpringQuestButtonStyle: ButtonStyle {
     }
 }
 
+struct BackToSchoolQuestButtonStyle: ButtonStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .frame(maxWidth: .infinity)
+            .background(
+                RoundedRectangle(cornerRadius: Theme.Layout.largeCornerRadius, style: .continuous)
+                    .fill(
+                        LinearGradient(
+                            colors: [
+                                Color(red: 0.40, green: 0.70, blue: 0.98),
+                                Color(red: 0.20, green: 0.48, blue: 0.85)
+                            ],
+                            startPoint: .top,
+                            endPoint: .bottom
+                        )
+                    )
+                    .overlay(
+                        RoundedRectangle(cornerRadius: Theme.Layout.largeCornerRadius, style: .continuous)
+                            .strokeBorder(
+                                LinearGradient(
+                                    colors: [
+                                        Color(red: 1.0, green: 0.85, blue: 0.35),
+                                        Color(red: 0.98, green: 0.65, blue: 0.20)
+                                    ],
+                                    startPoint: .topLeading,
+                                    endPoint: .bottomTrailing
+                                ),
+                                lineWidth: 3
+                            )
+                    )
+                    .shadow(color: Color(red: 0.15, green: 0.35, blue: 0.70).opacity(0.35), radius: 12, x: 0, y: 6)
+            )
+            .scaleEffect(configuration.isPressed ? 0.98 : 1.0)
+            .animation(.easeInOut(duration: 0.1), value: configuration.isPressed)
+    }
+}
+
 struct PlayGuideButtonStyle: ButtonStyle {
     func makeBody(configuration: Configuration) -> some View {
         configuration.label

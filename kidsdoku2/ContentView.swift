@@ -67,6 +67,9 @@ struct ContentView: View {
         } else if product == "spring" {
             appEnvironment.setTheme(.spring)
             path = [.puzzleSelection(size: 4)]
+        } else if product == "backtoschool" {
+            appEnvironment.setTheme(.backToSchool)
+            path = [.puzzleSelection(size: 4)]
         }
         
         deepLinkProduct = nil

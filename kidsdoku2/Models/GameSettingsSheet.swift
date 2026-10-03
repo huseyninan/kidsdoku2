@@ -28,6 +28,8 @@ struct GameSettingsSheet: View {
             self.availableSymbolGroups = SymbolGroup.christmasCases
         case .spring:
             self.availableSymbolGroups = SymbolGroup.springCases
+        case .backToSchool:
+            self.availableSymbolGroups = SymbolGroup.backToSchoolCases
         }
     }
     
