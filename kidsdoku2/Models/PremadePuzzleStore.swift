@@ -3470,7 +3470,11 @@ private func assignSymbolGroup(size: Int, difficulty: PuzzleDifficulty, number: 
     case .spring:
         symbolCases = SymbolGroup.springCases
     case .backToSchool:
-        symbolCases = SymbolGroup.backToSchoolCases
+        // One group per school item, so every puzzle in a size gets its own cover icon.
+        // Each size starts at a different item to vary icons across 3x3, 4x4 and 6x6.
+        let cases = SymbolGroup.backToSchoolCases
+        let sizeOffset = size == 3 ? 0 : size == 4 ? 5 : 10
+        return cases[(number - 1 + sizeOffset) % cases.count]
     }
     let groupIndex = abs(seed) % symbolCases.count
     return symbolCases[groupIndex]
