@@ -669,11 +669,11 @@ struct BackToSchoolTheme: GameTheme {
     let puzzleCardShadow = Color(red: 0.15, green: 0.30, blue: 0.50).opacity(0.15)
     let puzzleSettingsCardShadow = Color(red: 0.15, green: 0.30, blue: 0.50).opacity(0.1)
     
-    // Grid Size Section Colors - Crayon box
+    // Grid Size Section Colors - Crayon box (avoid orange: it matches the puzzle number badge)
     let groupPuzzlesBySize = true
     let freePuzzlesPerSection = 1
     let gridSize3x3Color = Color(red: 0.30, green: 0.62, blue: 0.32) // Grass green
-    let gridSize4x4Color = Color(red: 0.93, green: 0.55, blue: 0.15) // Pencil orange
+    let gridSize4x4Color = Color(red: 0.86, green: 0.32, blue: 0.34) // Apple red
     let gridSize6x6Color = Color(red: 0.25, green: 0.48, blue: 0.82) // Backpack blue
 }
 
