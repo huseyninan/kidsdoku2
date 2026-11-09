@@ -1,0 +1,7 @@
+# Onboarding (first launch). Needs a clean app state, so it runs on its own.
+appId: kidsdoku.hinan.kidsdoku
+---
+- launchApp:
+    clearState: true
+- assertVisible: "Skip"
+- takeScreenshot: ${SHOT_DIR}/01_onboarding_1

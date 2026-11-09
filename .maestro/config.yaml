@@ -1,0 +1,3 @@
+# Maestro workspace config. Flows are run in this order by scripts/screenshots.sh.
+flows:
+  - "0*.yaml"
