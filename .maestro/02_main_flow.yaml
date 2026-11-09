@@ -1,0 +1,39 @@
+# Main menu -> tutorial -> puzzle selection -> game -> settings.
+# Skips onboarding first so every later screen is reachable.
+appId: kidsdoku.hinan.kidsdoku
+---
+- launchApp:
+    clearState: true
+- tapOn: "Skip"
+
+# 1. Main menu
+- assertVisible: "How to Play"
+- takeScreenshot: ${SHOT_DIR}/02_main_menu
+
+# 2. How to Play (tutorial)
+- tapOn: "How to Play"
+- assertVisible: "Sudoku for Kids"
+- takeScreenshot: ${SHOT_DIR}/03_tutorial
+- tapOn: "Done"
+
+# 3. Parental gate (reached via Go Premium; the math answer is random, so we only capture it)
+- tapOn: "Go Premium"
+- assertVisible: "Parental Gate"
+- takeScreenshot: ${SHOT_DIR}/04_parental_gate
+- tapOn: "Cancel"
+
+# 4. Puzzle selection
+- tapOn: "Start Journey: 4x4"
+- assertVisible: "Choose Your Adventure"
+- takeScreenshot: ${SHOT_DIR}/05_puzzle_selection
+
+# 5. Game screen: first puzzle tile
+- tapOn: "1"
+- takeScreenshot: ${SHOT_DIR}/06_game
+- back
+- back
+
+# 6. Settings
+- tapOn: "Settings"
+- assertVisible: "Version 1.0.0"
+- takeScreenshot: ${SHOT_DIR}/07_settings
